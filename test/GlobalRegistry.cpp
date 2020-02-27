@@ -36,9 +36,10 @@
 
 TEST_CASE("Test", "[unit][global-registry]")
 {
-    struct Test : public utils::Registrable<int>
-    {
-        explicit Test(int a) : utils::Registrable<int>(a) {}
+    struct Test : public utils::Registrable<int> {
+        explicit Test(int a)
+            : utils::Registrable<int>(a)
+        {}
     };
 
     utils::GlobalRegistry<Test>::init(Test(1), Test(2));
