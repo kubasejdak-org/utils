@@ -40,13 +40,12 @@
 namespace utils {
 
 template <typename T>
-class Registrable
-{
+class Registrable {
 public:
     using InstanceType = T;
 
     constexpr explicit Registrable(InstanceType instance)
-        : m_instance(instance)
+        : m_cInstance(instance)
     {}
     constexpr Registrable(const Registrable&) = default;
     constexpr Registrable(Registrable&&) noexcept = default;
@@ -54,15 +53,14 @@ public:
     constexpr Registrable& operator=(const Registrable&) = default;
     constexpr Registrable& operator=(Registrable&&) noexcept = default;
 
-    constexpr InstanceType getInstance() const { return m_instance; }
+    constexpr InstanceType getInstance() const { return m_cInstance; }
 
 private:
-    const InstanceType m_instance;
+    const InstanceType m_cInstance;
 };
 
 template <typename T>
-class GlobalRegistry
-{
+class GlobalRegistry {
 public:
     template <typename... Ts>
     static void init(Ts&&... instances)
