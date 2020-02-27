@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 set(APP utils-tests)
 include(test/${APP}.cmake)
 
+include(cmake/conan.cmake)
 include(cmake/coverage.cmake)
 include(cmake/doxygen.cmake)
 include(cmake/osal.cmake)
