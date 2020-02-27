@@ -5,6 +5,6 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror $<$<COMPILE_LANGUAGE:CXX>:-
 
 add_library(utils INTERFACE)
 
-target_include_directories(
+target_include_directories(utils
     INTERFACE include
 )
