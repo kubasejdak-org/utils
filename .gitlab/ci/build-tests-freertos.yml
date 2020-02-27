@@ -17,7 +17,7 @@
     # Build application.
     - ../tools/build/${Script}.sh
     - make
-    - make osal-tests.bin
+    - make utils-tests.bin
 
 FreeRTOS_ARM_GCC_Debug_Build:
   extends: .Build_Demo_Baremetal
