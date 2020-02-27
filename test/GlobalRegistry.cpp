@@ -35,4 +35,9 @@
 #include <catch2/catch.hpp>
 
 TEST_CASE("Test", "[unit][global-registry]")
-{}
+{
+    struct Test : public utils::Registrable<int>
+    {};
+
+    utils::GlobalRegistry<Test>(Test());
+}
