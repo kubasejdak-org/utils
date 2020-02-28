@@ -53,7 +53,7 @@ public:
     constexpr Registrable& operator=(const Registrable&) = default;
     constexpr Registrable& operator=(Registrable&&) noexcept = default;
 
-    constexpr InstanceType getInstance() const { return m_cInstance; }
+    [[nodiscard]] constexpr InstanceType getInstance() const { return m_cInstance; }
 
 private:
     const InstanceType m_cInstance;
