@@ -18,11 +18,6 @@ endif ()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Add conan files.
-if (EXISTS ${CMAKE_BINARY_DIR}/conan_paths.cmake)
-    include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
-endif ()
-
 # Project-wide compilation options.
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
