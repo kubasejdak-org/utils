@@ -10,6 +10,7 @@ macro(conan_get)
         REQUIRES            ${ARGN}
         PROFILE             ${CONAN_PROFILE}
         PROFILE_AUTO        build_type
+        SETTINGS            os_build=${CMAKE_HOST_SYSTEM_NAME}
         BUILD               missing
         GENERATORS          cmake_find_package cmake_paths
     )
