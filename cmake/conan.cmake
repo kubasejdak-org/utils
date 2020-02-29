@@ -9,6 +9,7 @@ macro(conan_get)
     conan_cmake_run(
         REQUIRES            ${ARGN}
         PROFILE             ${CONAN_PROFILE}
+        PROFILE_AUTO        build_type
         BUILD               missing
         GENERATORS          cmake_find_package cmake_paths
     )
