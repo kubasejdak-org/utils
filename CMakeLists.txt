@@ -10,7 +10,7 @@ include(cmake/doxygen.cmake)
 include(cmake/osal.cmake)
 include(cmake/platform.cmake)
 
-project(hal VERSION 1.0 LANGUAGES ASM C CXX)
+project(utils VERSION 1.0 LANGUAGES ASM C CXX)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
