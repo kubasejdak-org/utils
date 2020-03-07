@@ -42,10 +42,10 @@ namespace utils {
 template <typename T>
 class Registrable {
 public:
-    using InstanceType = T;
+    using InstanceIdType = T;
 
-    constexpr explicit Registrable(InstanceType instance)
-        : m_cInstance(instance)
+    constexpr explicit Registrable(InstanceIdType instanceId)
+        : m_cInstanceId(instanceId)
     {}
     constexpr Registrable(const Registrable&) = default;
     constexpr Registrable(Registrable&&) noexcept = default;
@@ -53,10 +53,10 @@ public:
     constexpr Registrable& operator=(const Registrable&) = default;
     constexpr Registrable& operator=(Registrable&&) noexcept = default;
 
-    [[nodiscard]] constexpr InstanceType getInstance() const { return m_cInstance; }
+    [[nodiscard]] constexpr InstanceIdType instanceId() const { return m_cInstanceId; }
 
 private:
-    const InstanceType m_cInstance;
+    const InstanceIdType m_cInstanceId;
 };
 
 template <typename T>
@@ -65,23 +65,23 @@ public:
     template <typename... Ts>
     static void init(Ts&&... instances)
     {
-        static_assert(std::conjunction<std::is_constructible<T, Ts>...>::value);
+        static_assert(sizeof...(Ts) > 0);
+        static_assert(std::conjunction_v<std::is_constructible<T, Ts>...>);
         assert(m_instances.empty());
 
-        (m_instances.try_emplace(instances.getInstance(), std::make_shared<T>(std::forward<Ts>(instances))), ...);
+        (m_instances.try_emplace(instances.instanceId(), std::make_shared<T>(std::forward<Ts>(instances))), ...);
         assert(sizeof...(Ts) == m_instances.size());
     }
 
-    static std::shared_ptr<T> get(typename T::InstanceType idx) { return m_instances[idx]; }
+    static std::shared_ptr<T> get(typename T::InstanceIdType idx) { return m_instances[idx]; }
+    static std::size_t size() { return m_instances.size(); }
+    static void clear() { m_instances.clear(); }
 
 private:
     GlobalRegistry() = default;
 
 private:
-    static std::map<typename T::InstanceType, std::shared_ptr<T>> m_instances;
+    static inline std::map<typename T::InstanceIdType, std::shared_ptr<T>> m_instances;
 };
-
-template <typename T>
-std::map<typename T::InstanceType, std::shared_ptr<T>> GlobalRegistry<T>::m_instances;
 
 } // namespace utils

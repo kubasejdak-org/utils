@@ -34,13 +34,129 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("Test", "[unit][global-registry]")
+#include <memory>
+#include <type_traits>
+
+TEST_CASE("All instances are correctly stored in GlobalRegistry", "[unit][GlobalRegistry]")
 {
-    struct Test : public utils::Registrable<int> {
+    struct Test : utils::Registrable<int> {
         explicit Test(int a)
             : utils::Registrable<int>(a)
         {}
     };
 
-    utils::GlobalRegistry<Test>::init(Test(1), Test(2));
+    std::size_t instancesCount{};
+
+    SECTION("1 instance")
+    {
+        utils::GlobalRegistry<Test>::init(Test(0));
+        instancesCount = 1;
+    }
+
+    SECTION("4 instances")
+    {
+        utils::GlobalRegistry<Test>::init(Test(0), Test(1), Test(2), Test(3));
+        instancesCount = 4;
+    }
+
+    auto size = utils::GlobalRegistry<Test>::size();
+    REQUIRE(size == instancesCount);
+    for (std::size_t i = 0; i < size; ++i) {
+        auto instance = utils::GlobalRegistry<Test>::get(i);
+        REQUIRE(std::is_same_v<decltype(instance), std::shared_ptr<Test>>);
+        REQUIRE(instance->instanceId() == static_cast<Test::InstanceIdType>(i));
+    }
+
+    utils::GlobalRegistry<Test>::clear();
+}
+
+TEST_CASE("Copy only types can be stored in GlobalRegistry", "[unit][GlobalRegistry]")
+{
+    struct Test : utils::Registrable<int> {
+        explicit Test(int a)
+            : utils::Registrable<int>(a)
+        {}
+
+        Test(const Test& other)
+            : utils::Registrable<int>(other)
+        {
+            copied = true;
+        }
+        Test(Test&&) = delete;
+
+        bool copied{false};
+    };
+
+    std::size_t instancesCount{};
+
+    SECTION("1 instance")
+    {
+        Test instance0(0);
+        utils::GlobalRegistry<Test>::init(instance0);
+        instancesCount = 1;
+    }
+
+    SECTION("4 instances")
+    {
+        Test instance0(0);
+        Test instance1(1);
+        Test instance2(2);
+        Test instance3(3);
+        utils::GlobalRegistry<Test>::init(instance0, instance1, instance2, instance3);
+        instancesCount = 4;
+    }
+
+    auto size = utils::GlobalRegistry<Test>::size();
+    REQUIRE(size == instancesCount);
+    for (std::size_t i = 0; i < size; ++i) {
+        auto instance = utils::GlobalRegistry<Test>::get(i);
+        REQUIRE(std::is_same_v<decltype(instance), std::shared_ptr<Test>>);
+        REQUIRE(instance->instanceId() == static_cast<Test::InstanceIdType>(i));
+        REQUIRE(instance->copied);
+    }
+
+    utils::GlobalRegistry<Test>::clear();
+}
+
+TEST_CASE("Move only types can be stored in GlobalRegistry", "[unit][GlobalRegistry]")
+{
+    struct Test : utils::Registrable<int> {
+        explicit Test(int a)
+            : utils::Registrable<int>(a)
+        {}
+
+        Test(const Test&) = delete;
+        Test(Test&& other) noexcept
+            : utils::Registrable<int>(std::move(other))
+        {
+            moved = true;
+        }
+
+        bool moved{false};
+    };
+
+    std::size_t instancesCount{};
+
+    SECTION("1 instance")
+    {
+        utils::GlobalRegistry<Test>::init(Test(0));
+        instancesCount = 1;
+    }
+
+    SECTION("4 instances")
+    {
+        utils::GlobalRegistry<Test>::init(Test(0), Test(1), Test(2), Test(3));
+        instancesCount = 4;
+    }
+
+    auto size = utils::GlobalRegistry<Test>::size();
+    REQUIRE(size == instancesCount);
+    for (std::size_t i = 0; i < size; ++i) {
+        auto instance = utils::GlobalRegistry<Test>::get(i);
+        REQUIRE(std::is_same_v<decltype(instance), std::shared_ptr<Test>>);
+        REQUIRE(instance->instanceId() == static_cast<Test::InstanceIdType>(i));
+        REQUIRE(instance->moved);
+    }
+
+    utils::GlobalRegistry<Test>::clear();
 }
