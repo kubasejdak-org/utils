@@ -83,6 +83,9 @@ TEST_CASE("Copy only types can be stored in GlobalRegistry", "[unit][GlobalRegis
             copied = true;
         }
         Test(Test&&) = delete;
+        ~Test() override = default;
+        Test& operator=(const Test&) = delete;
+        Test& operator=(Test&&) = delete;
 
         bool copied{false};
     };
@@ -131,6 +134,9 @@ TEST_CASE("Move only types can be stored in GlobalRegistry", "[unit][GlobalRegis
         {
             moved = true;
         }
+        ~Test() override = default;
+        Test& operator=(const Test&) = delete;
+        Test& operator=(Test&&) = delete;
 
         bool moved{false};
     };
