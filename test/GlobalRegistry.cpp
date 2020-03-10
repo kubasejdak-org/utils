@@ -68,6 +68,8 @@ TEST_CASE("All instances are correctly stored in GlobalRegistry", "[unit][Global
     }
 
     utils::GlobalRegistry<Test>::clear();
+    size = utils::GlobalRegistry<Test>::size();
+    REQUIRE(size == 0);
 }
 
 TEST_CASE("Copy only types can be stored in GlobalRegistry", "[unit][GlobalRegistry]")
@@ -119,6 +121,8 @@ TEST_CASE("Copy only types can be stored in GlobalRegistry", "[unit][GlobalRegis
     }
 
     utils::GlobalRegistry<Test>::clear();
+    size = utils::GlobalRegistry<Test>::size();
+    REQUIRE(size == 0);
 }
 
 TEST_CASE("Move only types can be stored in GlobalRegistry", "[unit][GlobalRegistry]")
@@ -165,4 +169,6 @@ TEST_CASE("Move only types can be stored in GlobalRegistry", "[unit][GlobalRegis
     }
 
     utils::GlobalRegistry<Test>::clear();
+    size = utils::GlobalRegistry<Test>::size();
+    REQUIRE(size == 0);
 }
