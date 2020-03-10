@@ -66,6 +66,8 @@ TEST_CASE("All instances are correctly stored in GlobalRegistry", "[unit][Global
         REQUIRE(std::is_same_v<decltype(instance), std::shared_ptr<Test>>);
         REQUIRE(instance->instanceId() == static_cast<Test::InstanceIdType>(i));
     }
+    auto nullInstance = utils::GlobalRegistry<Test>::get(5);
+    REQUIRE(!nullInstance);
 
     utils::GlobalRegistry<Test>::clear();
     size = utils::GlobalRegistry<Test>::size();
@@ -119,6 +121,8 @@ TEST_CASE("Copy only types can be stored in GlobalRegistry", "[unit][GlobalRegis
         REQUIRE(instance->instanceId() == static_cast<Test::InstanceIdType>(i));
         REQUIRE(instance->copied);
     }
+    auto nullInstance = utils::GlobalRegistry<Test>::get(5);
+    REQUIRE(!nullInstance);
 
     utils::GlobalRegistry<Test>::clear();
     size = utils::GlobalRegistry<Test>::size();
@@ -167,6 +171,8 @@ TEST_CASE("Move only types can be stored in GlobalRegistry", "[unit][GlobalRegis
         REQUIRE(instance->instanceId() == static_cast<Test::InstanceIdType>(i));
         REQUIRE(instance->moved);
     }
+    auto nullInstance = utils::GlobalRegistry<Test>::get(5);
+    REQUIRE(!nullInstance);
 
     utils::GlobalRegistry<Test>::clear();
     size = utils::GlobalRegistry<Test>::size();
