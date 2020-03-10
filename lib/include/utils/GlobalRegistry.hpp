@@ -39,49 +39,96 @@
 
 namespace utils {
 
+/// @class Registrable
+/// Helper class that provides "InstanceIdType" type alias and "getInstanceId()" method.
+/// @tparam T                   Type that should be used as global instance id.
 template <typename T>
 class Registrable {
 public:
-    using InstanceType = T;
+    /// @typedef InstanceIdType
+    /// Helper type alias for global instance id.
+    using InstanceIdType = T;
 
-    constexpr explicit Registrable(InstanceType instance)
-        : m_cInstance(instance)
+    /// Constructor.
+    /// @param instanceId       Instance id.
+    constexpr explicit Registrable(InstanceIdType instanceId)
+        : m_cInstanceId(instanceId)
     {}
+
+    /// Copy constructor.
     constexpr Registrable(const Registrable&) = default;
+
+    /// Move constructor.
     constexpr Registrable(Registrable&&) noexcept = default;
+
+    /// Virtual destructor.
     virtual ~Registrable() = default;
+
+    /// Copy assignment operator.
+    /// @return Reference to self.
     constexpr Registrable& operator=(const Registrable&) = default;
+
+    /// Move assignment operator.
+    /// @return Reference to self.
     constexpr Registrable& operator=(Registrable&&) noexcept = default;
 
-    [[nodiscard]] constexpr InstanceType getInstance() const { return m_cInstance; }
+    /// Returns instance id of the current object.
+    /// @return Instance id of the current object.
+    [[nodiscard]] constexpr InstanceIdType instanceId() const { return m_cInstanceId; }
 
 private:
-    const InstanceType m_cInstance;
+    const InstanceIdType m_cInstanceId;
 };
 
+/// @class GlobalRegistry
+/// Provides an easy to use way of registering set of global objects of the same type T, accessible from everywhere.
+/// @tparam T                   Type of objects, that should be stored within GlobalRegistry.
+/// @note In order to create a GlobalRegistry, call GlobalRegistry<T>::init(<objects...>) with the objects that should
+///       be stored. Type T must be either either copy-constructible or move-constructible. GlobalRegistry supports
+///       move-only types. Ideal usage of the GlobalRegistry<T> is to move (not copy) global objects into registry.
 template <typename T>
 class GlobalRegistry {
 public:
+    /// Initializes GlobalRegistry with a given set of T objects.
+    /// @tparam Ts              Types, that should be stored within GlobalRegistry.
+    /// @param instances        T objects, that should be stored within GlobalRegistry.
+    /// @note This method can be called only once for every type T.
     template <typename... Ts>
     static void init(Ts&&... instances)
     {
-        static_assert(std::conjunction<std::is_constructible<T, Ts>...>::value);
+        static_assert(sizeof...(Ts) > 0);
+        static_assert(std::conjunction_v<std::is_constructible<T, Ts>...>);
         assert(m_instances.empty());
 
-        (m_instances.try_emplace(instances.getInstance(), std::make_shared<T>(std::forward<Ts>(instances))), ...);
+        (m_instances.try_emplace(instances.instanceId(), std::make_shared<T>(std::forward<Ts>(instances))), ...);
         assert(sizeof...(Ts) == m_instances.size());
     }
 
-    static std::shared_ptr<T> get(typename T::InstanceType idx) { return m_instances[idx]; }
+    /// Returns std::shared_ptr with instance of the T type, that is identified with the given id.
+    /// @param idx               Index (id) of the instance, that should be returned.
+    /// @return std::shared_ptr with instance of the T type, that is identified with the given id.
+    static std::shared_ptr<T> get(typename T::InstanceIdType idx)
+    {
+        if (m_instances.count(idx) == 0)
+            return nullptr;
+
+        return m_instances[idx];
+    }
+
+    /// Returns size of the GlobalRegistry.
+    /// @return Size of the GlobalRegistry.
+    static std::size_t size() { return m_instances.size(); }
+
+    /// Clears global registry.
+    /// @note After call to this function GlobalRegistry can be initialized once again.
+    static void clear() { m_instances.clear(); }
 
 private:
+    /// Default constructor.
     GlobalRegistry() = default;
 
 private:
-    static std::map<typename T::InstanceType, std::shared_ptr<T>> m_instances;
+    static inline std::map<typename T::InstanceIdType, std::shared_ptr<T>> m_instances;
 };
-
-template <typename T>
-std::map<typename T::InstanceType, std::shared_ptr<T>> GlobalRegistry<T>::m_instances;
 
 } // namespace utils

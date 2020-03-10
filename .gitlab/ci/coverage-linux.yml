@@ -23,4 +23,4 @@
 GlobalRegistry_Coverage:
   extends: .Linux_Coverage
   variables:
-    Tags: "[global-registry]"
+    Tags: "[GlobalRegistry]"

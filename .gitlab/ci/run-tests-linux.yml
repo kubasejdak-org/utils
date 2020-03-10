@@ -31,9 +31,9 @@
 GlobalRegistry_Linux_ARM_UT:
   extends: .Run_Test_Linux_ARM
   variables:
-    TestTags: "[global-registry]"
+    TestTags: "[GlobalRegistry]"
 
 GlobalRegistry_Linux_UT:
   extends: .Run_Test_Linux
   variables:
-    TestTags: "[global-registry]"
+    TestTags: "[GlobalRegistry]"
