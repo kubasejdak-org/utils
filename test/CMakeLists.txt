@@ -14,7 +14,7 @@ target_compile_features(apputils-tests
     PRIVATE cxx_std_17
 )
 
-conan_get(REQUIRES Catch2/2.11.3)
+conan_get(REQUIRES catch2/2.11.3)
 find_package(Catch2 REQUIRED)
 
 if (PLATFORM STREQUAL freertos-arm)
