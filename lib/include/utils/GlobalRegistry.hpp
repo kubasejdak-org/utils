@@ -39,13 +39,11 @@
 
 namespace utils {
 
-/// @class Registrable
 /// Helper class that provides "InstanceIdType" type alias and "getInstanceId()" method.
 /// @tparam T                   Type that should be used as global instance id.
 template <typename T>
 class Registrable {
 public:
-    /// @typedef InstanceIdType
     /// Helper type alias for global instance id.
     using InstanceIdType = T;
 
@@ -80,7 +78,6 @@ private:
     const InstanceIdType m_cInstanceId;
 };
 
-/// @class GlobalRegistry
 /// Provides an easy to use way of registering set of global objects of the same type T, accessible from everywhere.
 /// @tparam T                   Type of objects, that should be stored within GlobalRegistry.
 /// @note In order to create a GlobalRegistry, call GlobalRegistry<T>::init(<objects...>) with the objects that should
