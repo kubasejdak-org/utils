@@ -1,0 +1,142 @@
+/////////////////////////////////////////////////////////////////////////////////////
+///
+/// @file
+/// @author Kuba Sejdak
+/// @copyright BSD 2-Clause License
+///
+/// Copyright (c) 2020-2020, Kuba Sejdak <kuba.sejdak@gmail.com>
+/// All rights reserved.
+///
+/// Redistribution and use in source and binary forms, with or without
+/// modification, are permitted provided that the following conditions are met:
+///
+/// 1. Redistributions of source code must retain the above copyright notice, this
+///    list of conditions and the following disclaimer.
+///
+/// 2. Redistributions in binary form must reproduce the above copyright notice,
+///    this list of conditions and the following disclaimer in the documentation
+///    and/or other materials provided with the distribution.
+///
+/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+/// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+/// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+/// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+/// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+/// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+/// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+/// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+///
+/////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include <osal/Thread.h>
+#include <osal/sleep.hpp>
+
+#include <cassert>
+#include <chrono>
+#include <cstdint>
+#include <cstring>
+#include <functional>
+#include <utility>
+
+namespace std {
+
+class thread {
+public:
+    using native_handle_type = OsalThread;
+
+    thread() noexcept = default;
+
+    template <typename Callable, typename... Args>
+    explicit thread(Callable&& function, Args&&... args)
+    {
+        std::memset(m_stack, 0, sizeof(m_stack));
+
+        m_userFunction = std::bind(function, std::forward<Args>(args)...);
+        m_workerFunction = [](void* arg) {
+            auto threadFunction = *static_cast<FunctionWrapper*>(arg);
+            threadFunction();
+        };
+
+        osalThreadCreate(&m_thread,
+                         {cOsalThreadDefaultPriority, m_cStackSize, m_stack},
+                         m_workerFunction,
+                         &m_userFunction);
+    }
+
+    ~thread()
+    {
+        if (m_userFunction != nullptr)
+            osalThreadDestroy(&m_thread);
+    }
+    thread(const thread&) = delete;
+    thread(thread&& other) noexcept
+    {
+        std::memcpy(&m_thread, &other.m_thread, sizeof(m_thread));
+        m_userFunction = std::move(other.m_userFunction);
+        m_workerFunction = other.m_workerFunction;
+        std::memcpy(m_stack, other.m_stack, sizeof(m_stack));
+
+        std::memset(&other.m_thread, 0, sizeof(other.m_thread));
+        other.m_workerFunction = nullptr;
+        std::memset(other.m_stack, 0, sizeof(other.m_stack));
+    }
+    thread& operator=(const thread&) = delete;
+    thread& operator=(thread&& other) noexcept
+    {
+        std::memcpy(&m_thread, &other.m_thread, sizeof(m_thread));
+        m_userFunction = std::move(other.m_userFunction);
+        m_workerFunction = other.m_workerFunction;
+        std::memcpy(m_stack, other.m_stack, sizeof(m_stack));
+
+        std::memset(&other.m_thread, 0, sizeof(other.m_thread));
+        other.m_workerFunction = nullptr;
+        std::memset(other.m_stack, 0, sizeof(other.m_stack));
+        return *this;
+    }
+
+    void swap(thread&) noexcept { assert(false); }
+    bool joinable() const noexcept { return true; }
+    void join() { osalThreadJoin(&m_thread); }
+    void detach() { assert(false); }
+
+    struct id {
+        std::uint32_t threadId{};
+    };
+
+    thread::id get_id() const noexcept { return {osalThreadId()}; }
+    native_handle_type native_handle() { return m_thread; }
+    static unsigned int hardware_concurrency() noexcept { return 1; }
+
+private:
+    using FunctionWrapper = std::function<void(void)>;
+
+    static constexpr int m_cStackSize = 2 * 1024;
+    OsalThread m_thread{};
+    FunctionWrapper m_userFunction;
+    OsalThreadFunction m_workerFunction{};
+    char m_stack[m_cStackSize];
+};
+
+template <>
+struct hash<thread::id> {
+    size_t operator()(const thread::id& id) const noexcept { return id.threadId; }
+};
+
+namespace this_thread {
+inline thread::id get_id() noexcept
+{
+    return {osalThreadId()};
+}
+
+template <typename Representation, typename Period>
+inline void sleep_for(const chrono::duration<Representation, Period>& time)
+{
+    osal::sleep(time);
+}
+
+} // namespace this_thread
+} // namespace std

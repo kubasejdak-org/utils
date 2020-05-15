@@ -35,3 +35,13 @@ GlobalRegistry_Linux_UT:
   extends: .Run_Test_Linux
   variables:
     TestTags: "[GlobalRegistry]"
+
+Logger_Linux_ARM_UT:
+  extends: .Run_Test_Linux_ARM
+  variables:
+    TestTags: "[Logger]"
+
+Logger_Linux_UT:
+  extends: .Run_Test_Linux
+  variables:
+    TestTags: "[Logger]"

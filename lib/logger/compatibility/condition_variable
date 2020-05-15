@@ -1,0 +1,127 @@
+/////////////////////////////////////////////////////////////////////////////////////
+///
+/// @file
+/// @author Kuba Sejdak
+/// @copyright BSD 2-Clause License
+///
+/// Copyright (c) 2020-2020, Kuba Sejdak <kuba.sejdak@gmail.com>
+/// All rights reserved.
+///
+/// Redistribution and use in source and binary forms, with or without
+/// modification, are permitted provided that the following conditions are met:
+///
+/// 1. Redistributions of source code must retain the above copyright notice, this
+///    list of conditions and the following disclaimer.
+///
+/// 2. Redistributions in binary form must reproduce the above copyright notice,
+///    this list of conditions and the following disclaimer in the documentation
+///    and/or other materials provided with the distribution.
+///
+/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+/// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+/// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+/// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+/// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+/// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+/// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+/// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+///
+/////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include <osal/Semaphore.hpp>
+
+#include <cassert>
+#include <chrono>
+#include <mutex>
+
+namespace std {
+
+enum class cv_status { no_timeout, timeout };
+
+class condition_variable {
+public:
+    using native_handle_type = osal::Semaphore&;
+
+    condition_variable() noexcept
+        : m_semaphore(0)
+    {}
+    ~condition_variable() noexcept = default;
+    condition_variable(const condition_variable&) = delete;
+    condition_variable& operator=(const condition_variable&) = delete;
+
+    void notify_one() noexcept { m_semaphore.signal(); }
+    void notify_all() noexcept { assert(false); }
+
+    void wait(unique_lock<mutex>& lock) noexcept
+    {
+        lock.unlock();
+        m_semaphore.wait();
+        lock.lock();
+    }
+
+    template <typename Predicate>
+    void wait(unique_lock<mutex>& lock, Predicate predicate)
+    {
+        while (!predicate())
+            wait(lock);
+    }
+
+    template <typename Duration>
+    cv_status wait_until(unique_lock<mutex>& /*unused*/,
+                         const chrono::time_point<chrono::system_clock, Duration>& /*unused*/)
+    {
+        assert(false);
+        return cv_status::timeout;
+    }
+
+    template <typename Clock, typename Duration>
+    cv_status wait_until(unique_lock<mutex>& /*unused*/, const chrono::time_point<Clock, Duration>& /*unused*/)
+    {
+        assert(false);
+        return cv_status::timeout;
+    }
+
+    template <typename Clock, typename Duration, typename Predicate>
+    bool wait_until(unique_lock<mutex>& lock, const chrono::time_point<Clock, Duration>& time, Predicate predicate)
+    {
+        while (!predicate()) {
+            if (wait_until(lock, time) == cv_status::timeout)
+                return predicate();
+        }
+
+        return true;
+    }
+
+    template <typename Representation, typename Period>
+    cv_status wait_for(unique_lock<mutex>& lock, const chrono::duration<Representation, Period>& time)
+    {
+        lock.unlock();
+        auto error = m_semaphore.timedWait(time);
+        auto status = !error ? cv_status::no_timeout : cv_status::timeout;
+        lock.lock();
+
+        return status;
+    }
+
+    template <typename Representation, typename Period, typename Predicate>
+    bool wait_for(unique_lock<mutex>& lock, const chrono::duration<Representation, Period>& time, Predicate predicate)
+    {
+        while (!predicate()) {
+            if (wait_for(lock, time) == cv_status::timeout)
+                return predicate();
+        }
+
+        return true;
+    }
+
+    native_handle_type native_handle() { return m_semaphore; }
+
+private:
+    osal::Semaphore m_semaphore;
+};
+
+} // namespace std
