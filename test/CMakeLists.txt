@@ -4,6 +4,7 @@ add_subdirectory(init)
 add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
     GlobalRegistry.cpp
+    Logger.cpp
 )
 
 target_include_directories(apputils-tests
@@ -14,8 +15,9 @@ target_compile_features(apputils-tests
     PRIVATE cxx_std_17
 )
 
-conan_get(REQUIRES catch2/2.11.3)
+conan_get(REQUIRES catch2/2.12.1 fmt/6.2.0 OPTIONS fmt:header_only=True)
 find_package(Catch2 REQUIRED)
+find_package(fmt REQUIRED)
 
 if (PLATFORM STREQUAL freertos-arm)
     # This is required, because FreeRTOS doesn't support signals or exceptions.
@@ -24,7 +26,7 @@ endif ()
 
 target_link_libraries(apputils-tests
     PUBLIC platform-init
-    PRIVATE Catch2::Catch2 osal::cpp utils
+    PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger
 )
 
 # This is required to selectively run Catch2 tests using tags on platforms, where cmd line arguments are not available.

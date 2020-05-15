@@ -23,7 +23,7 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 if (COVERAGE)
     # Generate coverage report.
-    add_lcov_coverage(IGNORE ${CMAKE_CURRENT_SOURCE_DIR}/test/*)
+    add_lcov_coverage(IGNORE ${CMAKE_CURRENT_SOURCE_DIR}/test/* ${CMAKE_CURRENT_SOURCE_DIR}/lib/logger/spdlog-*/*)
 endif ()
 
 add_subdirectory(${platform_SOURCE_DIR}/app ${platform_BINARY_DIR})

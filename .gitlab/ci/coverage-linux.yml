@@ -25,3 +25,8 @@ GlobalRegistry_Coverage:
   extends: .Linux_Coverage
   variables:
     Tags: "[GlobalRegistry]"
+
+Logger_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[Logger]"
