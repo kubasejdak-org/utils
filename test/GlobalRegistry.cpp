@@ -132,3 +132,23 @@ TEST_CASE("Move only types can be stored in GlobalRegistry with default id type"
     size = TestRegistry::size();
     REQUIRE(size == 0);
 }
+
+TEST_CASE("GlobalRegistry can hold derived types with abstract interface", "[unit][GlobalRegistry]")
+{
+    struct IBase {
+        [[maybe_unused]] virtual void func() = 0;
+    };
+    struct Derived : IBase {
+        void func() override {}
+    };
+
+    using BaseRegistry = utils::GlobalRegistry<IBase>;
+
+    BaseRegistry::init({{"instance0", Derived()}, {"instance1", Derived()}, {"instance2", Derived()}});
+    auto size = BaseRegistry::size();
+    REQUIRE(size == 3);
+
+    BaseRegistry::clear();
+    size = BaseRegistry::size();
+    REQUIRE(size == 0);
+}

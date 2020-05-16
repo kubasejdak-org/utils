@@ -50,16 +50,18 @@ namespace detail {
 /// @note This helper class is necessary, because there is no STL container that is only move-constructible.
 template <typename IdType, typename ObjectType>
 class Instance {
-    static_assert(std::is_move_constructible_v<ObjectType>);
-
 public:
     /// Constructor. Creates std::shared_ptr out of the given object.
+    /// @tparam T                Type of the object to be held within this Instance.
     /// @param id               Id of the object.
     /// @param object           Object to be held.
-    Instance(IdType&& id, ObjectType&& object)
+    template <typename T>
+    Instance(IdType&& id, T&& object)
         : m_id(std::forward<IdType>(id))
-        , m_object(std::make_shared<ObjectType>(std::forward<ObjectType>(object)))
-    {}
+        , m_object(std::make_shared<T>(std::forward<T>(object)))
+    {
+        static_assert(std::is_move_constructible_v<T>);
+    }
 
     /// Returns id of the underlying object.
     /// @return Id of the underlying object.
