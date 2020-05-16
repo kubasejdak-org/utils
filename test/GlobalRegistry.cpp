@@ -136,6 +136,13 @@ TEST_CASE("Move only types can be stored in GlobalRegistry with default id type"
 TEST_CASE("GlobalRegistry can hold derived types with abstract interface", "[unit][GlobalRegistry]")
 {
     struct IBase {
+        IBase() = default;
+        [[maybe_unused]] IBase(const IBase&) = delete;
+        [[maybe_unused]] IBase(IBase&& other) noexcept = default;
+
+        virtual ~IBase() = default;
+        IBase& operator=(const IBase&) = delete;
+        IBase& operator=(IBase&&) = delete;
         [[maybe_unused]] virtual void func() = 0;
     };
     struct Derived : IBase {
