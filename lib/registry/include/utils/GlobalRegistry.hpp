@@ -35,81 +35,83 @@
 #include <cassert>
 #include <map>
 #include <memory>
+#include <string>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace utils {
+namespace detail {
 
-/// Helper class that provides "InstanceIdType" type alias and "getInstanceId()" method.
-/// @tparam T                   Type that should be used as global instance id.
-template <typename T>
-class Registrable {
+/// Helper class that wrapping object and the id describing it into one entity.
+/// @tparam IdType              Type representing id of the object.
+/// @tparam ObjectType          Type representing the object.
+/// @note This type constructs std::shared_ptr by moving given object to the smart pointer.
+/// @note This helper class is necessary, because there is no STL container that is only move-constructible.
+template <typename IdType, typename ObjectType>
+class Instance {
+    static_assert(std::is_move_constructible_v<ObjectType>);
+
 public:
-    /// Helper type alias for global instance id.
-    using InstanceIdType = T;
-
-    /// Constructor.
-    /// @param instanceId       Instance id.
-    constexpr explicit Registrable(InstanceIdType instanceId)
-        : m_cInstanceId(instanceId)
+    /// Constructor. Creates std::shared_ptr out of the given object.
+    /// @param id               Id of the object.
+    /// @param object           Object to be held.
+    Instance(IdType&& id, ObjectType&& object)
+        : m_id(std::forward<IdType>(id))
+        , m_object(std::make_shared<ObjectType>(std::forward<ObjectType>(object)))
     {}
 
-    /// Copy constructor.
-    constexpr Registrable(const Registrable&) = default;
+    /// Returns id of the underlying object.
+    /// @return Id of the underlying object.
+    [[nodiscard]] IdType id() const { return m_id; }
 
-    /// Move constructor.
-    constexpr Registrable(Registrable&&) noexcept = default;
-
-    /// Virtual destructor.
-    virtual ~Registrable() = default;
-
-    /// Copy assignment operator.
-    /// @return Reference to self.
-    constexpr Registrable& operator=(const Registrable&) = default;
-
-    /// Move assignment operator.
-    /// @return Reference to self.
-    constexpr Registrable& operator=(Registrable&&) noexcept = default;
-
-    /// Returns instance id of the current object.
-    /// @return Instance id of the current object.
-    [[nodiscard]] constexpr InstanceIdType instanceId() const { return m_cInstanceId; }
+    /// Returns std::shared_ptr with the underlying object.
+    /// @return std::shared_ptr with the underlying object.
+    std::shared_ptr<ObjectType> object() const { return m_object; }
 
 private:
-    const InstanceIdType m_cInstanceId;
+    IdType m_id{};
+    std::shared_ptr<ObjectType> m_object;
 };
 
-/// Provides an easy to use way of registering set of global objects of the same type T, accessible from everywhere.
-/// @tparam T                   Type of objects, that should be stored within GlobalRegistry.
-/// @note In order to create a GlobalRegistry, call GlobalRegistry<T>::init(<objects...>) with the objects that should
-///       be stored. Type T must be either either copy-constructible or move-constructible. GlobalRegistry supports
-///       move-only types. Ideal usage of the GlobalRegistry<T> is to move (not copy) global objects into registry.
-template <typename T>
+} // namespace detail
+
+/// Provides an easy to use way of registering set of global objects of the same type ObjectType and accessible via
+/// IdType from everywhere.
+/// @tparam ObjectType          Type representing the object.
+/// @tparam IdType              Type representing id of the object.
+/// @note In order to create a GlobalRegistry, use the following code:
+///
+/// 1) For default IdType = std::string:
+///     using MyTestRegistry = GlobalRegistry<MyTest>;
+///     MyTestRegistry::init({{"id1", MyTest(1, 1, 1)}, {"id2", MyTest(2, 2, 2)}});
+///
+/// 2) For custom IdType:
+///     using MyTestRegistry2 = GlobalRegistry<MyTest, int>;
+///     MyTestRegistry2::init({{1, MyTest(1, 1, 1)}, {2, MyTest(2, 2, 2)}});
+template <typename ObjectType, typename IdType = std::string>
 class GlobalRegistry {
 public:
-    /// Initializes GlobalRegistry with a given set of T objects.
-    /// @tparam Ts              Types, that should be stored within GlobalRegistry.
+    /// Initializes GlobalRegistry with a given set of id-object pairs (wrapper in detail::Instance).
     /// @param instances        T objects, that should be stored within GlobalRegistry.
-    /// @note This method can be called only once for every type T.
-    template <typename... Ts>
-    static void init(Ts&&... instances)
+    /// @note This method can be called only once for every type ObjectType-IdType pair.
+    static void init(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
     {
-        static_assert(sizeof...(Ts) > 0);
-        static_assert(std::conjunction_v<std::is_constructible<T, Ts>...>);
         assert(m_instances.empty());
 
-        (m_instances.try_emplace(instances.instanceId(), std::make_shared<T>(std::forward<Ts>(instances))), ...);
-        assert(sizeof...(Ts) == m_instances.size());
+        for (auto& instance : instances)
+            m_instances.try_emplace(instance.id(), instance.object());
     }
 
     /// Returns std::shared_ptr with instance of the T type, that is identified with the given id.
-    /// @param idx               Index (id) of the instance, that should be returned.
+    /// @param id               Id of the instance, that should be returned.
     /// @return std::shared_ptr with instance of the T type, that is identified with the given id.
-    static std::shared_ptr<T> get(typename T::InstanceIdType idx)
+    static std::shared_ptr<ObjectType> get(const IdType& id)
     {
-        if (m_instances.count(idx) == 0)
+        if (m_instances.count(id) == 0)
             return nullptr;
 
-        return m_instances[idx];
+        return m_instances[id];
     }
 
     /// Returns size of the GlobalRegistry.
@@ -125,7 +127,7 @@ private:
     GlobalRegistry() = default;
 
 private:
-    static inline std::map<typename T::InstanceIdType, std::shared_ptr<T>> m_instances;
+    static inline std::map<IdType, std::shared_ptr<ObjectType>> m_instances;
 };
 
 } // namespace utils
