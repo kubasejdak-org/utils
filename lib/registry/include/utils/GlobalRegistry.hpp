@@ -67,7 +67,7 @@ public:
 
     /// Returns std::shared_ptr with the underlying object.
     /// @return std::shared_ptr with the underlying object.
-    std::shared_ptr<ObjectType> object() const { return m_object; }
+    [[nodiscard]] std::shared_ptr<ObjectType> object() const { return m_object; }
 
 private:
     IdType m_id{};
