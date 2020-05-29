@@ -56,21 +56,27 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
 /// @tparam T1              First type on which depends given type property.
 /// @tparam property        Type of the user-defined type property.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ADD_PROPERTY_TYPE(T1, property) \
-    struct T1;                          \
-    struct property;                    \
-    template <> struct utils::Property<T1> { using type = property; }
+#define ADD_PROPERTY_TYPE(T1, property)                                                                                \
+    struct T1;                                                                                                         \
+    struct property;                                                                                                   \
+    template <>                                                                                                        \
+    struct utils::Property<T1> {                                                                                       \
+        using type = property;                                                                                         \
+    }
 
 /// Registers user-defined type property which depends on T1 and T2 types.
 /// @tparam T1              First type on which depends given type property.
 /// @tparam T2              Second type on which depends given type property.
 /// @tparam property        Type of the user-defined type property.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ADD_PROPERTY_TYPE_2(T1, T2, property) \
-    struct T1;                                \
-    struct T2;                                \
-    struct property;                          \
-    template <> struct utils::Property<T1, T2> { using type = property; }
+#define ADD_PROPERTY_TYPE_2(T1, T2, property)                                                                          \
+    struct T1;                                                                                                         \
+    struct T2;                                                                                                         \
+    struct property;                                                                                                   \
+    template <>                                                                                                        \
+    struct utils::Property<T1, T2> {                                                                                   \
+        using type = property;                                                                                         \
+    }
 
 /// Registers user-defined type property which depends on T1, T2 and T3 types.
 /// @tparam T1              First type on which depends given type property.
@@ -78,30 +84,39 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
 /// @tparam T3              Third type on which depends given type property.
 /// @tparam property        Type of the user-defined type property.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ADD_PROPERTY_TYPE_3(T1, T2, T3, property) \
-    struct T1;                                    \
-    struct T2;                                    \
-    struct T3;                                    \
-    struct property;                              \
-    template <> struct utils::Property<T1, T2, T3> { using type = property; }
+#define ADD_PROPERTY_TYPE_3(T1, T2, T3, property)                                                                      \
+    struct T1;                                                                                                         \
+    struct T2;                                                                                                         \
+    struct T3;                                                                                                         \
+    struct property;                                                                                                   \
+    template <>                                                                                                        \
+    struct utils::Property<T1, T2, T3> {                                                                               \
+        using type = property;                                                                                         \
+    }
 
 /// Registers user-defined value property which depends on T1 type.
 /// @tparam T1              First type on which depends given value property.
 /// @param property         Value of the user-defined value property.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ADD_PROPERTY(T1, property) \
-    struct T1;                     \
-    template <> struct utils::Property<T1> { static constexpr decltype(property) value = property; }
+#define ADD_PROPERTY(T1, property)                                                                                     \
+    struct T1;                                                                                                         \
+    template <>                                                                                                        \
+    struct utils::Property<T1> {                                                                                       \
+        static constexpr decltype(property) value = property;                                                          \
+    }
 
 /// Registers user-defined value property which depends on T1 and T2 types.
 /// @tparam T1              First type on which depends given value property.
 /// @tparam T2              Second type on which depends given value property.
 /// @param property         Value of the user-defined value property.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ADD_PROPERTY_2(T1, T2, property) \
-    struct T1;                           \
-    struct T2;                           \
-    template <> struct utils::Property<T1, T2> { static constexpr decltype(property) value = property; }
+#define ADD_PROPERTY_2(T1, T2, property)                                                                               \
+    struct T1;                                                                                                         \
+    struct T2;                                                                                                         \
+    template <>                                                                                                        \
+    struct utils::Property<T1, T2> {                                                                                   \
+        static constexpr decltype(property) value = property;                                                          \
+    }
 
 /// Registers user-defined type property which depends on T1, T2 and T3 types.
 /// @tparam T1              First type on which depends given value property.
@@ -109,8 +124,11 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
 /// @tparam T3              Third type on which depends given value property.
 /// @param property         Value of the user-defined value property.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ADD_PROPERTY_3(T1, T2, T3, property) \
-    struct T1;                               \
-    struct T2;                               \
-    struct T3;                               \
-    template <> struct utils::Property<T1, T2, T3> { static constexpr decltype(property) value = property; }
+#define ADD_PROPERTY_3(T1, T2, T3, property)                                                                           \
+    struct T1;                                                                                                         \
+    struct T2;                                                                                                         \
+    struct T3;                                                                                                         \
+    template <>                                                                                                        \
+    struct utils::Property<T1, T2, T3> {                                                                               \
+        static constexpr decltype(property) value = property;                                                          \
+    }
