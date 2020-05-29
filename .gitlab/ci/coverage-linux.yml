@@ -30,3 +30,8 @@ Logger_Coverage:
   extends: .Linux_Coverage
   variables:
     Tags: "[Logger]"
+
+Property_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[property]"
