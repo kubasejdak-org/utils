@@ -5,6 +5,7 @@ add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
     GlobalRegistry.cpp
     Logger.cpp
+    property.cpp
 )
 
 target_include_directories(apputils-tests
@@ -26,7 +27,7 @@ endif ()
 
 target_link_libraries(apputils-tests
     PUBLIC platform-init
-    PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger
+    PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::property
 )
 
 # This is required to selectively run Catch2 tests using tags on platforms, where cmd line arguments are not available.
