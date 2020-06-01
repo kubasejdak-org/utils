@@ -1,4 +1,4 @@
-.Build_Demo_Baremetal:
+.Build_Test_FreeRTOS:
   stage: build-GCC
   image: kubasejdak/arm-none-eabi-gcc:latest
   tags:
@@ -15,16 +15,32 @@
     - cd ${CI_JOB_NAME}
 
     # Build application.
-    - cmake .. -DPLATFORM=freertos-arm -DCMAKE_BUILD_TYPE=${BuildType}
+    - cmake .. -DPLATFORM=freertos-arm -DCMAKE_BUILD_TYPE=${BuildType} -DTEST_TAGS=${TestTags}
     - make
     - make utils-tests.bin
 
-FreeRTOS_ARM_GCC_Debug_Build:
-  extends: .Build_Demo_Baremetal
+    # Copy CI tools.
+    - cp -R ../tools/ci bin/
+
+GlobalRegistry_FreeRTOS_ARM_GCC_Debug_Build:
+  extends: .Build_Test_FreeRTOS
   variables:
     BuildType: "Debug"
+    TestTags: "[GlobalRegistry]"
+
+Logger_FreeRTOS_ARM_GCC_Debug_Build:
+  extends: .Build_Test_FreeRTOS
+  variables:
+    BuildType: "Debug"
+    TestTags: "[Logger]"
+
+Property_FreeRTOS_ARM_GCC_Debug_Build:
+  extends: .Build_Test_FreeRTOS
+  variables:
+    BuildType: "Debug"
+    TestTags: "[property]"
 
 FreeRTOS_ARM_GCC_Release_Build:
-  extends: .Build_Demo_Baremetal
+  extends: .Build_Test_FreeRTOS
   variables:
     BuildType: "Release"

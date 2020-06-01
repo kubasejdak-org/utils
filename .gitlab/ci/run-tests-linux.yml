@@ -1,4 +1,4 @@
-.Run_Test:
+.Run_Test_Linux:
   stage: test
   variables:
     GIT_STRATEGY: none
@@ -6,8 +6,8 @@
     - cd ${AppArtifact}/bin
     - ./utils-tests ${TestTags}
 
-.Run_Test_Linux:
-  extends: .Run_Test
+.Run_Test_Linux_x86:
+  extends: .Run_Test_Linux
   tags:
     - linux
     - shared
@@ -18,7 +18,7 @@
     AppArtifact: "Linux_GCC_Debug_Build"
 
 .Run_Test_Linux_ARM:
-  extends: .Run_Test
+  extends: .Run_Test_Linux
   tags:
     - raspberrypi
   dependencies:
@@ -32,7 +32,7 @@ GlobalRegistry_Linux_ARM_UT:
     TestTags: "[GlobalRegistry]"
 
 GlobalRegistry_Linux_UT:
-  extends: .Run_Test_Linux
+  extends: .Run_Test_Linux_x86
   variables:
     TestTags: "[GlobalRegistry]"
 
@@ -42,7 +42,7 @@ Logger_Linux_ARM_UT:
     TestTags: "[Logger]"
 
 Logger_Linux_UT:
-  extends: .Run_Test_Linux
+  extends: .Run_Test_Linux_x86
   variables:
     TestTags: "[Logger]"
 
@@ -52,6 +52,6 @@ Property_Linux_ARM_UT:
     TestTags: "[property]"
 
 Property_Linux_UT:
-  extends: .Run_Test_Linux
+  extends: .Run_Test_Linux_x86
   variables:
     TestTags: "[property]"
