@@ -1,4 +1,4 @@
-.Run_Test_FreeRTOS:
+.Run_Test_FreeRTOS_ARM:
   stage: test
   tags:
     - stm32f4discovery
@@ -10,21 +10,21 @@
     - ci/logs-reader.py
 
 GlobalRegistry_FreeRTOS_ARM_UT:
-  extends: .Run_Test_FreeRTOS
+  extends: .Run_Test_FreeRTOS_ARM
   dependencies:
     - GlobalRegistry_FreeRTOS_ARM_GCC_Debug_Build
   variables:
     AppArtifact: "GlobalRegistry_FreeRTOS_ARM_GCC_Debug_Build"
 
 Logger_FreeRTOS_ARM_UT:
-  extends: .Run_Test_FreeRTOS
+  extends: .Run_Test_FreeRTOS_ARM
   dependencies:
     - Logger_FreeRTOS_ARM_GCC_Debug_Build
   variables:
     AppArtifact: "Logger_FreeRTOS_ARM_GCC_Debug_Build"
 
 Property_FreeRTOS_ARM_UT:
-  extends: .Run_Test_FreeRTOS
+  extends: .Run_Test_FreeRTOS_ARM
   dependencies:
     - Property_FreeRTOS_ARM_GCC_Debug_Build
   variables:
