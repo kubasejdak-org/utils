@@ -1,4 +1,4 @@
-add_subdirectory(spdlog-1.6.0)
+add_subdirectory(spdlog-1.7.0)
 
 add_library(utils-logger INTERFACE)
 add_library(utils::logger ALIAS utils-logger)
