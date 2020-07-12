@@ -67,7 +67,7 @@ TEST_CASE("Log messages are displayed correctly", "[unit][Logger]")
     Demo3Logger::error("This error log will be visible");
     Demo3Logger::critical("This critical log will be visible");
 
-    fmt::print("\n>>>>> Using explicitly set 'CRITICAL' level at construction time. <<<<<\n");
+    fmt::print("\n>>>>> Using explicitly set 'INFO' level at construction time. <<<<<\n");
     Demo4Logger::trace("This trace log shouldn't be visible");
     Demo4Logger::debug("This debug log shouldn't be visible");
     Demo4Logger::info("This info log shouldn't be visible");
