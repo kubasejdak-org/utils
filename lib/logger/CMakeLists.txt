@@ -1,4 +1,4 @@
-add_subdirectory(spdlog-1.7.0)
+add_subdirectory(spdlog-1.8.0)
 
 add_library(utils-logger INTERFACE)
 add_library(utils::logger ALIAS utils-logger)
@@ -22,7 +22,7 @@ if (NOT UNIX)
     )
 endif ()
 
-conan_get(REQUIRES fmt/7.0.1 OPTIONS fmt:header_only=True)
+conan_get(REQUIRES fmt/7.0.3 OPTIONS fmt:header_only=True)
 find_package(fmt REQUIRED)
 
 target_link_libraries(utils-logger
