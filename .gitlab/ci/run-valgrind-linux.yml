@@ -13,17 +13,17 @@
     - cd ${AppArtifact}/bin
     - valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=123 ./utils-tests ${TestTags} || if [ $? -eq 123 ]; then exit 1; fi
 
-GlobalRegistry_Valgrind_Linux:
+GlobalRegistry_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
     TestTags: "[GlobalRegistry]"
 
-Logger_Valgrind_Linux:
+Logger_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
     TestTags: "[Logger]"
 
-Property_Valgrind_Linux:
+Property_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
     TestTags: "[Property]"

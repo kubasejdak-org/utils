@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 # Define application settings.
 set(APP utils-tests)
-include(test/${APP}.cmake)
+include(test/settings.cmake)
 
 include(cmake/conan.cmake)
 include(cmake/coverage.cmake)

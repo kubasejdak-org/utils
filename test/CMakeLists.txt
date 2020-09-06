@@ -16,7 +16,7 @@ target_compile_features(apputils-tests
     PRIVATE cxx_std_17
 )
 
-conan_get(REQUIRES catch2/2.12.4 fmt/7.0.1 OPTIONS fmt:header_only=True)
+conan_get(REQUIRES catch2/2.13.0 fmt/7.0.3 OPTIONS fmt:header_only=True)
 find_package(Catch2 REQUIRED)
 find_package(fmt REQUIRED)
 
