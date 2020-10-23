@@ -100,7 +100,7 @@ public:
     static void init(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
     {
         assert(m_instances.empty());
-        append(std::forward<detail::Instance<IdType, ObjectType>>(instances));
+        append(std::forward<std::vector<detail::Instance<IdType, ObjectType>>>(instances));
     }
 
     /// Appends given set of id-object pairs into GlobalRegistry (wrapper in detail::Instance).
