@@ -136,6 +136,7 @@ private:
     GlobalRegistry() = default;
 
 private:
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     static inline std::map<IdType, std::shared_ptr<ObjectType>> m_instances;
 };
 
