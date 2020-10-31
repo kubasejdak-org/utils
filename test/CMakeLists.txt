@@ -3,9 +3,9 @@ add_subdirectory(init)
 # Object library type is used to prevent compiler from removing unit test functions from the binary.
 add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
-    GlobalRegistry.cpp
-    Logger.cpp
-    property.cpp
+    #GlobalRegistry.cpp
+    #Logger.cpp
+    #property.cpp
 )
 
 target_include_directories(apputils-tests

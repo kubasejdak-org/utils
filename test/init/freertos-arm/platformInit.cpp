@@ -32,12 +32,33 @@
 
 #include "platformInit.hpp"
 
+#include <allocator/allocator.hpp>
+
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4xx_usart.h>
 
 #include <cstddef>
 #include <cstdint>
+
+// Defined in linker script.
+extern const char heapMin; // NOLINT
+extern const char heapMax; // NOLINT
+
+void* operator new(std::size_t size)
+{
+    return memory::allocator::allocate(size);
+}
+
+void operator delete(void* ptr) noexcept
+{
+    memory::allocator::release(ptr);
+}
+
+void operator delete(void* ptr, [[maybe_unused]] std::size_t sz) noexcept
+{
+    operator delete(ptr);
+}
 
 int consolePrint(const char* message, std::size_t size)
 {
@@ -80,10 +101,16 @@ static void consoleInitUart()
     USART_Cmd(UART4, ENABLE);   // NOLINT
 }
 
+static bool initAllocator()
+{
+    constexpr std::size_t cPageSize = 512;
+    return memory::allocator::init(std::uintptr_t(&heapMin), std::uintptr_t(&heapMax), cPageSize);
+}
+
 bool platformInit()
 {
     consoleInitGpio();
     consoleInitUart();
 
-    return true;
+    return initAllocator();
 }
