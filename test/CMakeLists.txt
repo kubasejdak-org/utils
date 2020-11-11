@@ -3,6 +3,7 @@ add_subdirectory(init)
 # Object library type is used to prevent compiler from removing unit test functions from the binary.
 add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
+    bits.cpp
     GlobalRegistry.cpp
     Logger.cpp
     property.cpp
@@ -27,7 +28,7 @@ endif ()
 
 target_link_libraries(apputils-tests
     PUBLIC platform-init
-    PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::property
+    PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::property utils::bits
 )
 
 # This is required to selectively run Catch2 tests using tags on platforms, where cmd line arguments are not available.
