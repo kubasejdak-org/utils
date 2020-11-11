@@ -114,3 +114,55 @@ TEST_CASE("Check conversions to big endian", "[unit][bits]")
         }
     }
 }
+
+TEST_CASE("Conversions from integral to byte array", "[unit][bits]")
+{
+    SECTION("std::uint8_t")
+    {
+        for (std::uint8_t value = 0; value < std::numeric_limits<std::uint8_t>::max(); ++value) {
+            auto array = utils::toBytesArray(value);
+            REQUIRE(array.size() == sizeof(value));
+            REQUIRE(array[0] == value);
+        }
+    }
+
+    SECTION("std::uint16_t")
+    {
+        for (std::uint16_t value = 0; value < std::numeric_limits<std::uint16_t>::max(); ++value) {
+            auto array = utils::toBytesArray(value);
+            REQUIRE(array.size() == sizeof(value));
+            REQUIRE(array[0] == (value & 0x00ff));         // NOLINT
+            REQUIRE(array[1] == ((value & 0xff00) >> 8U)); // NOLINT
+        }
+    }
+
+    SECTION("std::uint32_t")
+    {
+        constexpr std::uint32_t cIterationsCount = 1'000;
+        for (std::uint32_t value = 0; value < cIterationsCount; ++value) {
+            auto array = utils::toBytesArray(value);
+            REQUIRE(array.size() == sizeof(value));
+            REQUIRE(array[0] == (value & 0x000000ff));          // NOLINT
+            REQUIRE(array[1] == ((value & 0x0000ff00) >> 8U));  // NOLINT
+            REQUIRE(array[2] == ((value & 0x00ff0000) >> 16U)); // NOLINT
+            REQUIRE(array[3] == ((value & 0xff000000) >> 24U)); // NOLINT
+        }
+    }
+
+    SECTION("std::uint64_t")
+    {
+        constexpr std::uint64_t cIterationsCount = 1'000;
+        for (std::uint64_t value = 0; value < cIterationsCount; ++value) {
+            auto array = utils::toBytesArray(value);
+            REQUIRE(array.size() == sizeof(value));
+            REQUIRE(array[0] == (value & 0x00000000000000ff));          // NOLINT
+            REQUIRE(array[1] == ((value & 0x000000000000ff00) >> 8U));  // NOLINT
+            REQUIRE(array[2] == ((value & 0x0000000000ff0000) >> 16U)); // NOLINT
+            REQUIRE(array[3] == ((value & 0x00000000ff000000) >> 24U)); // NOLINT
+            REQUIRE(array[4] == ((value & 0x000000ff00000000) >> 32U)); // NOLINT
+            REQUIRE(array[5] == ((value & 0x0000ff0000000000) >> 40U)); // NOLINT
+            REQUIRE(array[6] == ((value & 0x00ff000000000000) >> 48U)); // NOLINT
+            REQUIRE(array[7] == ((value & 0xff00000000000000) >> 56U)); // NOLINT
+        }
+    }
+}
