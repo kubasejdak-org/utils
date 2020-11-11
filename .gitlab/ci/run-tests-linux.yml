@@ -26,6 +26,16 @@
   variables:
     AppArtifact: "Linux_ARM_GCC_Debug_Build"
 
+Bits_Linux_ARM_UT:
+  extends: .Run_Test_Linux_ARM
+  variables:
+    TestTags: "[bits]"
+
+Bits_Linux_UT:
+  extends: .Run_Test_Linux
+  variables:
+    TestTags: "[bits]"
+
 GlobalRegistry_Linux_ARM_UT:
   extends: .Run_Test_Linux_ARM
   variables:
