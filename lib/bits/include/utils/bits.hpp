@@ -34,6 +34,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <type_traits>
 
 namespace utils {
@@ -72,6 +73,7 @@ template <typename T>
 constexpr inline auto changeEndianness(T value)
 {
     static_assert(std::is_integral_v<T>, "T is not integral");
+
     constexpr auto cSize = sizeof(T);
 
     if constexpr (cSize == 2)
@@ -104,6 +106,20 @@ template <typename T>
 inline auto toLittleEndian(T value)
 {
     return isBigEndian() ? changeEndianness(value) : value;
+}
+
+/// Converts given integral value into array of bytes.
+/// @tparam T           Type of the value to be converted.
+/// @param value        Value to be converted.
+/// @return Array of bytes created from the given integral value.
+template <typename T>
+constexpr inline auto toBytesArray(T value)
+{
+    static_assert(std::is_integral_v<T>, "T is not integral");
+
+    std::array<std::uint8_t, sizeof(T)> bytes{};
+    std::memcpy(bytes.data(), &value, sizeof(T));
+    return bytes;
 }
 
 } // namespace utils
