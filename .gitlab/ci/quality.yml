@@ -3,7 +3,7 @@ Clang_Format:
   image: kubasejdak/clang:11
   tags:
     - linux
-  dependencies: []
+  needs: []
   script:
     - tools/check-clang-format.sh lib test
     - |
@@ -19,7 +19,7 @@ Clang_Format:
   stage: quality
   tags:
     - linux
-  dependencies: []
+  needs: []
   artifacts:
     name: "${CI_JOB_NAME}_${CI_JOB_ID}"
     expire_in: 2 weeks
@@ -51,7 +51,8 @@ Coverage_Total:
   image: kubasejdak/gcc:latest
   tags:
     - linux
-  dependencies:
+  needs:
+    - Bits_Coverage
     - GlobalRegistry_Coverage
     - Logger_Coverage
     - Property_Coverage
@@ -65,7 +66,8 @@ Coverage_Total:
     - cd ${CI_JOB_NAME}
 
     - |
-      lcov -a ../GlobalRegistry_Coverage/coverage/coverage.info \
+      lcov -a ../Bits_Coverage/coverage/coverage.info \
+           -a ../GlobalRegistry_Coverage/coverage/coverage.info \
            -a ../Logger_Coverage/coverage/coverage.info \
            -a ../Property_Coverage/coverage/coverage.info \
            -o coverage.info
