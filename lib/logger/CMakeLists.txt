@@ -1,4 +1,4 @@
-add_subdirectory(spdlog-1.8.1)
+add_subdirectory(spdlog-1.8.2)
 
 add_library(utils-logger INTERFACE)
 add_library(utils::logger ALIAS utils-logger)
@@ -18,13 +18,10 @@ if (NOT UNIX)
 
     set(COMPATIBILITY_PATH      ${CMAKE_CURRENT_SOURCE_DIR}/compatibility)
     target_compile_options(utils-logger
-        INTERFACE -include${COMPATIBILITY_PATH}/mutex -include${COMPATIBILITY_PATH}/thread -include${COMPATIBILITY_PATH}/condition_variable
+        INTERFACE -include${COMPATIBILITY_PATH}/mutex -include${COMPATIBILITY_PATH}/thread -include${COMPATIBILITY_PATH}/condition_variable -include${COMPATIBILITY_PATH}/syscalls.hpp
     )
 endif ()
 
-conan_get(REQUIRES fmt/7.0.3 OPTIONS fmt:header_only=True)
-find_package(fmt REQUIRED)
-
 target_link_libraries(utils-logger
-    INTERFACE spdlog::spdlog fmt::fmt
+    INTERFACE spdlog::spdlog
 )
