@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
 ///
 /// @file
 /// @author Kuba Sejdak
@@ -54,9 +54,11 @@
         #include "ApplicationLogger.h"
     #endif
 
-    using LoggerCreator = app::ApplicationLoggerCreator;
+    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+    #define LOGGER_CREATOR app::ApplicationLoggerCreator
 #else
-    using LoggerCreator = utils::logger::detail::DefaultLoggerCreator;
+    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+    #define LOGGER_CREATOR utils::logger::detail::DefaultLoggerCreator
 #endif
 
 /// Registers custom user-defined logger with the given properties.
@@ -65,7 +67,7 @@
 /// @param logLevel         Default logging level for this logger.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define REGISTER_LOGGER(LoggerType, loggerName, logLevel) \
-    REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, LoggerCreator)
+    REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, LOGGER_CREATOR)
 // clang-format on
 
 namespace utils::logger {
