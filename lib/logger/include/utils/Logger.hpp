@@ -49,13 +49,23 @@
     struct LoggerType##Tag { static constexpr auto* name = loggerName; };   \
     using LoggerType = utils::logger::ModuleLogger<LoggerType##Tag, logLevel, loggerCreator> // NOLINT
 
+#ifdef APPLICATION_LOGGER
+    #if __has_include("ApplicationLogger.h")
+        #include "ApplicationLogger.h"
+    #endif
+
+    using LoggerCreator = app::ApplicationLoggerCreator;
+#else
+    using LoggerCreator = utils::logger::detail::DefaultLoggerCreator;
+#endif
+
 /// Registers custom user-defined logger with the given properties.
 /// @tparam LoggerType      Type used to access given logger.
 /// @param loggerName       Name of the logger (displayed as [<NAME>] in log message).
 /// @param logLevel         Default logging level for this logger.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define REGISTER_LOGGER(LoggerType, loggerName, logLevel) \
-    REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, utils::logger::detail::DefaultLoggerCreator)
+    REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, LoggerCreator)
 // clang-format on
 
 namespace utils::logger {
