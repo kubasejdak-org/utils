@@ -72,10 +72,7 @@ struct StateC : IAppState {
         : IAppState("StateC", stateMachine)
     {}
 
-    void func() override
-    {
-        changeState<StateD>();
-    }
+    void func() override { changeState<StateD>(); }
 };
 
 struct StateD : IAppState {
@@ -117,15 +114,9 @@ TEST_CASE("2. Changing state from the outside in a loop", "[unit][StateMachine]"
     constexpr int cIterations = 100'000;
     for (int i = 0; i < cIterations; ++i) {
         switch (i % 3) {
-            case 0:
-                stateMachine.changeState<StateA>();
-                break;
-            case 1:
-                stateMachine.changeState<StateB>();
-                break;
-            case 2:
-                stateMachine.changeState<StateD>();
-                break;
+            case 0: stateMachine.changeState<StateA>(); break;
+            case 1: stateMachine.changeState<StateB>(); break;
+            case 2: stateMachine.changeState<StateD>(); break;
         }
 
         stateMachine.currentState()->func();
@@ -139,18 +130,10 @@ TEST_CASE("3. Changing state from the inside and outside in a loop", "[unit][Sta
     constexpr int cIterations = 100'000;
     for (int i = 0; i < cIterations; ++i) {
         switch (i % 4) {
-            case 0:
-                stateMachine.changeState<StateA>();
-                break;
-            case 1:
-                stateMachine.changeState<StateB>();
-                break;
-            case 2:
-                stateMachine.changeState<StateC>();
-                break;
-            case 3:
-                stateMachine.changeState<StateD>();
-                break;
+            case 0: stateMachine.changeState<StateA>(); break;
+            case 1: stateMachine.changeState<StateB>(); break;
+            case 2: stateMachine.changeState<StateC>(); break;
+            case 3: stateMachine.changeState<StateD>(); break;
         }
 
         stateMachine.currentState()->func();
