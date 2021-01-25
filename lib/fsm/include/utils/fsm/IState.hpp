@@ -48,6 +48,13 @@ public:
         , m_stateMachine(stateMachine)
     {}
 
+    IState(const IState<UserState>&) = default;
+    IState(IState<UserState>&&) noexcept = default;
+    virtual ~IState() = default;
+
+    IState<UserState>& operator=(const IState<UserState>&) = default;
+    IState<UserState>& operator=(IState<UserState>&&) noexcept = default;
+
     [[nodiscard]] std::string name() const { return m_name; }
 
 protected:
