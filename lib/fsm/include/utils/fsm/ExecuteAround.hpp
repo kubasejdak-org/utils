@@ -93,22 +93,19 @@ private:
         explicit ActionExecutor(Wrapper* wrapper) noexcept
             : wrapper(wrapper)
         {
-            if (wrapper->preAction) {
+            if (wrapper->preAction)
                 wrapper->preAction();
-            }
         }
-
+        ActionExecutor(const ActionExecutor&) = delete;
+        ActionExecutor(ActionExecutor&&) noexcept = default;
         ~ActionExecutor()
         {
-            if ((wrapper != nullptr) && wrapper->postAction) {
+            if ((wrapper != nullptr) && wrapper->postAction)
                 wrapper->postAction();
-            }
         }
 
-        ActionExecutor(const ActionExecutor&) = delete;
         ActionExecutor& operator=(const ActionExecutor&) = delete;
-
-        ActionExecutor(ActionExecutor&&) = default;
+        ActionExecutor& operator=(ActionExecutor&&) = delete;
 
         auto operator->() const noexcept { return wrapper->underlyingObject.get(); }
     };

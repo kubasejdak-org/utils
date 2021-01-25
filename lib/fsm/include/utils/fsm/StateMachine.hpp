@@ -38,6 +38,7 @@
 #include <utils/fsm/logger.hpp>
 
 #include <fmt/printf.h>
+
 #include <type_traits>
 
 namespace utils::fsm {
