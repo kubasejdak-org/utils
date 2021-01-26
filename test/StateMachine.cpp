@@ -30,12 +30,11 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <osal/Thread.hpp>
+#include <osal/sleep.hpp>
 #include <utils/fsm/ExecuteAround.hpp>
 #include <utils/fsm/IState.hpp>
 #include <utils/fsm/StateMachine.hpp>
-
-#include <osal/Thread.hpp>
-#include <osal/sleep.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -83,7 +82,11 @@ struct StateD : IAppState {
         : IAppState("StateD", stateMachine)
     {}
 
-    void func() override { changeState<StateF>(); osal::sleep(1ms); }
+    void func() override
+    {
+        changeState<StateF>();
+        osal::sleep(1ms);
+    }
 };
 
 struct StateE : IAppState {
@@ -91,7 +94,11 @@ struct StateE : IAppState {
         : IAppState("StateE", stateMachine)
     {}
 
-    void func() override { changeState<StateD>(); osal::sleep(2ms); }
+    void func() override
+    {
+        changeState<StateD>();
+        osal::sleep(2ms);
+    }
 };
 
 struct StateF : IAppState {
@@ -99,7 +106,11 @@ struct StateF : IAppState {
         : IAppState("StateF", stateMachine)
     {}
 
-    void func() override { changeState<StateE>(); osal::sleep(3ms); }
+    void func() override
+    {
+        changeState<StateE>();
+        osal::sleep(3ms);
+    }
 };
 
 struct StateG : IAppState {
@@ -107,7 +118,11 @@ struct StateG : IAppState {
         : IAppState("StateG", stateMachine)
     {}
 
-    void func() override { changeState<StateG>(); osal::sleep(1ms); }
+    void func() override
+    {
+        changeState<StateG>();
+        osal::sleep(1ms);
+    }
 };
 
 TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
@@ -211,35 +226,40 @@ TEST_CASE("3. Changing state from multiple threads", "[unit][StateMachine]")
 
     constexpr int cThreadsCount = 20;
     std::array<osal::Thread<>, cThreadsCount> normalThreads = {
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc},
-        osal::Thread<>{threadFunc}
-    };
+        osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}, osal::Thread<>{threadFunc}};
 
-    osal::Thread<> changeThread1([&]{ stateMachine.changeState<StateA>(); osal::sleep(1ms); });
-    osal::Thread<> changeThread2([&]{ stateMachine.changeState<StateB>(); osal::sleep(2ms); });
-    osal::Thread<> changeThread3([&]{ stateMachine.changeState<StateC>(); osal::sleep(3ms); });
-    osal::Thread<> changeThread4([&]{ stateMachine.changeState<StateD>(); osal::sleep(4ms); });
-    osal::Thread<> changeThread5([&]{ stateMachine.changeState<StateE>(); osal::sleep(3ms); });
-    osal::Thread<> changeThread6([&]{ stateMachine.changeState<StateF>(); osal::sleep(2ms); });
-    osal::Thread<> changeThread7([&]{ stateMachine.changeState<StateG>(); osal::sleep(1ms); });
+    osal::Thread<> changeThread1([&] {
+        stateMachine.changeState<StateA>();
+        osal::sleep(1ms);
+    });
+    osal::Thread<> changeThread2([&] {
+        stateMachine.changeState<StateB>();
+        osal::sleep(2ms);
+    });
+    osal::Thread<> changeThread3([&] {
+        stateMachine.changeState<StateC>();
+        osal::sleep(3ms);
+    });
+    osal::Thread<> changeThread4([&] {
+        stateMachine.changeState<StateD>();
+        osal::sleep(4ms);
+    });
+    osal::Thread<> changeThread5([&] {
+        stateMachine.changeState<StateE>();
+        osal::sleep(3ms);
+    });
+    osal::Thread<> changeThread6([&] {
+        stateMachine.changeState<StateF>();
+        osal::sleep(2ms);
+    });
+    osal::Thread<> changeThread7([&] {
+        stateMachine.changeState<StateG>();
+        osal::sleep(1ms);
+    });
 
     osal::sleep(30s);
     stop = true;
