@@ -34,6 +34,7 @@
 
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 namespace utils::fsm {
@@ -86,6 +87,18 @@ public:
     auto operator->() const { return ActionExecutor<const ExecAround>(this); }
 
 private:
+    template <typename T>
+    struct IsReferenceWrapper : std::false_type {};
+
+    template <typename T>
+    struct IsReferenceWrapper<std::reference_wrapper<T>> : std::true_type {};
+
+    template <typename T>
+    struct IsSharedPointer : std::false_type {};
+
+    template <typename T>
+    struct IsSharedPointer<std::shared_ptr<T>> : std::true_type {};
+
     template <typename Wrapper>
     struct ActionExecutor {
         Wrapper* wrapper;
@@ -107,7 +120,17 @@ private:
         ActionExecutor& operator=(const ActionExecutor&) = delete;
         ActionExecutor& operator=(ActionExecutor&&) = delete;
 
-        auto operator->() const noexcept { return wrapper->underlyingObject.get(); }
+        auto operator->() const noexcept
+        {
+            if constexpr (IsReferenceWrapper<UnderlyingType>::value || IsSharedPointer<UnderlyingType>::value) {
+                return wrapper->underlyingObject.get();
+            }
+            else if constexpr (std::is_pointer_v<UnderlyingType>) {
+                return wrapper->underlyingObject;
+            }
+            else
+                return &wrapper->underlyingObject;
+        }
     };
 };
 

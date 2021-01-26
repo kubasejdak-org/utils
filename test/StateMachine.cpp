@@ -39,6 +39,7 @@
 #include <catch2/catch.hpp>
 
 #include <array>
+#include <string_view>
 #include <utility>
 
 struct IAppState : utils::fsm::IState<IAppState> {
@@ -131,22 +132,30 @@ TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
     utils::fsm::StateMachine<IAppState> stateMachine("Test");
 
     stateMachine.changeState<StateA>();
+    REQUIRE(stateMachine.currentState()->name() == "StateA");
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateB>();
+    REQUIRE(stateMachine.currentState()->name() == "StateB");
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateC>();
+    REQUIRE(stateMachine.currentState()->name() == "StateC");
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateA>();
+    REQUIRE(stateMachine.currentState()->name() == "StateA");
     stateMachine.changeState<StateB>();
+    REQUIRE(stateMachine.currentState()->name() == "StateB");
     stateMachine.changeState<StateC>();
+    REQUIRE(stateMachine.currentState()->name() == "StateC");
     stateMachine.changeState<StateB>();
+    REQUIRE(stateMachine.currentState()->name() == "StateB");
     stateMachine.changeState<StateA>();
+    REQUIRE(stateMachine.currentState()->name() == "StateA");
     stateMachine.currentState()->func();
 }
 
@@ -154,16 +163,28 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
 {
     utils::fsm::StateMachine<IAppState> stateMachine("Test");
     constexpr int cIterations = 1'000;
+    std::string_view name;
+    std::string_view nextName;
 
     SECTION("2.1. Changing state from the outside")
     {
         for (int i = 0; i < cIterations; ++i) {
             switch (i % 3) {
-                case 0: stateMachine.changeState<StateA>(); break;
-                case 1: stateMachine.changeState<StateB>(); break;
-                case 2: stateMachine.changeState<StateC>(); break;
+                case 0:
+                    stateMachine.changeState<StateA>();
+                    name = "StateA";
+                    break;
+                case 1:
+                    stateMachine.changeState<StateB>();
+                    name = "StateB";
+                    break;
+                case 2:
+                    stateMachine.changeState<StateC>();
+                    name = "StateC";
+                    break;
             }
 
+            REQUIRE(stateMachine.currentState()->name() == name);
             stateMachine.currentState()->func();
         }
     }
@@ -172,12 +193,26 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
     {
         for (int i = 0; i < cIterations; ++i) {
             switch (i % 3) {
-                case 0: stateMachine.changeState<StateD>(); break;
-                case 1: stateMachine.changeState<StateE>(); break;
-                case 2: stateMachine.changeState<StateF>(); break;
+                case 0:
+                    stateMachine.changeState<StateD>();
+                    name = "StateD";
+                    nextName = "StateF";
+                    break;
+                case 1:
+                    stateMachine.changeState<StateE>();
+                    name = "StateE";
+                    nextName = "StateD";
+                    break;
+                case 2:
+                    stateMachine.changeState<StateF>();
+                    name = "StateF";
+                    nextName = "StateE";
+                    break;
             }
 
+            REQUIRE(stateMachine.currentState()->name() == name);
             stateMachine.currentState()->func();
+            REQUIRE(stateMachine.currentState()->name() == nextName);
         }
     }
 
@@ -185,15 +220,41 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
     {
         for (int i = 0; i < cIterations; ++i) {
             switch (i % 6) { // NOLINT
-                case 0: stateMachine.changeState<StateA>(); break;
-                case 1: stateMachine.changeState<StateD>(); break;
-                case 2: stateMachine.changeState<StateE>(); break;
-                case 3: stateMachine.changeState<StateB>(); break;
-                case 4: stateMachine.changeState<StateC>(); break;
-                case 5: stateMachine.changeState<StateF>(); break; // NOLINT
+                case 0:
+                    stateMachine.changeState<StateA>();
+                    name = "StateA";
+                    nextName = name;
+                    break;
+                case 1:
+                    stateMachine.changeState<StateD>();
+                    name = "StateD";
+                    nextName = "StateF";
+                    break;
+                case 2:
+                    stateMachine.changeState<StateE>();
+                    name = "StateE";
+                    nextName = "StateD";
+                    break;
+                case 3:
+                    stateMachine.changeState<StateB>();
+                    name = "StateB";
+                    nextName = name;
+                    break;
+                case 4:
+                    stateMachine.changeState<StateC>();
+                    name = "StateC";
+                    nextName = name;
+                    break;
+                case 5:
+                    stateMachine.changeState<StateF>();
+                    name = "StateF";
+                    nextName = "StateE";
+                    break; // NOLINT
             }
 
+            REQUIRE(stateMachine.currentState()->name() == name);
             stateMachine.currentState()->func();
+            REQUIRE(stateMachine.currentState()->name() == nextName);
         }
     }
 
@@ -201,7 +262,9 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
     {
         for (int i = 0; i < cIterations; ++i) {
             stateMachine.changeState<StateA>();
+            REQUIRE(stateMachine.currentState()->name() == "StateA");
             stateMachine.currentState()->func();
+            REQUIRE(stateMachine.currentState()->name() == "StateA");
         }
     }
 
@@ -209,7 +272,9 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
     {
         for (int i = 0; i < cIterations; ++i) {
             stateMachine.changeState<StateG>();
+            REQUIRE(stateMachine.currentState()->name() == "StateG");
             stateMachine.currentState()->func();
+            REQUIRE(stateMachine.currentState()->name() == "StateG");
         }
     }
 }
