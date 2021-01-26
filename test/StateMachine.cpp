@@ -34,6 +34,9 @@
 #include <utils/fsm/IState.hpp>
 #include <utils/fsm/StateMachine.hpp>
 
+#include <osal/Thread.hpp>
+#include <osal/sleep.hpp>
+
 #include <catch2/catch.hpp>
 
 #include <utility>
@@ -54,7 +57,7 @@ struct StateA : IAppState {
         : IAppState("StateA", stateMachine)
     {}
 
-    void func() override {}
+    void func() override { osal::sleep(1ms); }
 };
 
 struct StateB : IAppState {
@@ -62,25 +65,49 @@ struct StateB : IAppState {
         : IAppState("StateB", stateMachine)
     {}
 
-    void func() override {}
+    void func() override { osal::sleep(2ms); }
 };
-
-struct StateD;
 
 struct StateC : IAppState {
     explicit StateC(utils::fsm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateC", stateMachine)
     {}
 
-    void func() override { changeState<StateD>(); }
+    void func() override { osal::sleep(3ms); }
 };
+
+struct StateF;
 
 struct StateD : IAppState {
     explicit StateD(utils::fsm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateD", stateMachine)
     {}
 
-    void func() override {}
+    void func() override { changeState<StateF>(); osal::sleep(1ms); }
+};
+
+struct StateE : IAppState {
+    explicit StateE(utils::fsm::StateMachine<IAppState>* stateMachine)
+        : IAppState("StateE", stateMachine)
+    {}
+
+    void func() override { changeState<StateD>(); osal::sleep(2ms); }
+};
+
+struct StateF : IAppState {
+    explicit StateF(utils::fsm::StateMachine<IAppState>* stateMachine)
+        : IAppState("StateF", stateMachine)
+    {}
+
+    void func() override { changeState<StateE>(); osal::sleep(3ms); }
+};
+
+struct StateG : IAppState {
+    explicit StateG(utils::fsm::StateMachine<IAppState>* stateMachine)
+        : IAppState("StateG", stateMachine)
+    {}
+
+    void func() override { changeState<StateG>(); osal::sleep(1ms); }
 };
 
 TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
@@ -95,47 +122,125 @@ TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
-    stateMachine.changeState<StateD>();
+    stateMachine.changeState<StateC>();
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateA>();
     stateMachine.changeState<StateB>();
-    stateMachine.changeState<StateD>();
+    stateMachine.changeState<StateC>();
     stateMachine.changeState<StateB>();
     stateMachine.changeState<StateA>();
     stateMachine.currentState()->func();
 }
 
-TEST_CASE("2. Changing state from the outside in a loop", "[unit][StateMachine]")
+TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
 {
     utils::fsm::StateMachine<IAppState> stateMachine("Test");
+    constexpr int cIterations = 1'000;
 
-    constexpr int cIterations = 100'000;
-    for (int i = 0; i < cIterations; ++i) {
-        switch (i % 3) {
-            case 0: stateMachine.changeState<StateA>(); break;
-            case 1: stateMachine.changeState<StateB>(); break;
-            case 2: stateMachine.changeState<StateD>(); break;
+    SECTION("2.1. Changing state from the outside")
+    {
+        for (int i = 0; i < cIterations; ++i) {
+            switch (i % 3) {
+                case 0: stateMachine.changeState<StateA>(); break;
+                case 1: stateMachine.changeState<StateB>(); break;
+                case 2: stateMachine.changeState<StateC>(); break;
+            }
+
+            stateMachine.currentState()->func();
         }
+    }
 
-        stateMachine.currentState()->func();
+    SECTION("2.2. Changing state from the inside")
+    {
+        for (int i = 0; i < cIterations; ++i) {
+            switch (i % 3) {
+                case 0: stateMachine.changeState<StateD>(); break;
+                case 1: stateMachine.changeState<StateE>(); break;
+                case 2: stateMachine.changeState<StateF>(); break;
+            }
+
+            stateMachine.currentState()->func();
+        }
+    }
+
+    SECTION("2.3. Changing state from both the sides")
+    {
+        for (int i = 0; i < cIterations; ++i) {
+            switch (i % 6) { // NOLINT
+                case 0: stateMachine.changeState<StateA>(); break;
+                case 1: stateMachine.changeState<StateD>(); break;
+                case 2: stateMachine.changeState<StateE>(); break;
+                case 3: stateMachine.changeState<StateB>(); break;
+                case 4: stateMachine.changeState<StateC>(); break;
+                case 5: stateMachine.changeState<StateF>(); break; // NOLINT
+            }
+
+            stateMachine.currentState()->func();
+        }
+    }
+
+    SECTION("2.4. Changing state to self from outside")
+    {
+        for (int i = 0; i < cIterations; ++i) {
+            stateMachine.changeState<StateA>();
+            stateMachine.currentState()->func();
+        }
+    }
+
+    SECTION("2.5. Changing state to self from inside")
+    {
+        for (int i = 0; i < cIterations; ++i) {
+            stateMachine.changeState<StateG>();
+            stateMachine.currentState()->func();
+        }
     }
 }
 
-TEST_CASE("3. Changing state from the inside and outside in a loop", "[unit][StateMachine]")
+TEST_CASE("3. Changing state from multiple threads", "[unit][StateMachine]")
 {
     utils::fsm::StateMachine<IAppState> stateMachine("Test");
+    stateMachine.changeState<StateA>();
 
-    constexpr int cIterations = 100'000;
-    for (int i = 0; i < cIterations; ++i) {
-        switch (i % 4) {
-            case 0: stateMachine.changeState<StateA>(); break;
-            case 1: stateMachine.changeState<StateB>(); break;
-            case 2: stateMachine.changeState<StateC>(); break;
-            case 3: stateMachine.changeState<StateD>(); break;
-        }
+    bool stop{};
+    auto threadFunc = [&] {
+        while (!stop) // NOLINT
+            stateMachine.currentState()->func();
+    };
 
-        stateMachine.currentState()->func();
-    }
+    constexpr int cThreadsCount = 20;
+    std::array<osal::Thread<>, cThreadsCount> normalThreads = {
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc},
+        osal::Thread<>{threadFunc}
+    };
+
+    osal::Thread<> changeThread1([&]{ stateMachine.changeState<StateA>(); osal::sleep(1ms); });
+    osal::Thread<> changeThread2([&]{ stateMachine.changeState<StateB>(); osal::sleep(2ms); });
+    osal::Thread<> changeThread3([&]{ stateMachine.changeState<StateC>(); osal::sleep(3ms); });
+    osal::Thread<> changeThread4([&]{ stateMachine.changeState<StateD>(); osal::sleep(4ms); });
+    osal::Thread<> changeThread5([&]{ stateMachine.changeState<StateE>(); osal::sleep(3ms); });
+    osal::Thread<> changeThread6([&]{ stateMachine.changeState<StateF>(); osal::sleep(2ms); });
+    osal::Thread<> changeThread7([&]{ stateMachine.changeState<StateG>(); osal::sleep(1ms); });
+
+    osal::sleep(30s);
+    stop = true;
 }

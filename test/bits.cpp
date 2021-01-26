@@ -37,7 +37,7 @@
 #include <cmath>
 #include <limits>
 
-TEST_CASE("Check power of 2 detection", "[unit][bits]")
+TEST_CASE("1. Check power of 2 detection", "[unit][bits]")
 {
     constexpr std::uint32_t cIterationsCount = 1'000;
     for (std::uint32_t i = 0; i < cIterationsCount; ++i) {
@@ -49,22 +49,22 @@ TEST_CASE("Check power of 2 detection", "[unit][bits]")
     }
 }
 
-TEST_CASE("Check conversions to little endian", "[unit][bits]")
+TEST_CASE("2. Check conversions to little endian", "[unit][bits]")
 {
-    SECTION("16bit conversions")
+    SECTION("2.1. 16bit conversions")
     {
         for (std::uint16_t i = 0; i < std::numeric_limits<std::uint16_t>::max(); ++i)
             REQUIRE(utils::toLittleEndian(i) == i);
     }
 
-    SECTION("32bit conversions")
+    SECTION("2.2. 32bit conversions")
     {
         constexpr std::uint32_t cIterationsCount = 1'000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i)
             REQUIRE(utils::toLittleEndian(i) == i);
     }
 
-    SECTION("64bit conversions")
+    SECTION("2.3. 64bit conversions")
     {
         constexpr std::uint64_t cIterationsCount = 1'000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i)
@@ -72,9 +72,9 @@ TEST_CASE("Check conversions to little endian", "[unit][bits]")
     }
 }
 
-TEST_CASE("Check conversions to big endian", "[unit][bits]")
+TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
 {
-    SECTION("16bit conversions")
+    SECTION("3.1. 16bit conversions")
     {
         for (std::uint16_t i = 0; i < std::numeric_limits<std::uint16_t>::max(); ++i) {
             std::uint16_t expected = ((i & 0x00ff) << 8) | ((i & 0xff00) >> 8); // NOLINT
@@ -82,7 +82,7 @@ TEST_CASE("Check conversions to big endian", "[unit][bits]")
         }
     }
 
-    SECTION("32bit conversions")
+    SECTION("3.2. 32bit conversions")
     {
         constexpr std::uint32_t cIterationsCount = 1'000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i) {
@@ -96,7 +96,7 @@ TEST_CASE("Check conversions to big endian", "[unit][bits]")
         }
     }
 
-    SECTION("64bit conversions")
+    SECTION("3.3 64bit conversions")
     {
         constexpr std::uint64_t cIterationsCount = 1'000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i) {
@@ -115,9 +115,9 @@ TEST_CASE("Check conversions to big endian", "[unit][bits]")
     }
 }
 
-TEST_CASE("Conversions from integral to byte array", "[unit][bits]")
+TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
 {
-    SECTION("std::uint8_t")
+    SECTION("4.1. std::uint8_t")
     {
         for (std::uint8_t value = 0; value < std::numeric_limits<std::uint8_t>::max(); ++value) {
             auto array = utils::toBytesArray(value);
@@ -126,7 +126,7 @@ TEST_CASE("Conversions from integral to byte array", "[unit][bits]")
         }
     }
 
-    SECTION("std::uint16_t")
+    SECTION("4.2. std::uint16_t")
     {
         for (std::uint16_t value = 0; value < std::numeric_limits<std::uint16_t>::max(); ++value) {
             auto array = utils::toBytesArray(value);
@@ -136,7 +136,7 @@ TEST_CASE("Conversions from integral to byte array", "[unit][bits]")
         }
     }
 
-    SECTION("std::uint32_t")
+    SECTION("4.3. std::uint32_t")
     {
         constexpr std::uint32_t cIterationsCount = 1'000;
         for (std::uint32_t value = 0; value < cIterationsCount; ++value) {
@@ -149,7 +149,7 @@ TEST_CASE("Conversions from integral to byte array", "[unit][bits]")
         }
     }
 
-    SECTION("std::uint64_t")
+    SECTION("4.4. std::uint64_t")
     {
         constexpr std::uint64_t cIterationsCount = 1'000;
         for (std::uint64_t value = 0; value < cIterationsCount; ++value) {

@@ -43,7 +43,7 @@ ADD_PROPERTY_TYPE(KeyA, Type1);
 ADD_PROPERTY_TYPE_2(KeyA, KeyB, Type2);
 ADD_PROPERTY_TYPE_3(KeyA, KeyB, KeyC, Type2);
 
-TEST_CASE("Type properties depending on multiple keys", "[unit][property]")
+TEST_CASE("1. Type properties depending on multiple keys", "[unit][property]")
 {
     REQUIRE(std::is_same_v<utils::PropertyType<KeyA>, Type1>);
     REQUIRE(std::is_same_v<utils::PropertyType<KeyA, KeyB>, Type2>);
@@ -54,7 +54,7 @@ ADD_PROPERTY(KeyD, "ValueA"sv);
 ADD_PROPERTY_2(KeyD, KeyE, "ValueB"sv);
 ADD_PROPERTY_3(KeyD, KeyE, KeyF, "ValueC"sv);
 
-TEST_CASE("Value properties depending on multiple keys", "[unit][property]")
+TEST_CASE("2. Value properties depending on multiple keys", "[unit][property]")
 {
     REQUIRE(utils::cPropertyValue<KeyD> == "ValueA"sv);
     REQUIRE(utils::cPropertyValue<KeyD, KeyE> == "ValueB"sv);
@@ -69,7 +69,7 @@ ADD_PROPERTY_2(RaspberryPi, SpiB, "spi1"sv);
 ADD_PROPERTY_2(Cmpc30, SpiA, "spi2"sv);
 ADD_PROPERTY_2(Cmpc30, SpiB, "spi3"sv);
 
-TEST_CASE("Properties used in real use case with boards ans SPI configuration", "[unit][property]")
+TEST_CASE("3. Properties used in real use case with boards ans SPI configuration", "[unit][property]")
 {
     using Board = utils::PropertyType<BoardType>;
 
