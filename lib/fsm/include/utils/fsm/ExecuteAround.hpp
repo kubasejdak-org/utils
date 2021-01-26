@@ -48,10 +48,10 @@ public:
 
     Action preAction;
     Action postAction;
-    const std::shared_ptr<UnderlyingType>& underlyingObject;
+    UnderlyingType underlyingObject;
 
     template <typename... Args>
-    ExecAround(Action preAction, Action postAction, const std::shared_ptr<UnderlyingType>& underlyingObject)
+    ExecAround(Action preAction, Action postAction, UnderlyingType underlyingObject)
         : preAction(std::move(preAction))
         , postAction(std::move(postAction))
         , underlyingObject(std::move(underlyingObject))

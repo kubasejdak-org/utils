@@ -39,6 +39,7 @@
 
 #include <fmt/printf.h>
 
+#include <functional>
 #include <type_traits>
 
 namespace utils::fsm {
@@ -68,7 +69,10 @@ public:
 
     [[nodiscard]] auto currentState()
     {
-        return ExecAround<UserState>([this] { preStateCall(); }, [this] { postStateCall(); }, m_currentState);
+        using UserStateRef = std::reference_wrapper<std::shared_ptr<UserState>>;
+        return ExecAround<UserStateRef>([this] { preStateCall(); },
+                                        [this] { postStateCall(); },
+                                        std::ref(m_currentState));
     }
 
 private:
