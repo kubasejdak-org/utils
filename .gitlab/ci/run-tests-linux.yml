@@ -65,3 +65,13 @@ Property_Linux_UT:
   extends: .Run_Test_Linux
   variables:
     TestTags: "[property]"
+
+StateMachine_Linux_ARM_UT:
+  extends: .Run_Test_Linux_ARM
+  variables:
+    TestTags: "[StateMachine]"
+
+StateMachine_Linux_UT:
+  extends: .Run_Test_Linux
+  variables:
+    TestTags: "[StateMachine]"
