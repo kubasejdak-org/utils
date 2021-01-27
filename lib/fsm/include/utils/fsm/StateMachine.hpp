@@ -36,6 +36,7 @@
 #include <osal/ScopedLock.hpp>
 #include <utils/fsm/IState.hpp>
 #include <utils/fsm/logger.hpp>
+#include <utils/functional/ExecuteAround.hpp>
 
 #include <fmt/printf.h>
 
@@ -70,9 +71,9 @@ public:
     [[nodiscard]] auto currentState()
     {
         using UserStateRef = std::reference_wrapper<std::shared_ptr<UserState>>;
-        return ExecAround<UserStateRef>([this] { preStateCall(); },
-                                        [this] { postStateCall(); },
-                                        std::ref(m_currentState));
+        return functional::ExecAround<UserStateRef>([this] { preStateCall(); },
+                                                    [this] { postStateCall(); },
+                                                    std::ref(m_currentState));
     }
 
 private:

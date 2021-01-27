@@ -6,5 +6,5 @@ target_include_directories(utils-fsm
 )
 
 target_link_libraries(utils-fsm
-    INTERFACE osal::cpp
+    INTERFACE utils::functional osal::cpp
 )

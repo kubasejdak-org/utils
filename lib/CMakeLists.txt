@@ -5,6 +5,7 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror $<$<COMPILE_LANGUAGE:CXX>:-
 
 add_subdirectory(bits)
 add_subdirectory(fsm)
+add_subdirectory(functional)
 add_subdirectory(logger)
 add_subdirectory(property)
 add_subdirectory(registry)

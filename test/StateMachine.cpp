@@ -32,7 +32,6 @@
 
 #include <osal/Thread.hpp>
 #include <osal/sleep.hpp>
-#include <utils/fsm/ExecuteAround.hpp>
 #include <utils/fsm/IState.hpp>
 #include <utils/fsm/StateMachine.hpp>
 

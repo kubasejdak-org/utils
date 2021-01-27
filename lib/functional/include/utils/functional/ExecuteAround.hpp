@@ -37,7 +37,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace utils::fsm {
+namespace utils::functional {
 
 template <typename UnderlyingType>
 class ExecAround {
@@ -134,4 +134,4 @@ private:
     };
 };
 
-} // namespace utils::fsm
+} // namespace utils::functional
