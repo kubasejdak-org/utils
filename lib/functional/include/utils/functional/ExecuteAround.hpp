@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include <utils/types/traits.hpp>
+
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -87,18 +89,6 @@ public:
     auto operator->() const { return ActionExecutor<const ExecAround>(this); }
 
 private:
-    template <typename T>
-    struct IsReferenceWrapper : std::false_type {};
-
-    template <typename T>
-    struct IsReferenceWrapper<std::reference_wrapper<T>> : std::true_type {};
-
-    template <typename T>
-    struct IsSharedPointer : std::false_type {};
-
-    template <typename T>
-    struct IsSharedPointer<std::shared_ptr<T>> : std::true_type {};
-
     template <typename Wrapper>
     struct ActionExecutor {
         Wrapper* wrapper;
@@ -122,7 +112,10 @@ private:
 
         auto operator->() const noexcept
         {
-            if constexpr (IsReferenceWrapper<UnderlyingType>::value || IsSharedPointer<UnderlyingType>::value) {
+            if constexpr (types::IsReferenceWrapper<UnderlyingType>::value) {
+                return wrapper->underlyingObject.get();
+            }
+            else if constexpr (types::IsSharedPointer<UnderlyingType>::value) {
                 return wrapper->underlyingObject.get();
             }
             else if constexpr (std::is_pointer_v<UnderlyingType>) {

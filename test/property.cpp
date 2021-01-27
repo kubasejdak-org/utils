@@ -30,7 +30,7 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <utils/property.hpp>
+#include <utils/types/property.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -45,9 +45,9 @@ ADD_PROPERTY_TYPE_3(KeyA, KeyB, KeyC, Type2);
 
 TEST_CASE("1. Type properties depending on multiple keys", "[unit][property]")
 {
-    REQUIRE(std::is_same_v<utils::PropertyType<KeyA>, Type1>);
-    REQUIRE(std::is_same_v<utils::PropertyType<KeyA, KeyB>, Type2>);
-    REQUIRE(std::is_same_v<utils::PropertyType<KeyA, KeyB, KeyC>, Type2>);
+    REQUIRE(std::is_same_v<utils::types::PropertyType<KeyA>, Type1>);
+    REQUIRE(std::is_same_v<utils::types::PropertyType<KeyA, KeyB>, Type2>);
+    REQUIRE(std::is_same_v<utils::types::PropertyType<KeyA, KeyB, KeyC>, Type2>);
 }
 
 ADD_PROPERTY(KeyD, "ValueA"sv);
@@ -56,9 +56,9 @@ ADD_PROPERTY_3(KeyD, KeyE, KeyF, "ValueC"sv);
 
 TEST_CASE("2. Value properties depending on multiple keys", "[unit][property]")
 {
-    REQUIRE(utils::cPropertyValue<KeyD> == "ValueA"sv);
-    REQUIRE(utils::cPropertyValue<KeyD, KeyE> == "ValueB"sv);
-    REQUIRE(utils::cPropertyValue<KeyD, KeyE, KeyF> == "ValueC"sv);
+    REQUIRE(utils::types::cPropertyValue<KeyD> == "ValueA"sv);
+    REQUIRE(utils::types::cPropertyValue<KeyD, KeyE> == "ValueB"sv);
+    REQUIRE(utils::types::cPropertyValue<KeyD, KeyE, KeyF> == "ValueC"sv);
 }
 
 ADD_PROPERTY_TYPE(BoardType, RaspberryPi);
@@ -71,9 +71,9 @@ ADD_PROPERTY_2(Cmpc30, SpiB, "spi3"sv);
 
 TEST_CASE("3. Properties used in real use case with boards ans SPI configuration", "[unit][property]")
 {
-    using Board = utils::PropertyType<BoardType>;
+    using Board = utils::types::PropertyType<BoardType>;
 
-    REQUIRE(utils::cPropertyValue<BoardName> == "RaspberryPi"sv);
-    REQUIRE(utils::cPropertyValue<Board, SpiA> == "spi0"sv);
-    REQUIRE(utils::cPropertyValue<Board, SpiB> == "spi1"sv);
+    REQUIRE(utils::types::cPropertyValue<BoardName> == "RaspberryPi"sv);
+    REQUIRE(utils::types::cPropertyValue<Board, SpiA> == "spi0"sv);
+    REQUIRE(utils::types::cPropertyValue<Board, SpiB> == "spi1"sv);
 }

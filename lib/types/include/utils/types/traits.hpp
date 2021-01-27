@@ -32,16 +32,22 @@
 
 #pragma once
 
-#include <utils/logger/Logger.hpp>
+#include <functional>
+#include <memory>
+#include <type_traits>
 
-#ifdef NDEBUG
-constexpr auto cDefaultLogLevel = spdlog::level::off;
-#else
-constexpr auto cDefaultLogLevel = spdlog::level::err;
-#endif
+namespace utils::types {
 
-namespace utils::fsm {
+template <typename T>
+struct IsReferenceWrapper : std::false_type {};
 
-REGISTER_LOGGER(FsmLogger, "StateMachine", cDefaultLogLevel);
+template <typename T>
+struct IsReferenceWrapper<std::reference_wrapper<T>> : std::true_type {};
 
-} // namespace utils::fsm
+template <typename T>
+struct IsSharedPointer : std::false_type {};
+
+template <typename T>
+struct IsSharedPointer<std::shared_ptr<T>> : std::true_type {};
+
+} // namespace utils::types

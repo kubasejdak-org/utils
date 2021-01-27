@@ -40,7 +40,7 @@
 #include <utility>
 #include <vector>
 
-namespace utils {
+namespace utils::registry {
 namespace detail {
 
 /// Helper class that wrapping object and the id describing it into one entity.
@@ -140,4 +140,4 @@ private:
     static inline std::map<IdType, std::shared_ptr<ObjectType>> m_instances;
 };
 
-} // namespace utils
+} // namespace utils::registry
