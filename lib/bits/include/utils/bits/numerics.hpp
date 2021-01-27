@@ -4,7 +4,7 @@
 /// @author Kuba Sejdak
 /// @copyright BSD 2-Clause License
 ///
-/// Copyright (c) 2021-2021, Kuba Sejdak <kuba.sejdak@gmail.com>
+/// Copyright (c) 2020-2021, Kuba Sejdak <kuba.sejdak@gmail.com>
 /// All rights reserved.
 ///
 /// Redistribution and use in source and binary forms, with or without
@@ -32,16 +32,18 @@
 
 #pragma once
 
-#include <utils/logger/Logger.hpp>
+#include <cstdint>
 
-#ifdef NDEBUG
-constexpr auto cDefaultLogLevel = spdlog::level::off;
-#else
-constexpr auto cDefaultLogLevel = spdlog::level::err;
-#endif
+namespace utils::bits {
 
-namespace utils::fsm {
+/// Checks if the given value is a power of 2.
+/// @param value        Value to be checked.
+/// @return Flag indicating if given value is a power of 2.
+/// @retval true        Given value is a power of 2.
+/// @retval false       Given value is not a power of 2.
+constexpr inline bool isPowerOf2(std::uint32_t value)
+{
+    return (value > 0 && ((value & (value - 1)) == 0));
+}
 
-REGISTER_LOGGER(FsmLogger, "StateMachine", cDefaultLogLevel);
-
-} // namespace utils::fsm
+} // namespace utils::bits

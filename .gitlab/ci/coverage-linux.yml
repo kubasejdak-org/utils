@@ -41,3 +41,8 @@ Property_Coverage:
   extends: .Linux_Coverage
   variables:
     Tags: "[property]"
+
+StateMachine_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[StateMachine]"
