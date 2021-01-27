@@ -40,7 +40,7 @@ REGISTER_LOGGER(Demo2Logger, "DEMO2", spdlog::level::critical);
 REGISTER_LOGGER(Demo3Logger, "DEMO3", spdlog::level::trace);
 REGISTER_LOGGER(Demo4Logger, "DEMO4", spdlog::level::info);
 
-TEST_CASE("Log messages are displayed correctly", "[unit][Logger]")
+TEST_CASE("1. Log messages are displayed correctly", "[unit][Logger]")
 {
     fmt::print("\n>>>>> Using explicitly set 'OFF' level at construction time. <<<<<\n");
     Demo1Logger::trace("This trace log shouldn't be visible");

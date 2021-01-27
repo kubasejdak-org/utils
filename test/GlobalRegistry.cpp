@@ -37,7 +37,7 @@
 #include <memory>
 #include <type_traits>
 
-TEST_CASE("All instances are correctly stored in GlobalRegistry with custom id type", "[unit][GlobalRegistry]")
+TEST_CASE("1. All instances are correctly stored in GlobalRegistry with custom id type", "[unit][GlobalRegistry]")
 {
     struct Test {
         explicit Test(int a)
@@ -50,13 +50,13 @@ TEST_CASE("All instances are correctly stored in GlobalRegistry with custom id t
     using TestRegistry = utils::GlobalRegistry<Test, int>;
     std::size_t instancesCount{};
 
-    SECTION("1 instance")
+    SECTION("1.1. 1 instance")
     {
         TestRegistry::init({{0, Test(0)}});
         instancesCount = 1;
     }
 
-    SECTION("4 instances")
+    SECTION("1.2. 4 instances")
     {
         TestRegistry::init({{0, Test(0)}, {1, Test(1)}, {2, Test(2)}, {3, Test(3)}});
         instancesCount = 4;
@@ -79,7 +79,7 @@ TEST_CASE("All instances are correctly stored in GlobalRegistry with custom id t
     REQUIRE(size == 0);
 }
 
-TEST_CASE("Move only types can be stored in GlobalRegistry with default id type", "[unit][GlobalRegistry]")
+TEST_CASE("2. Move only types can be stored in GlobalRegistry with default id type", "[unit][GlobalRegistry]")
 {
     struct Test {
         explicit Test(int a)
@@ -104,13 +104,13 @@ TEST_CASE("Move only types can be stored in GlobalRegistry with default id type"
     using TestRegistry = utils::GlobalRegistry<Test>;
     std::size_t instancesCount{};
 
-    SECTION("1 instance")
+    SECTION("2.1. 1 instance")
     {
         TestRegistry::init({{"0", Test(0)}});
         instancesCount = 1;
     }
 
-    SECTION("4 instances")
+    SECTION("2.2. 4 instances")
     {
         TestRegistry::init({{"0", Test(0)}, {"1", Test(1)}, {"2", Test(2)}, {"3", Test(3)}});
         instancesCount = 4;
@@ -133,7 +133,7 @@ TEST_CASE("Move only types can be stored in GlobalRegistry with default id type"
     REQUIRE(size == 0);
 }
 
-TEST_CASE("GlobalRegistry can hold derived types with abstract interface", "[unit][GlobalRegistry]")
+TEST_CASE("3. GlobalRegistry can hold derived types with abstract interface", "[unit][GlobalRegistry]")
 {
     struct IBase {
         IBase() = default;
