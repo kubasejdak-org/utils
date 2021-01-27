@@ -244,11 +244,11 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     name = "StateC";
                     nextName = name;
                     break;
-                case 5:
+                case 5: // NOLINT
                     stateMachine.changeState<StateF>();
                     name = "StateF";
                     nextName = "StateE";
-                    break; // NOLINT
+                    break;
             }
 
             REQUIRE(stateMachine.currentState()->name() == name);
