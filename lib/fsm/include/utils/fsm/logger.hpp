@@ -4,7 +4,7 @@
 /// @author Kuba Sejdak
 /// @copyright BSD 2-Clause License
 ///
-/// Copyright (c) 2020-2021, Kuba Sejdak <kuba.sejdak@gmail.com>
+/// Copyright (c) 2021-2021, Kuba Sejdak <kuba.sejdak@gmail.com>
 /// All rights reserved.
 ///
 /// Redistribution and use in source and binary forms, with or without
@@ -30,50 +30,18 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <utils/property.hpp>
+#pragma once
 
-#include <catch2/catch.hpp>
+#include <utils/Logger.hpp>
 
-#include <string>
-#include <type_traits>
+#ifdef NDEBUG
+constexpr auto cDefaultLogLevel = spdlog::level::off;
+#else
+constexpr auto cDefaultLogLevel = spdlog::level::err;
+#endif
 
-using namespace std::string_view_literals;
+namespace utils::fsm {
 
-ADD_PROPERTY_TYPE(KeyA, Type1);
-ADD_PROPERTY_TYPE_2(KeyA, KeyB, Type2);
-ADD_PROPERTY_TYPE_3(KeyA, KeyB, KeyC, Type2);
+REGISTER_LOGGER(FsmLogger, "StateMachine", cDefaultLogLevel);
 
-TEST_CASE("1. Type properties depending on multiple keys", "[unit][property]")
-{
-    REQUIRE(std::is_same_v<utils::PropertyType<KeyA>, Type1>);
-    REQUIRE(std::is_same_v<utils::PropertyType<KeyA, KeyB>, Type2>);
-    REQUIRE(std::is_same_v<utils::PropertyType<KeyA, KeyB, KeyC>, Type2>);
-}
-
-ADD_PROPERTY(KeyD, "ValueA"sv);
-ADD_PROPERTY_2(KeyD, KeyE, "ValueB"sv);
-ADD_PROPERTY_3(KeyD, KeyE, KeyF, "ValueC"sv);
-
-TEST_CASE("2. Value properties depending on multiple keys", "[unit][property]")
-{
-    REQUIRE(utils::cPropertyValue<KeyD> == "ValueA"sv);
-    REQUIRE(utils::cPropertyValue<KeyD, KeyE> == "ValueB"sv);
-    REQUIRE(utils::cPropertyValue<KeyD, KeyE, KeyF> == "ValueC"sv);
-}
-
-ADD_PROPERTY_TYPE(BoardType, RaspberryPi);
-ADD_PROPERTY(BoardName, "RaspberryPi");
-
-ADD_PROPERTY_2(RaspberryPi, SpiA, "spi0"sv);
-ADD_PROPERTY_2(RaspberryPi, SpiB, "spi1"sv);
-ADD_PROPERTY_2(Cmpc30, SpiA, "spi2"sv);
-ADD_PROPERTY_2(Cmpc30, SpiB, "spi3"sv);
-
-TEST_CASE("3. Properties used in real use case with boards ans SPI configuration", "[unit][property]")
-{
-    using Board = utils::PropertyType<BoardType>;
-
-    REQUIRE(utils::cPropertyValue<BoardName> == "RaspberryPi"sv);
-    REQUIRE(utils::cPropertyValue<Board, SpiA> == "spi0"sv);
-    REQUIRE(utils::cPropertyValue<Board, SpiB> == "spi1"sv);
-}
+} // namespace utils::fsm
