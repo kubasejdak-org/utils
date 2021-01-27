@@ -30,7 +30,8 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <utils/bits.hpp>
+#include <utils/bits/endianness.hpp>
+#include <utils/bits/numerics.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -45,7 +46,7 @@ TEST_CASE("1. Check power of 2 detection", "[unit][bits]")
         double valueB = std::pow(2, valueA);
         bool powerOf2 = double(i) == valueB;
 
-        REQUIRE(utils::isPowerOf2(i) == powerOf2);
+        REQUIRE(utils::bits::isPowerOf2(i) == powerOf2);
     }
 }
 
@@ -54,21 +55,21 @@ TEST_CASE("2. Check conversions to little endian", "[unit][bits]")
     SECTION("2.1. 16bit conversions")
     {
         for (std::uint16_t i = 0; i < std::numeric_limits<std::uint16_t>::max(); ++i)
-            REQUIRE(utils::toLittleEndian(i) == i);
+            REQUIRE(utils::bits::toLittleEndian(i) == i);
     }
 
     SECTION("2.2. 32bit conversions")
     {
         constexpr std::uint32_t cIterationsCount = 1'000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i)
-            REQUIRE(utils::toLittleEndian(i) == i);
+            REQUIRE(utils::bits::toLittleEndian(i) == i);
     }
 
     SECTION("2.3. 64bit conversions")
     {
         constexpr std::uint64_t cIterationsCount = 1'000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i)
-            REQUIRE(utils::toLittleEndian(i) == i);
+            REQUIRE(utils::bits::toLittleEndian(i) == i);
     }
 }
 
@@ -78,7 +79,7 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
     {
         for (std::uint16_t i = 0; i < std::numeric_limits<std::uint16_t>::max(); ++i) {
             std::uint16_t expected = ((i & 0x00ff) << 8) | ((i & 0xff00) >> 8); // NOLINT
-            REQUIRE(utils::toBigEndian(i) == expected);
+            REQUIRE(utils::bits::toBigEndian(i) == expected);
         }
     }
 
@@ -92,7 +93,7 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
                                    | ((i & 0x00ff0000) >> 8)   // NOLINT
                                    | ((i & 0xff000000) >> 24); // NOLINT
             // clang-format on
-            REQUIRE(utils::toBigEndian(i) == expected);
+            REQUIRE(utils::bits::toBigEndian(i) == expected);
         }
     }
 
@@ -110,7 +111,7 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
                                    | ((i & 0x00ff000000000000UL) >> 40)  // NOLINT
                                    | ((i & 0xff00000000000000UL) >> 56); // NOLINT
             // clang-format on
-            REQUIRE(utils::toBigEndian(i) == expected);
+            REQUIRE(utils::bits::toBigEndian(i) == expected);
         }
     }
 }
@@ -120,7 +121,7 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
     SECTION("4.1. std::uint8_t")
     {
         for (std::uint8_t value = 0; value < std::numeric_limits<std::uint8_t>::max(); ++value) {
-            auto array = utils::toBytesArray(value);
+            auto array = utils::bits::toBytesArray(value);
             REQUIRE(array.size() == sizeof(value));
             REQUIRE(array[0] == value);
         }
@@ -129,7 +130,7 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
     SECTION("4.2. std::uint16_t")
     {
         for (std::uint16_t value = 0; value < std::numeric_limits<std::uint16_t>::max(); ++value) {
-            auto array = utils::toBytesArray(value);
+            auto array = utils::bits::toBytesArray(value);
             REQUIRE(array.size() == sizeof(value));
             REQUIRE(array[0] == (value & 0x00ff));         // NOLINT
             REQUIRE(array[1] == ((value & 0xff00) >> 8U)); // NOLINT
@@ -140,7 +141,7 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
     {
         constexpr std::uint32_t cIterationsCount = 1'000;
         for (std::uint32_t value = 0; value < cIterationsCount; ++value) {
-            auto array = utils::toBytesArray(value);
+            auto array = utils::bits::toBytesArray(value);
             REQUIRE(array.size() == sizeof(value));
             REQUIRE(array[0] == (value & 0x000000ff));          // NOLINT
             REQUIRE(array[1] == ((value & 0x0000ff00) >> 8U));  // NOLINT
@@ -153,7 +154,7 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
     {
         constexpr std::uint64_t cIterationsCount = 1'000;
         for (std::uint64_t value = 0; value < cIterationsCount; ++value) {
-            auto array = utils::toBytesArray(value);
+            auto array = utils::bits::toBytesArray(value);
             REQUIRE(array.size() == sizeof(value));
             REQUIRE(array[0] == (value & 0x00000000000000ff));          // NOLINT
             REQUIRE(array[1] == ((value & 0x000000000000ff00) >> 8U));  // NOLINT

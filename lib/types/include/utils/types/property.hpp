@@ -32,7 +32,7 @@
 
 #pragma once
 
-namespace utils {
+namespace utils::types {
 
 /// Base property type.
 /// @tparam Ts              Type tags used to specialize generic Property type.
@@ -50,7 +50,7 @@ using PropertyType = typename Property<Ts...>::type;
 template <typename... Ts>
 inline constexpr auto cPropertyValue = Property<Ts...>::value;
 
-} // namespace utils
+} // namespace utils::types
 
 /// Registers user-defined type property which depends on T1 type.
 /// @tparam T1              First type on which depends given type property.
@@ -60,7 +60,7 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
     struct T1;                                                                                                         \
     struct property;                                                                                                   \
     template <>                                                                                                        \
-    struct utils::Property<T1> {                                                                                       \
+    struct utils::types::Property<T1> {                                                                                \
         using type = property;                                                                                         \
     }
 
@@ -74,7 +74,7 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
     struct T2;                                                                                                         \
     struct property;                                                                                                   \
     template <>                                                                                                        \
-    struct utils::Property<T1, T2> {                                                                                   \
+    struct utils::types::Property<T1, T2> {                                                                            \
         using type = property;                                                                                         \
     }
 
@@ -90,7 +90,7 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
     struct T3;                                                                                                         \
     struct property;                                                                                                   \
     template <>                                                                                                        \
-    struct utils::Property<T1, T2, T3> {                                                                               \
+    struct utils::types::Property<T1, T2, T3> {                                                                        \
         using type = property;                                                                                         \
     }
 
@@ -101,7 +101,7 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
 #define ADD_PROPERTY(T1, property)                                                                                     \
     struct T1;                                                                                                         \
     template <>                                                                                                        \
-    struct utils::Property<T1> {                                                                                       \
+    struct utils::types::Property<T1> {                                                                                \
         static constexpr decltype(property) value = property;                                                          \
     }
 
@@ -114,7 +114,7 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
     struct T1;                                                                                                         \
     struct T2;                                                                                                         \
     template <>                                                                                                        \
-    struct utils::Property<T1, T2> {                                                                                   \
+    struct utils::types::Property<T1, T2> {                                                                            \
         static constexpr decltype(property) value = property;                                                          \
     }
 
@@ -129,6 +129,6 @@ inline constexpr auto cPropertyValue = Property<Ts...>::value;
     struct T2;                                                                                                         \
     struct T3;                                                                                                         \
     template <>                                                                                                        \
-    struct utils::Property<T1, T2, T3> {                                                                               \
+    struct utils::types::Property<T1, T2, T3> {                                                                        \
         static constexpr decltype(property) value = property;                                                          \
     }

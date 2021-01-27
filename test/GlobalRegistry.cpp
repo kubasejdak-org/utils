@@ -30,7 +30,7 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <utils/GlobalRegistry.hpp>
+#include <utils/registry/GlobalRegistry.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -47,7 +47,7 @@ TEST_CASE("1. All instances are correctly stored in GlobalRegistry with custom i
         int value{};
     };
 
-    using TestRegistry = utils::GlobalRegistry<Test, int>;
+    using TestRegistry = utils::registry::GlobalRegistry<Test, int>;
     std::size_t instancesCount{};
 
     SECTION("1.1. 1 instance")
@@ -101,7 +101,7 @@ TEST_CASE("2. Move only types can be stored in GlobalRegistry with default id ty
         bool moved{false};
     };
 
-    using TestRegistry = utils::GlobalRegistry<Test>;
+    using TestRegistry = utils::registry::GlobalRegistry<Test>;
     std::size_t instancesCount{};
 
     SECTION("2.1. 1 instance")
@@ -149,7 +149,7 @@ TEST_CASE("3. GlobalRegistry can hold derived types with abstract interface", "[
         void func() override {}
     };
 
-    using BaseRegistry = utils::GlobalRegistry<IBase>;
+    using BaseRegistry = utils::registry::GlobalRegistry<IBase>;
 
     BaseRegistry::init({{"instance0", Derived()}, {"instance1", Derived()}, {"instance2", Derived()}});
     auto size = BaseRegistry::size();

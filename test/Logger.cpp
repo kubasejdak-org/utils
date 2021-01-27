@@ -30,7 +30,7 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <utils/Logger.hpp>
+#include <utils/logger/Logger.hpp>
 
 #include <catch2/catch.hpp>
 #include <fmt/printf.h>

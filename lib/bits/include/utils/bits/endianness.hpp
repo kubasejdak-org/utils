@@ -37,17 +37,7 @@
 #include <cstring>
 #include <type_traits>
 
-namespace utils {
-
-/// Checks if the given value is a power of 2.
-/// @param value        Value to be checked.
-/// @return Flag indicating if given value is a power of 2.
-/// @retval true        Given value is a power of 2.
-/// @retval false       Given value is not a power of 2.
-constexpr inline bool isPowerOf2(std::uint32_t value)
-{
-    return (value > 0 && ((value & (value - 1)) == 0));
-}
+namespace utils::bits {
 
 /// Checks if current system uses big endian notation.
 /// @return Flag indicating if current system uses big endian notation.
@@ -122,4 +112,4 @@ constexpr inline auto toBytesArray(T value)
     return bytes;
 }
 
-} // namespace utils
+} // namespace utils::bits
