@@ -329,3 +329,65 @@ TEST_CASE("3. Changing state from multiple threads", "[unit][StateMachine]")
     osal::sleep(30s);
     stop = true;
 }
+
+struct ITestState : utils::fsm::IState<ITestState> {
+    ITestState(std::string name, utils::fsm::StateMachine<ITestState>* stateMachine)
+        : utils::fsm::IState<ITestState>(std::move(name), stateMachine)
+    {}
+
+    virtual void func() = 0;
+};
+
+struct TestStateD;
+
+struct TestStateA : ITestState {
+    explicit TestStateA(utils::fsm::StateMachine<ITestState>* stateMachine)
+        : ITestState("TestStateA", stateMachine)
+    {}
+
+    void func() override { changeState<TestStateD>(); }
+};
+
+struct TestStateB : ITestState {
+    explicit TestStateB(utils::fsm::StateMachine<ITestState>* stateMachine)
+        : ITestState("TestStateB", stateMachine)
+    {}
+
+    void onEnter() override { changeState<TestStateA>(); }
+
+    void func() override {}
+};
+
+struct TestStateC : ITestState {
+    explicit TestStateC(utils::fsm::StateMachine<ITestState>* stateMachine)
+        : ITestState("TestStateC", stateMachine)
+    {}
+
+    void onEnter() override { changeState<TestStateB>(); }
+
+    void func() override {}
+};
+
+struct TestStateD : ITestState {
+    explicit TestStateD(utils::fsm::StateMachine<ITestState>* stateMachine)
+        : ITestState("TestStateD", stateMachine)
+    {}
+
+    void onEnter() override { changeState<TestStateC>(); }
+
+    void func() override {}
+};
+
+TEST_CASE("4. Recursive calls to changeState()", "[unit][StateMachine]")
+{
+    utils::fsm::StateMachine<ITestState> stateMachine("Test");
+
+    stateMachine.changeState<TestStateA>();
+    REQUIRE(stateMachine.currentState()->name() == "TestStateA");
+
+    SECTION("4.1. Calls triggered from outside") { stateMachine.changeState<TestStateD>(); }
+
+    SECTION("4.2. Calls triggered from inside") { stateMachine.currentState()->func(); }
+
+    REQUIRE(stateMachine.currentState()->name() == "TestStateA");
+}
