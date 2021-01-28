@@ -152,10 +152,10 @@ private:
         }
 
         if (m_changeStateCounter > 1) {
-            FsmLogger::error("<{}:{}> Recursive calls to changeState() detected: called {} times",
-                             m_name,
-                             m_currentState->name(),
-                             m_changeStateCounter);
+            FsmLogger::warn("<{}:{}> Recursive calls to changeState() detected: called {} times",
+                            m_name,
+                            m_currentState->name(),
+                            m_changeStateCounter);
         }
 
         m_changeStateCounter = 0;
