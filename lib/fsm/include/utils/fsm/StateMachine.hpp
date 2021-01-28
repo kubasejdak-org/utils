@@ -40,6 +40,7 @@
 
 #include <fmt/printf.h>
 
+#include <cassert>
 #include <functional>
 #include <type_traits>
 
@@ -85,6 +86,7 @@ public:
         static_assert(std::is_base_of_v<UserState, NewState>);
 
         osal::ScopedLock lock(m_mutex);
+        assert(!m_newState);
         m_newState = std::make_shared<NewState>(this, std::forward<Args>(args)...);
 
         ++m_changeStateCounter;
@@ -143,6 +145,11 @@ private:
 
         FsmLogger::info("<{}:{}> Entering state", m_name, m_currentState->name());
         m_currentState->onEnter();
+
+        if (m_newState) {
+            // This can happen, if onEnter() method if the state class calls changeState() recursively.
+            changeStatePriv();
+        }
 
         if (m_changeStateCounter > 1) {
             FsmLogger::error("<{}:{}> Recursive calls to changeState() detected: called {} times",
