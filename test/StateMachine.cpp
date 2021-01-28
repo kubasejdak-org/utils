@@ -385,15 +385,9 @@ TEST_CASE("4. Recursive calls to changeState()", "[unit][StateMachine]")
     stateMachine.changeState<TestStateA>();
     REQUIRE(stateMachine.currentState()->name() == "TestStateA");
 
-    SECTION("4.1. Calls triggered from outside")
-    {
-        stateMachine.changeState<TestStateD>();
-    }
+    SECTION("4.1. Calls triggered from outside") { stateMachine.changeState<TestStateD>(); }
 
-    SECTION("4.2. Calls triggered from inside")
-    {
-        stateMachine.currentState()->func();
-    }
+    SECTION("4.2. Calls triggered from inside") { stateMachine.currentState()->func(); }
 
     REQUIRE(stateMachine.currentState()->name() == "TestStateA");
 }
