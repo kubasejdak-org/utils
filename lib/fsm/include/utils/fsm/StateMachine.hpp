@@ -38,8 +38,6 @@
 #include <utils/fsm/logger.hpp>
 #include <utils/functional/ExecuteAround.hpp>
 
-#include <fmt/printf.h>
-
 #include <cassert>
 #include <functional>
 #include <type_traits>
