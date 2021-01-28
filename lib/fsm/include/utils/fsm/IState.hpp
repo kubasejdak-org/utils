@@ -74,7 +74,6 @@ public:
     /// @return User-provided name of the class.
     [[nodiscard]] std::string name() const { return m_name; }
 
-protected:
     /// Method which will be called directly after setting this state as current state in state machine.
     /// @note User states can override this method for custom behavior.
     virtual void onEnter() {}
@@ -84,6 +83,7 @@ protected:
     /// @note User states can override this method for custom behavior.
     virtual void onLeave() {}
 
+protected:
     /// Triggers change of current state in the state machine.
     /// @tparam NewState        Type of the state to be set.
     /// @tparam Args            Pack of argument types that will passed to the constructor of the new state.
