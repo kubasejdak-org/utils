@@ -46,8 +46,8 @@ template <typename UserState>
 class IState {
 public:
     /// Constructor.
-    /// @param name
-    /// @param stateMachine
+    /// @param name             Human-readable name of the state.
+    /// @param stateMachine     Pointer to the state machine, which will manage this state.
     IState(std::string name, StateMachine<UserState>* stateMachine)
         : m_name(std::move(name))
         , m_stateMachine(stateMachine)
