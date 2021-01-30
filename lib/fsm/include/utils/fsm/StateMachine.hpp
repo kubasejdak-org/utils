@@ -153,7 +153,7 @@ private:
         m_currentState->onEnter();
 
         if (m_newState) {
-            // This can happen, if onEnter() method if the state class calls changeState() recursively.
+            // This can happen, if onEnter() method in the state class calls changeState() recursively.
             executeStateChange();
         }
 
