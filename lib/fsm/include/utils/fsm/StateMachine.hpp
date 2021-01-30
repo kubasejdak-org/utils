@@ -71,26 +71,17 @@ public:
     /// @tparam NewState        Type of the state to be set.
     /// @tparam Args            Pack of argument types that will passed to the constructor of the new state.
     /// @param args             Pack of arguments that will passed to the constructor of the new state.
-    /// @param callFromState    Flag indicating if this call was made from one of the state's methods.
-    /// @note If this method is called from any of the current state's methods then physical change of state will be
-    ///       done after that function is finished. Otherwise change of state is done immediately.
     /// @note This method is thread-safe.
     /// @note This method is able to detect recursive usage (it is reported with a proper log in changeStatePriv()
     ///       method). It is not explicitly disallowed to do that, however bare in mind that this can lead to hard
     ///       to track bugs.
     template <typename NewState, typename... Args>
-    void changeState(Args&&... args, bool callFromState = false)
+    void changeState(Args&&... args)
     {
-        static_assert(std::is_base_of_v<UserState, NewState>);
-
         osal::ScopedLock lock(m_mutex);
-        assert(!m_newState);
-        m_newState = std::make_shared<NewState>(this, std::forward<Args>(args)...);
 
-        ++m_changeStateCounter;
-
-        if (!callFromState)
-            changeStatePriv();
+        scheduleStateChange<NewState>(std::forward<Args>(args)...);
+        executeStateChange();
     }
 
     /// Returns object of the currently set state.
@@ -123,16 +114,33 @@ private:
         FsmLogger::debug("<{}:{}> postStateCall", m_name, m_currentState->name());
 
         if (m_newState)
-            changeStatePriv();
+            executeStateChange();
 
         m_mutex.unlock();
     };
+
+    /// Prepares new state, that will be used during the execute state change step.
+    /// @tparam NewState        Type of the state to be set.
+    /// @tparam Args            Pack of argument types that will passed to the constructor of the new state.
+    /// @param args             Pack of arguments that will passed to the constructor of the new state.
+    /// @note This method is thread-safe.
+    /// @note This method can be used only from the state function.
+    template <typename NewState, typename... Args>
+    void scheduleStateChange(Args&&... args)
+    {
+        static_assert(std::is_base_of_v<UserState, NewState>);
+
+        assert(!m_newState);
+        m_newState = std::make_shared<NewState>(this, std::forward<Args>(args)...);
+
+        ++m_changeStateCounter;
+    }
 
     /// Executes change of state. It is assumed, that new state is already constructed in a helper class field.
     /// This method automatically calls onLeave() method of the old state and onEnter() method of the new state.
     /// @note This method is checking the value of the internal counter of recursive usage of changeState() method. In
     ///       case of recursive usage, it will report it with a proper log message.
-    void changeStatePriv()
+    void executeStateChange()
     {
         if (m_currentState) {
             FsmLogger::info("<{}:{}> Leaving state", m_name, m_currentState->name());
@@ -146,7 +154,7 @@ private:
 
         if (m_newState) {
             // This can happen, if onEnter() method if the state class calls changeState() recursively.
-            changeStatePriv();
+            executeStateChange();
         }
 
         if (m_changeStateCounter > 1) {
@@ -160,6 +168,8 @@ private:
     }
 
 private:
+    friend class IState<UserState>;
+
     std::string m_name;
     osal::Mutex m_mutex{OsalMutexType::eRecursive};
     std::size_t m_changeStateCounter{};

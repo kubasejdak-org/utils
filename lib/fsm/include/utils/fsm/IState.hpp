@@ -93,7 +93,7 @@ protected:
     template <typename NewState, typename... Args>
     void changeState(Args&&... args)
     {
-        m_stateMachine->template changeState<NewState>(true, std::forward<Args>(args)...);
+        m_stateMachine->template scheduleStateChange<NewState>(std::forward<Args>(args)...);
     }
 
 private:
