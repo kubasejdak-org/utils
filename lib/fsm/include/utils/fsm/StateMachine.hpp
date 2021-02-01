@@ -72,7 +72,7 @@ public:
     /// @tparam Args            Pack of argument types that will passed to the constructor of the new state.
     /// @param args             Pack of arguments that will passed to the constructor of the new state.
     /// @note This method is thread-safe.
-    /// @note This method is able to detect recursive usage (it is reported with a proper log in changeStatePriv()
+    /// @note This method is able to detect recursive usage (it is reported with a proper log in executeStateChange()
     ///       method). It is not explicitly disallowed to do that, however bare in mind that this can lead to hard
     ///       to track bugs.
     template <typename NewState, typename... Args>
