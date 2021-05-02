@@ -65,9 +65,9 @@ TEST_CASE("1. All instances are correctly stored in GlobalRegistry with custom i
     auto size = TestRegistry::size();
     REQUIRE(size == instancesCount);
     for (std::size_t i = 0; i < size; ++i) {
-        auto instance = TestRegistry::get(i);
+        auto instance = TestRegistry::get(int(i));
         REQUIRE(std::is_same_v<decltype(instance), std::shared_ptr<Test>>);
-        REQUIRE(instance->value == static_cast<int>(i));
+        REQUIRE(instance->value == int(i));
     }
 
     constexpr int cInvalidId = 100;
@@ -88,10 +88,10 @@ TEST_CASE("2. Move only types can be stored in GlobalRegistry with default id ty
 
         [[maybe_unused]] Test(const Test&) = delete;
         Test(Test&& other) noexcept
+            : value(other.value)
+            , moved(true)
         {
-            value = other.value;
             other.value = -1;
-            moved = true;
         }
         ~Test() = default;
         Test& operator=(const Test&) = delete;
@@ -121,7 +121,7 @@ TEST_CASE("2. Move only types can be stored in GlobalRegistry with default id ty
     for (std::size_t i = 0; i < size; ++i) {
         auto instance = TestRegistry::get(std::to_string(i));
         REQUIRE(std::is_same_v<decltype(instance), std::shared_ptr<Test>>);
-        REQUIRE(instance->value == static_cast<int>(i));
+        REQUIRE(instance->value == int(i));
         REQUIRE(instance->moved);
     }
 

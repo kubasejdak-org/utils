@@ -42,7 +42,7 @@ TEST_CASE("1. Check power of 2 detection", "[unit][bits]")
 {
     constexpr std::uint32_t cIterationsCount = 1'000;
     for (std::uint32_t i = 0; i < cIterationsCount; ++i) {
-        std::uint32_t valueA = std::log2(i);
+        auto valueA = std::uint32_t(std::log2(i));
         double valueB = std::pow(2, valueA);
         bool powerOf2 = double(i) == valueB;
 
