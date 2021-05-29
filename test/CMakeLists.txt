@@ -8,6 +8,7 @@ add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     Logger.cpp
     property.cpp
     StateMachine.cpp
+    TcpServer.cpp
 )
 
 target_include_directories(apputils-tests
@@ -30,4 +31,5 @@ target_compile_definitions(Catch2::Catch2
 target_link_libraries(apputils-tests
     PUBLIC platform-init
     PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::types utils::bits utils::fsm
+            utils::network
 )
