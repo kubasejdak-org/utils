@@ -35,10 +35,7 @@
 #include "utils/network/logger.hpp"
 
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <osal/timestamp.h>
-#include <poll.h>
-#include <sys/select.h>
 #include <sys/socket.h>
 
 #include <cassert>
@@ -67,6 +64,11 @@ TcpServer::TcpServer(int port, int maxConnections, int maxPendingConnections)
     TcpServerLogger::info("  max pending connections : {}", m_maxPendingConnections);
 }
 
+TcpServer::~TcpServer()
+{
+    stop();
+}
+
 bool TcpServer::setOnConnectedCallback(ClientCallback callback)
 {
     if (m_onClientConnected)
@@ -85,12 +87,12 @@ bool TcpServer::setOnDisconnectedCallback(ClientCallback callback)
     return true;
 }
 
-bool TcpServer::setOnDataCallback(DataCallback callback)
+bool TcpServer::setConnectionCallback(ConnectionCallback callback)
 {
-    if (m_onDataReceived)
+    if (m_connectionCallback)
         return false;
 
-    m_onDataReceived = std::move(callback);
+    m_connectionCallback = std::move(callback);
     return true;
 }
 
@@ -138,13 +140,13 @@ bool TcpServer::start(int port)
     listen(m_socket, m_maxPendingConnections);
 
     if (auto error = m_listenThread.start([this] { listenThread(); })) {
-        TcpServerLogger::error("Failed to start connection thread: err={}", error.message());
+        TcpServerLogger::error("Failed to start listening thread: err={}", error.message());
         closeSocket();
     }
 
     constexpr auto cStartupTimeout = 1s;
     if (m_startSemaphore.timedWait(cStartupTimeout)) {
-        TcpServerLogger::error("Timeout in connection thread startup");
+        TcpServerLogger::error("Timeout in listening thread startup");
         m_running = false;
     }
 
@@ -163,10 +165,11 @@ void TcpServer::listenThread()
     m_running = true;
     m_startSemaphore.signal();
 
-    TcpServerLogger::info("Connection thread started");
+    TcpServerLogger::info("Listening thread started");
 
     while (m_running) {
-        if (m_connectionsSemaphore.timedWait(250ms))
+        constexpr auto cTimeout = 250ms;
+        if (m_connectionsSemaphore.timedWait(cTimeout))
             continue;
 
         TcpServerLogger::trace("Waiting for TCP client");
@@ -175,7 +178,7 @@ void TcpServer::listenThread()
             fd_set clientReadFds{};
             FD_ZERO(&clientReadFds);          // NOLINT
             FD_SET(m_socket, &clientReadFds); // NOLINT
-            timeval clientTimeout{0, int(osalMsToUs(1))};
+            timeval clientTimeout{0, int(osalMsToUs(cTimeout.count()))};
 
             if (select(m_socket + 1, &clientReadFds, nullptr, nullptr, &clientTimeout) > 0) {
                 TcpServerLogger::debug("Incoming TCP connection");
@@ -186,62 +189,34 @@ void TcpServer::listenThread()
                 // NOLINTNEXTLINE
                 auto clientSocket = accept4(m_socket, reinterpret_cast<sockaddr*>(&clientAddr), &size, SOCK_CLOEXEC);
                 std::string clientIp = inet_ntoa(clientAddr.sin_addr);
-                m_connectionThreads.emplace_back([&] { connectionThread(clientIp, clientSocket); });
+                m_connectionThreads.emplace_back([&] {
+                    TcpConnection connection(m_running, clientSocket, {clientIp, {}});
+                    connectionThread(std::move(connection));
+                });
                 break;
             }
         }
     }
 
     closeSocket();
-    TcpServerLogger::info("Connection thread stopped");
+    TcpServerLogger::info("Listening thread stopped");
 }
 
-void TcpServer::connectionThread(std::string clientIp, int clientSocket)
+void TcpServer::connectionThread(TcpConnection connection)
 {
+    auto endpoint = connection.endpoint();
+    TcpServerLogger::debug("Starting connection thread: endpoint ip={}", endpoint.ip);
+
     if (m_onClientConnected)
-        m_onClientConnected(clientIp);
+        m_onClientConnected(endpoint);
 
-    TcpServerLogger::debug("Starting connection thread: clientIp={}, clientSocket={}", clientIp, clientSocket);
-
-    while (m_running) {
-        fd_set dataReadFds{};
-        FD_ZERO(&dataReadFds);              // NOLINT
-        FD_SET(clientSocket, &dataReadFds); // NOLINT
-        timeval dataTimeout{0, int(osalMsToUs(250))};
-
-        TcpServerLogger::trace("Waiting for client data");
-        if (select(clientSocket + 1, &dataReadFds, nullptr, nullptr, &dataTimeout) > 0) {
-            constexpr int cBufferSize = 256;
-            std::vector<std::uint8_t> buffer(cBufferSize);
-            auto bytesCount = read(clientSocket, buffer.data(), buffer.size());
-            if (bytesCount == 0) {
-                TcpServerLogger::info("Client disconnected, closing connection");
-                break;
-            }
-            if (bytesCount == -1) {
-                TcpServerLogger::warn("Read returned error: {}", strerror(errno));
-                if (errno != EAGAIN) {
-                    TcpServerLogger::error("Closing connection on error");
-                    break;
-                }
-
-                continue;
-            }
-
-            TcpServerLogger::trace("Read {} bytes", bytesCount);
-
-            buffer.resize(bytesCount);
-            if (m_onDataReceived)
-                m_onDataReceived(clientIp, std::move(buffer));
-        }
-    }
-
-    close(clientSocket);
-    TcpServerLogger::debug("Connection closed");
+    if (m_connectionCallback)
+        m_connectionCallback(std::move(connection));
 
     if (m_onClientDisconnected)
-        m_onClientDisconnected(clientIp);
+        m_onClientDisconnected(endpoint);
 
+    TcpServerLogger::debug("Connection thread stopped");
     m_connectionsSemaphore.signal();
 }
 

@@ -1,4 +1,6 @@
 add_library(utils-network EXCLUDE_FROM_ALL
+    Error.cpp
+    TcpConnection.cpp
     TcpServer.cpp
 )
 add_library(utils::network ALIAS utils-network)
@@ -8,5 +10,5 @@ target_include_directories(utils-network
 )
 
 target_link_libraries(utils-network
-    PRIVATE osal::cpp
+    PUBLIC osal::cpp
 )

@@ -30,47 +30,48 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <osal/sleep.hpp>
-#include <utils/network/TcpConnection.hpp>
-#include <utils/network/TcpServer.hpp>
+#pragma once
 
-#include <catch2/catch.hpp>
-#include <fmt/printf.h>
+#include <osal/Timeout.hpp>
 
-#include <cstdio>
+#include <cstdint>
+#include <optional>
 #include <string>
+#include <system_error>
+#include <vector>
 
-TEST_CASE("1. Tests", "[unit][TcpServer]")
-{
-    constexpr int cPort = 10101;
-    utils::network::TcpServer server(cPort);
-    bool result = server.setOnConnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Connected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
+namespace utils::network {
 
-    result = server.setOnDisconnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Disconnected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
+struct Endpoint {
+    std::string ip;
+    std::optional<std::string> name;
+};
 
-    result = server.setConnectionCallback([](utils::network::TcpConnection connection) {
-        std::vector<std::uint8_t> bytes;
-        while (connection.isActive()) {
-            constexpr std::size_t cSize = 255;
-            if (auto error = connection.read(bytes, cSize)) {
-                fmt::print("Connection error: {}\n", error.message());
-                break;
-            }
+class TcpConnection {
+public:
+    /// Helper type alias representing vector of bytes.
+    using BytesVector = std::vector<std::uint8_t>;
 
-            fmt::print("Data: {}", std::string(bytes.begin(), bytes.end()));
-            (void) connection.write(bytes);
-        }
-    });
-    REQUIRE(result);
+    TcpConnection(const bool& serverRunning, int socket, Endpoint endpoint);
+    TcpConnection(const TcpConnection&) = delete;
+    TcpConnection(TcpConnection&& other) noexcept;
+    ~TcpConnection();
+    TcpConnection& operator=(const TcpConnection&) = delete;
+    TcpConnection& operator=(TcpConnection&&) = delete;
 
-    result = server.start();
-    REQUIRE(result);
+    [[nodiscard]] Endpoint endpoint() const { return m_endpoint; };
+    [[nodiscard]] bool isActive() const { return m_serverRunning && (m_socket != m_cUninitialized); }
 
-    osal::sleep(20s);
+    std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
+    [[nodiscard]] std::error_code write(const std::vector<std::uint8_t>& bytes);
+    void close();
 
-    server.stop();
-}
+private:
+    static constexpr int m_cUninitialized = -1;
+
+    const bool& m_serverRunning;
+    int m_socket;
+    Endpoint m_endpoint;
+};
+
+} // namespace utils::network

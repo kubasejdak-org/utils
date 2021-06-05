@@ -30,47 +30,34 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <osal/sleep.hpp>
-#include <utils/network/TcpConnection.hpp>
-#include <utils/network/TcpServer.hpp>
+#pragma once
 
-#include <catch2/catch.hpp>
-#include <fmt/printf.h>
+#include <system_error>
+#include <type_traits>
 
-#include <cstdio>
-#include <string>
+namespace utils::network {
 
-TEST_CASE("1. Tests", "[unit][TcpServer]")
-{
-    constexpr int cPort = 10101;
-    utils::network::TcpServer server(cPort);
-    bool result = server.setOnConnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Connected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
+/// Represents possible error codes returned from utils::network module.
+// clang-format off
+enum class Error {
+    eOk,
+    eClientDisconnected,
+    eTimeout,
+    eServerStopped,
+    eConnectionNotActive,
+    eWriteError
+};
+// clang-format on
 
-    result = server.setOnDisconnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Disconnected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
+/// Creates error code value for Error enum.
+/// @return std::error_code value created from Error enum.
+std::error_code make_error_code(Error error); // NOLINT(readability-identifier-naming)
 
-    result = server.setConnectionCallback([](utils::network::TcpConnection connection) {
-        std::vector<std::uint8_t> bytes;
-        while (connection.isActive()) {
-            constexpr std::size_t cSize = 255;
-            if (auto error = connection.read(bytes, cSize)) {
-                fmt::print("Connection error: {}\n", error.message());
-                break;
-            }
+} // namespace utils::network
 
-            fmt::print("Data: {}", std::string(bytes.begin(), bytes.end()));
-            (void) connection.write(bytes);
-        }
-    });
-    REQUIRE(result);
+namespace std {
 
-    result = server.start();
-    REQUIRE(result);
+template <>
+struct is_error_code_enum<utils::network::Error> : true_type {};
 
-    osal::sleep(20s);
-
-    server.stop();
-}
+} // namespace std

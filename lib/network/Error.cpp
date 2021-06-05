@@ -30,47 +30,40 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <osal/sleep.hpp>
-#include <utils/network/TcpConnection.hpp>
-#include <utils/network/TcpServer.hpp>
+#include "utils/network/Error.hpp"
 
-#include <catch2/catch.hpp>
-#include <fmt/printf.h>
-
-#include <cstdio>
 #include <string>
 
-TEST_CASE("1. Tests", "[unit][TcpServer]")
+namespace utils::network {
+
+struct ErrorCategory : std::error_category {
+    [[nodiscard]] const char* name() const noexcept override;
+    [[nodiscard]] std::string message(int value) const override;
+};
+
+const char* ErrorCategory::name() const noexcept
 {
-    constexpr int cPort = 10101;
-    utils::network::TcpServer server(cPort);
-    bool result = server.setOnConnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Connected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
-
-    result = server.setOnDisconnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Disconnected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
-
-    result = server.setConnectionCallback([](utils::network::TcpConnection connection) {
-        std::vector<std::uint8_t> bytes;
-        while (connection.isActive()) {
-            constexpr std::size_t cSize = 255;
-            if (auto error = connection.read(bytes, cSize)) {
-                fmt::print("Connection error: {}\n", error.message());
-                break;
-            }
-
-            fmt::print("Data: {}", std::string(bytes.begin(), bytes.end()));
-            (void) connection.write(bytes);
-        }
-    });
-    REQUIRE(result);
-
-    result = server.start();
-    REQUIRE(result);
-
-    osal::sleep(20s);
-
-    server.stop();
+    return "utils::network";
 }
+
+std::string ErrorCategory::message(int value) const
+{
+    switch (static_cast<Error>(value)) {
+        case Error::eOk: return "no error";
+        case Error::eClientDisconnected: return "client disconnected";
+        case Error::eTimeout: return "timeout";
+        case Error::eServerStopped: return "server stopped";
+        case Error::eConnectionNotActive: return "connection not active";
+        case Error::eWriteError: return "write error";
+        default: return "(unrecognized error)";
+    }
+}
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+std::error_code make_error_code(Error error)
+{
+    static const ErrorCategory cErrorCategory{};
+    return {static_cast<int>(error), cErrorCategory};
+}
+
+} // namespace utils::network

@@ -32,29 +32,35 @@
 
 #pragma once
 
+#include "utils/network/TcpConnection.hpp"
+
 #include <osal/Semaphore.hpp>
 #include <osal/Thread.hpp>
 
 #include <cstdint>
 #include <functional>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace utils::network {
 
-using ClientCallback = std::function<void(std::string_view clientIp)>;
-using DataCallback = std::function<void(std::string_view clientIp, std::vector<std::uint8_t> data)>;
+using ClientCallback = std::function<void(const Endpoint& endpoint)>;
+using ConnectionCallback = std::function<void(TcpConnection connection)>;
 
 class TcpServer {
 public:
     explicit TcpServer(int port = m_cUninitialized,
                        int maxConnections = m_cDefaultMaxConnections,
                        int maxPendingConnections = m_cDefaultMaxPendingConnections);
+    TcpServer(const TcpServer&) = delete;
+    TcpServer(TcpServer&&) = default;
+    ~TcpServer();
+    TcpServer& operator=(const TcpServer&) = delete;
+    TcpServer& operator=(TcpServer&&) = delete;
 
     bool setOnConnectedCallback(ClientCallback callback);
     bool setOnDisconnectedCallback(ClientCallback callback);
-    bool setOnDataCallback(DataCallback callback);
+    bool setConnectionCallback(ConnectionCallback callback);
 
     bool start();
     bool start(int port);
@@ -62,7 +68,7 @@ public:
 
 private:
     void listenThread();
-    void connectionThread(std::string clientIp, int clientSocket);
+    void connectionThread(TcpConnection connection);
     void closeSocket();
 
 private:
@@ -77,7 +83,7 @@ private:
     int m_socket{m_cUninitialized};
     ClientCallback m_onClientConnected;
     ClientCallback m_onClientDisconnected;
-    DataCallback m_onDataReceived;
+    ConnectionCallback m_connectionCallback;
     osal::Semaphore m_startSemaphore{0};
     osal::Semaphore m_connectionsSemaphore;
     osal::Thread<> m_listenThread;
