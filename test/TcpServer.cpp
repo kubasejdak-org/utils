@@ -44,25 +44,20 @@ TEST_CASE("1. Tests", "[unit][TcpServer]")
 {
     constexpr int cPort = 10101;
     utils::network::TcpServer server(cPort);
-    bool result = server.setOnConnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Connected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
-
-    result = server.setOnDisconnectedCallback(
-        [](const utils::network::Endpoint& endpoint) { fmt::print("Disconnected client: {}\n", endpoint.ip); });
-    REQUIRE(result);
-
-    result = server.setConnectionCallback([](utils::network::TcpConnection connection) {
+    auto result = server.setConnectionHandler([](utils::network::TcpConnection connection) {
         std::vector<std::uint8_t> bytes;
         while (connection.isActive()) {
             constexpr std::size_t cSize = 255;
             if (auto error = connection.read(bytes, cSize)) {
-                fmt::print("Connection error: {}\n", error.message());
+                fmt::print("Read error: {}\n", error.message());
                 break;
             }
 
             fmt::print("Data: {}", std::string(bytes.begin(), bytes.end()));
-            (void) connection.write(bytes);
+            if (auto error = connection.write(bytes)) {
+                fmt::print("Write error: {}\n", error.message());
+                break;
+            }
         }
     });
     REQUIRE(result);
@@ -71,6 +66,5 @@ TEST_CASE("1. Tests", "[unit][TcpServer]")
     REQUIRE(result);
 
     osal::sleep(20s);
-
     server.stop();
 }

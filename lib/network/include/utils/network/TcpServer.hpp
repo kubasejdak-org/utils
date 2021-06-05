@@ -44,8 +44,7 @@
 
 namespace utils::network {
 
-using ClientCallback = std::function<void(const Endpoint& endpoint)>;
-using ConnectionCallback = std::function<void(TcpConnection connection)>;
+using ConnectionHandler = std::function<void(TcpConnection connection)>;
 
 class TcpServer {
 public:
@@ -58,9 +57,7 @@ public:
     TcpServer& operator=(const TcpServer&) = delete;
     TcpServer& operator=(TcpServer&&) = delete;
 
-    bool setOnConnectedCallback(ClientCallback callback);
-    bool setOnDisconnectedCallback(ClientCallback callback);
-    bool setConnectionCallback(ConnectionCallback callback);
+    bool setConnectionHandler(ConnectionHandler connectionHandler);
 
     bool start();
     bool start(int port);
@@ -81,9 +78,7 @@ private:
     int m_maxConnections;
     int m_maxPendingConnections;
     int m_socket{m_cUninitialized};
-    ClientCallback m_onClientConnected;
-    ClientCallback m_onClientDisconnected;
-    ConnectionCallback m_connectionCallback;
+    ConnectionHandler m_connectionHandler;
     osal::Semaphore m_startSemaphore{0};
     osal::Semaphore m_connectionsSemaphore;
     osal::Thread<> m_listenThread;

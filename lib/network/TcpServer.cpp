@@ -69,30 +69,12 @@ TcpServer::~TcpServer()
     stop();
 }
 
-bool TcpServer::setOnConnectedCallback(ClientCallback callback)
+bool TcpServer::setConnectionHandler(ConnectionHandler connectionHandler)
 {
-    if (m_onClientConnected)
+    if (m_connectionHandler)
         return false;
 
-    m_onClientConnected = std::move(callback);
-    return true;
-}
-
-bool TcpServer::setOnDisconnectedCallback(ClientCallback callback)
-{
-    if (m_onClientDisconnected)
-        return false;
-
-    m_onClientDisconnected = std::move(callback);
-    return true;
-}
-
-bool TcpServer::setConnectionCallback(ConnectionCallback callback)
-{
-    if (m_connectionCallback)
-        return false;
-
-    m_connectionCallback = std::move(callback);
+    m_connectionHandler = std::move(connectionHandler);
     return true;
 }
 
@@ -207,14 +189,7 @@ void TcpServer::connectionThread(TcpConnection connection)
     auto endpoint = connection.endpoint();
     TcpServerLogger::debug("Starting connection thread: endpoint ip={}", endpoint.ip);
 
-    if (m_onClientConnected)
-        m_onClientConnected(endpoint);
-
-    if (m_connectionCallback)
-        m_connectionCallback(std::move(connection));
-
-    if (m_onClientDisconnected)
-        m_onClientDisconnected(endpoint);
+    m_connectionHandler(std::move(connection));
 
     TcpServerLogger::debug("Connection thread stopped");
     m_connectionsSemaphore.signal();
