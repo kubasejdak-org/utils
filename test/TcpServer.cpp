@@ -53,7 +53,7 @@ TEST_CASE("1. Tests", "[unit][TcpServer]")
                 break;
             }
 
-            fmt::print("Data: {}", std::string(bytes.begin(), bytes.end()));
+            fmt::print("Received: {}", std::string(bytes.begin(), bytes.end()));
             if (auto error = connection.write(bytes)) {
                 fmt::print("Write error: {}\n", error.message());
                 break;

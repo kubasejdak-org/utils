@@ -53,7 +53,7 @@ public:
     /// Helper type alias representing vector of bytes.
     using BytesVector = std::vector<std::uint8_t>;
 
-    TcpConnection(const bool& serverRunning, int socket, Endpoint remoteEndpoint);
+    TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
     TcpConnection(const TcpConnection&) = delete;
     TcpConnection(TcpConnection&& other) noexcept;
     ~TcpConnection();
@@ -72,6 +72,7 @@ private:
 
     const bool& m_serverRunning;
     int m_socket;
+    Endpoint m_localEndpoint;
     Endpoint m_remoteEndpoint;
 };
 

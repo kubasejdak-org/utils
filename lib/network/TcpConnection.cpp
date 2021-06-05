@@ -43,12 +43,17 @@
 
 namespace utils::network {
 
-TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint remoteEndpoint)
+TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint)
     : m_serverRunning(serverRunning)
     , m_socket(socket)
+    , m_localEndpoint(std::move(localEndpoint))
     , m_remoteEndpoint(std::move(remoteEndpoint))
 {
     TcpConnectionLogger::info("Created TCP/IP connection with the following parameters:");
+    TcpConnectionLogger::info("  local endpoint IP    : {}", m_localEndpoint.ip);
+    TcpConnectionLogger::info("  local endpoint port  : {}", m_localEndpoint.port);
+    if (m_localEndpoint.name)
+        TcpConnectionLogger::info("  local endpoint name  : {}", *m_localEndpoint.name);
     TcpConnectionLogger::info("  remote endpoint IP   : {}", m_remoteEndpoint.ip);
     TcpConnectionLogger::info("  remote endpoint port : {}", m_remoteEndpoint.port);
     if (m_remoteEndpoint.name)
@@ -84,7 +89,8 @@ std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::
         fd_set dataReadFds{};
         FD_ZERO(&dataReadFds);          // NOLINT
         FD_SET(m_socket, &dataReadFds); // NOLINT
-        timeval dataTimeout{0, int(osalMsToUs(100))};
+        constexpr int cTimeoutMs = 250;
+        timeval dataTimeout{0, int(osalMsToUs(cTimeoutMs))};
 
         TcpConnectionLogger::trace("Waiting for endpoint data");
         if (select(m_socket + 1, &dataReadFds, nullptr, nullptr, &dataTimeout) > 0) {

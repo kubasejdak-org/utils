@@ -41,6 +41,8 @@
 
 #include <array>
 #include <cassert>
+#include <cerrno>
+#include <cstring>
 #include <utility>
 
 namespace utils::network {
@@ -173,23 +175,54 @@ void TcpServer::listenThread()
                 // NOLINTNEXTLINE
                 auto clientSocket = accept4(m_socket, reinterpret_cast<sockaddr*>(&clientAddr), &size, SOCK_CLOEXEC);
                 m_connectionThreads.emplace_back([&] {
-                    std::optional<std::string> name;
-                    std::array<char, NI_MAXHOST> hostname{};
+                    Endpoint localEndpoint{};
+                    {
+                        sockaddr_in serverAddr{};
+                        socklen_t serverSize = sizeof(serverAddr);
 
-                    // NOLINTNEXTLINE
-                    if (getnameinfo(reinterpret_cast<sockaddr*>(&clientAddr),
-                                    size,
-                                    hostname.data(),
-                                    hostname.size(),
-                                    nullptr,
-                                    0,
-                                    NI_NAMEREQD)
-                        == 0)
-                        name = std::string(hostname.begin(), hostname.end());
+                        // NOLINTNEXTLINE
+                        if (getsockname(clientSocket, reinterpret_cast<sockaddr*>(&serverAddr), &serverSize) == -1) {
+                            TcpServerLogger::error("getsockname() returned error for local endpoint: err={}",
+                                                   strerror(errno));
+                        }
 
-                    std::string clientIp = inet_ntoa(clientAddr.sin_addr);
-                    int clientPort = clientAddr.sin_port;
-                    TcpConnection connection(m_running, clientSocket, {clientIp, clientPort, name});
+                        localEndpoint.ip = inet_ntoa(serverAddr.sin_addr);
+                        localEndpoint.port = serverAddr.sin_port;
+
+                        std::array<char, NI_MAXHOST> name{};
+
+                        // NOLINTNEXTLINE
+                        if (getnameinfo(reinterpret_cast<sockaddr*>(&clientAddr),
+                                        size,
+                                        name.data(),
+                                        name.size(),
+                                        nullptr,
+                                        0,
+                                        NI_NAMEREQD)
+                            == 0)
+                            localEndpoint.name = std::string(name.begin(), name.end());
+                    }
+
+                    Endpoint remoteEndpoint{};
+                    {
+                        remoteEndpoint.ip = inet_ntoa(clientAddr.sin_addr);
+                        remoteEndpoint.port = clientAddr.sin_port;
+
+                        std::array<char, NI_MAXHOST> name{};
+
+                        // NOLINTNEXTLINE
+                        if (getnameinfo(reinterpret_cast<sockaddr*>(&clientAddr),
+                                        size,
+                                        name.data(),
+                                        name.size(),
+                                        nullptr,
+                                        0,
+                                        NI_NAMEREQD)
+                            == 0)
+                            remoteEndpoint.name = std::string(name.begin(), name.end());
+                    }
+
+                    TcpConnection connection(m_running, clientSocket, localEndpoint, remoteEndpoint);
                     connectionThread(std::move(connection));
                 });
                 break;
