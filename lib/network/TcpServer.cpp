@@ -35,9 +35,11 @@
 #include "utils/network/logger.hpp"
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <osal/timestamp.h>
 #include <sys/socket.h>
 
+#include <array>
 #include <cassert>
 #include <utility>
 
@@ -170,9 +172,24 @@ void TcpServer::listenThread()
 
                 // NOLINTNEXTLINE
                 auto clientSocket = accept4(m_socket, reinterpret_cast<sockaddr*>(&clientAddr), &size, SOCK_CLOEXEC);
-                std::string clientIp = inet_ntoa(clientAddr.sin_addr);
                 m_connectionThreads.emplace_back([&] {
-                    TcpConnection connection(m_running, clientSocket, {clientIp, {}});
+                    std::optional<std::string> name;
+                    std::array<char, NI_MAXHOST> hostname{};
+
+                    // NOLINTNEXTLINE
+                    if (getnameinfo(reinterpret_cast<sockaddr*>(&clientAddr),
+                                    size,
+                                    hostname.data(),
+                                    hostname.size(),
+                                    nullptr,
+                                    0,
+                                    NI_NAMEREQD)
+                        == 0)
+                        name = std::string(hostname.begin(), hostname.end());
+
+                    std::string clientIp = inet_ntoa(clientAddr.sin_addr);
+                    int clientPort = clientAddr.sin_port;
+                    TcpConnection connection(m_running, clientSocket, {clientIp, clientPort, name});
                     connectionThread(std::move(connection));
                 });
                 break;
@@ -186,8 +203,8 @@ void TcpServer::listenThread()
 
 void TcpServer::connectionThread(TcpConnection connection)
 {
-    auto endpoint = connection.endpoint();
-    TcpServerLogger::debug("Starting connection thread: endpoint ip={}", endpoint.ip);
+    auto endpoint = connection.remoteEndpoint();
+    TcpServerLogger::debug("Starting connection thread: remote endpoint ip={}", endpoint.ip);
 
     m_connectionHandler(std::move(connection));
 

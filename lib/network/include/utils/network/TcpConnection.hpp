@@ -44,6 +44,7 @@ namespace utils::network {
 
 struct Endpoint {
     std::string ip;
+    int port;
     std::optional<std::string> name;
 };
 
@@ -52,14 +53,14 @@ public:
     /// Helper type alias representing vector of bytes.
     using BytesVector = std::vector<std::uint8_t>;
 
-    TcpConnection(const bool& serverRunning, int socket, Endpoint endpoint);
+    TcpConnection(const bool& serverRunning, int socket, Endpoint remoteEndpoint);
     TcpConnection(const TcpConnection&) = delete;
     TcpConnection(TcpConnection&& other) noexcept;
     ~TcpConnection();
     TcpConnection& operator=(const TcpConnection&) = delete;
     TcpConnection& operator=(TcpConnection&&) = delete;
 
-    [[nodiscard]] Endpoint endpoint() const { return m_endpoint; };
+    [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; };
     [[nodiscard]] bool isActive() const { return m_serverRunning && (m_socket != m_cUninitialized); }
 
     std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
@@ -71,7 +72,7 @@ private:
 
     const bool& m_serverRunning;
     int m_socket;
-    Endpoint m_endpoint;
+    Endpoint m_remoteEndpoint;
 };
 
 } // namespace utils::network

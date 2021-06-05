@@ -43,21 +43,22 @@
 
 namespace utils::network {
 
-TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint endpoint)
+TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint remoteEndpoint)
     : m_serverRunning(serverRunning)
     , m_socket(socket)
-    , m_endpoint(std::move(endpoint))
+    , m_remoteEndpoint(std::move(remoteEndpoint))
 {
     TcpConnectionLogger::info("Created TCP/IP connection with the following parameters:");
-    TcpConnectionLogger::info("  endpoint IP   : {}", m_endpoint.ip);
-    if (endpoint.name)
-        TcpConnectionLogger::info("  endpoint name : {}", *m_endpoint.name);
+    TcpConnectionLogger::info("  remote endpoint IP   : {}", m_remoteEndpoint.ip);
+    TcpConnectionLogger::info("  remote endpoint port : {}", m_remoteEndpoint.port);
+    if (m_remoteEndpoint.name)
+        TcpConnectionLogger::info("  remote endpoint name : {}", *m_remoteEndpoint.name);
 }
 
 TcpConnection::TcpConnection(TcpConnection&& other) noexcept
     : m_serverRunning(other.m_serverRunning)
     , m_socket(std::exchange(other.m_socket, m_cUninitialized))
-    , m_endpoint(std::move(other.m_endpoint))
+    , m_remoteEndpoint(std::move(other.m_remoteEndpoint))
 {}
 
 TcpConnection::~TcpConnection()
@@ -148,7 +149,6 @@ std::error_code TcpConnection::write(const std::vector<std::uint8_t>& bytes)
 void TcpConnection::close()
 {
     if (m_socket != m_cUninitialized) {
-        TcpConnectionLogger::info("STOP");
         ::close(m_socket);
         m_socket = m_cUninitialized;
     }
