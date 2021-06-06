@@ -50,13 +50,13 @@ struct Endpoint {
     std::optional<std::string> name;
 };
 
+/// Helper type alias representing vector of bytes.
+using BytesVector = std::vector<std::uint8_t>;
+
 /// Represents a network connection. This class should be used in user handlers to communicate with remote endpoint and
 /// control connection state on demand.
 class Connection {
 public:
-    /// Helper type alias representing vector of bytes.
-    using BytesVector = std::vector<std::uint8_t>;
-
     /// Constructor.
     /// @param serverRunning        Reference to flag indicating if parent network server is still running.
     /// @param socket               Socket, which is used in current connection.
@@ -96,6 +96,9 @@ public:
 
     std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
     [[nodiscard]] std::error_code write(const std::vector<std::uint8_t>& bytes);
+
+    /// Closes the connection.
+    /// @note After call to this method Connection object is unusable and should be removed.
     void close();
 
 private:
