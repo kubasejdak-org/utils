@@ -9,3 +9,7 @@ add_subdirectory(functional)
 add_subdirectory(logger)
 add_subdirectory(registry)
 add_subdirectory(types)
+
+if (OSAL_PLATFORM STREQUAL linux)
+    add_subdirectory(network)
+endif ()
