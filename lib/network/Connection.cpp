@@ -30,7 +30,7 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include "utils/network/TcpConnection.hpp"
+#include "utils/network/Connection.hpp"
 
 #include "utils/network/Error.hpp"
 #include "utils/network/logger.hpp"
@@ -43,45 +43,45 @@
 
 namespace utils::network {
 
-TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint)
+Connection::Connection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint)
     : m_serverRunning(serverRunning)
     , m_socket(socket)
     , m_localEndpoint(std::move(localEndpoint))
     , m_remoteEndpoint(std::move(remoteEndpoint))
 {
-    TcpConnectionLogger::info("Created TCP/IP connection with the following parameters:");
-    TcpConnectionLogger::info("  local endpoint IP    : {}", m_localEndpoint.ip);
-    TcpConnectionLogger::info("  local endpoint port  : {}", m_localEndpoint.port);
+    ConnectionLogger::info("Created network connection with the following parameters:");
+    ConnectionLogger::info("  local endpoint IP    : {}", m_localEndpoint.ip);
+    ConnectionLogger::info("  local endpoint port  : {}", m_localEndpoint.port);
     if (m_localEndpoint.name)
-        TcpConnectionLogger::info("  local endpoint name  : {}", *m_localEndpoint.name);
-    TcpConnectionLogger::info("  remote endpoint IP   : {}", m_remoteEndpoint.ip);
-    TcpConnectionLogger::info("  remote endpoint port : {}", m_remoteEndpoint.port);
+        ConnectionLogger::info("  local endpoint name  : {}", *m_localEndpoint.name);
+    ConnectionLogger::info("  remote endpoint IP   : {}", m_remoteEndpoint.ip);
+    ConnectionLogger::info("  remote endpoint port : {}", m_remoteEndpoint.port);
     if (m_remoteEndpoint.name)
-        TcpConnectionLogger::info("  remote endpoint name : {}", *m_remoteEndpoint.name);
+        ConnectionLogger::info("  remote endpoint name : {}", *m_remoteEndpoint.name);
 }
 
-TcpConnection::TcpConnection(TcpConnection&& other) noexcept
+Connection::Connection(Connection&& other) noexcept
     : m_serverRunning(other.m_serverRunning)
     , m_socket(std::exchange(other.m_socket, m_cUninitialized))
     , m_remoteEndpoint(std::move(other.m_remoteEndpoint))
 {}
 
-TcpConnection::~TcpConnection()
+Connection::~Connection()
 {
     close();
 }
 
-std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::Timeout timeout)
+std::error_code Connection::read(BytesVector& bytes, std::size_t size, osal::Timeout timeout)
 {
     if (!isActive()) {
-        TcpConnectionLogger::error("Connection is not active");
+        ConnectionLogger::error("Connection is not active");
         close();
         return Error::eConnectionNotActive;
     }
 
     while (m_serverRunning) {
         if (timeout.isExpired()) {
-            TcpConnectionLogger::debug("Read timeout occurred: {} ms", durationMs(timeout));
+            ConnectionLogger::debug("Read timeout occurred: {} ms", durationMs(timeout));
             close();
             return Error::eTimeout;
         }
@@ -92,26 +92,26 @@ std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::
         constexpr int cTimeoutMs = 250;
         timeval dataTimeout{0, int(osalMsToUs(cTimeoutMs))};
 
-        TcpConnectionLogger::trace("Waiting for endpoint data");
+        ConnectionLogger::trace("Waiting for endpoint data");
         if (select(m_socket + 1, &dataReadFds, nullptr, nullptr, &dataTimeout) > 0) {
             bytes.resize(size);
             auto bytesCount = ::read(m_socket, bytes.data(), bytes.size());
             if (bytesCount == 0) {
-                TcpConnectionLogger::info("Endpoint disconnected, closing connection");
+                ConnectionLogger::info("Endpoint disconnected, closing connection");
                 close();
                 return Error::eClientDisconnected;
             }
             if (bytesCount == -1) {
-                TcpConnectionLogger::warn("read() returned error: {}", strerror(errno));
+                ConnectionLogger::warn("read() returned error: {}", strerror(errno));
                 if (errno != EAGAIN) {
-                    TcpConnectionLogger::error("Closing connection on error");
+                    ConnectionLogger::error("Closing connection on error");
                     break;
                 }
 
                 continue;
             }
 
-            TcpConnectionLogger::trace("Read {} bytes", bytesCount);
+            ConnectionLogger::trace("Read {} bytes", bytesCount);
             bytes.resize(bytesCount);
             return Error::eOk;
         }
@@ -121,10 +121,10 @@ std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::
     return Error::eServerStopped;
 }
 
-std::error_code TcpConnection::write(const std::vector<std::uint8_t>& bytes)
+std::error_code Connection::write(const std::vector<std::uint8_t>& bytes)
 {
     if (!isActive()) {
-        TcpConnectionLogger::error("Connection is not active");
+        ConnectionLogger::error("Connection is not active");
         close();
         return Error::eConnectionNotActive;
     }
@@ -133,13 +133,13 @@ std::error_code TcpConnection::write(const std::vector<std::uint8_t>& bytes)
     while (toWrite != 0) {
         auto bytesCount = ::write(m_socket, bytes.data(), bytes.size());
         if (bytesCount == 0) {
-            TcpConnectionLogger::warn("write() returned 0");
+            ConnectionLogger::warn("write() returned 0");
             return Error::eWriteError;
         }
         if (bytesCount == -1) {
-            TcpConnectionLogger::warn("write() returned error: {}", strerror(errno));
+            ConnectionLogger::warn("write() returned error: {}", strerror(errno));
             if (errno != EAGAIN) {
-                TcpConnectionLogger::error("Closing connection on error");
+                ConnectionLogger::error("Closing connection on error");
                 break;
             }
 
@@ -152,7 +152,7 @@ std::error_code TcpConnection::write(const std::vector<std::uint8_t>& bytes)
     return Error::eOk;
 }
 
-void TcpConnection::close()
+void Connection::close()
 {
     if (m_socket != m_cUninitialized) {
         ::close(m_socket);

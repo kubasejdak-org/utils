@@ -222,7 +222,7 @@ void TcpServer::listenThread()
                             remoteEndpoint.name = std::string(name.begin(), name.end());
                     }
 
-                    TcpConnection connection(m_running, clientSocket, localEndpoint, remoteEndpoint);
+                    Connection connection(m_running, clientSocket, localEndpoint, remoteEndpoint);
                     connectionThread(std::move(connection));
                 });
                 break;
@@ -234,7 +234,7 @@ void TcpServer::listenThread()
     TcpServerLogger::info("Listening thread stopped");
 }
 
-void TcpServer::connectionThread(TcpConnection connection)
+void TcpServer::connectionThread(Connection connection)
 {
     auto endpoint = connection.remoteEndpoint();
     TcpServerLogger::debug("Starting connection thread: remote endpoint ip={}", endpoint.ip);

@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "utils/network/TcpConnection.hpp"
+#include "utils/network/Connection.hpp"
 
 #include <osal/Semaphore.hpp>
 #include <osal/Thread.hpp>
@@ -44,7 +44,7 @@
 
 namespace utils::network {
 
-using ConnectionHandler = std::function<void(TcpConnection connection)>;
+using ConnectionHandler = std::function<void(Connection connection)>;
 
 class TcpServer {
 public:
@@ -65,7 +65,7 @@ public:
 
 private:
     void listenThread();
-    void connectionThread(TcpConnection connection);
+    void connectionThread(Connection connection);
     void closeSocket();
 
 private:
