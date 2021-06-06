@@ -2,7 +2,7 @@
   stage: coverage
   only:
     - master
-  image: kubasejdak/gcc:latest
+  image: kubasejdak/gcc:10
   tags:
     - linux
   needs: []
