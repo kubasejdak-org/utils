@@ -50,7 +50,7 @@ Coverage_Total:
   stage: quality
   only:
     - master
-  image: kubasejdak/gcc:10
+  image: kubasejdak/gcc:latest
   tags:
     - linux
   needs:
