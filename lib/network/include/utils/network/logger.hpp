@@ -42,7 +42,7 @@ constexpr auto cDefaultLogLevel = spdlog::level::off;
 constexpr auto cDefaultLogLevel = spdlog::level::info;
 #endif
 
-REGISTER_LOGGER(TcpConnectionLogger, "TcpConnection", cDefaultLogLevel);
+REGISTER_LOGGER(ConnectionLogger, "Connection", cDefaultLogLevel);
 REGISTER_LOGGER(TcpServerLogger, "TcpServer", cDefaultLogLevel);
 
 } // namespace utils::network
