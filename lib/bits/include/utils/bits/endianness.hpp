@@ -60,19 +60,19 @@ inline bool isBigEndian()
 /// @param value        Value to be changed.
 /// @return Value with the opposite endianness.
 template <typename T>
-constexpr inline auto changeEndianness(T value)
+constexpr inline T changeEndianness(T value)
 {
-    static_assert(std::is_integral_v<T>, "T is not integral");
+    static_assert(std::is_integral_v<T>, "T is not an integral");
 
     constexpr auto cSize = sizeof(T);
 
     if constexpr (cSize == 2)
         return __builtin_bswap16(value);
 
-    if constexpr (sizeof(value) == 4)
+    if constexpr (cSize == 4)
         return __builtin_bswap32(value);
 
-    if constexpr (sizeof(value) == 8) // NOLINT
+    if constexpr (cSize == 8) // NOLINT
         return __builtin_bswap64(value);
 
     return value;
@@ -105,7 +105,7 @@ inline auto toLittleEndian(T value)
 template <typename T>
 constexpr inline auto toBytesArray(T value)
 {
-    static_assert(std::is_integral_v<T>, "T is not integral");
+    static_assert(std::is_integral_v<T>, "T is not an integral");
 
     std::array<std::uint8_t, sizeof(T)> bytes{};
     std::memcpy(bytes.data(), &value, sizeof(T));
