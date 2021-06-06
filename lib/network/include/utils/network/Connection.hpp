@@ -42,24 +42,55 @@
 
 namespace utils::network {
 
+/// Represents set of information about network endpoint (local or remote).
+/// @note This class will usually be used for debugging purposes as well as client filtering.
 struct Endpoint {
     std::string ip;
     int port;
     std::optional<std::string> name;
 };
 
-class TcpConnection {
+/// Represents a network connection. This class should be used in user handlers to communicate with remote endpoint and
+/// control connection state on demand.
+class Connection {
 public:
     /// Helper type alias representing vector of bytes.
     using BytesVector = std::vector<std::uint8_t>;
 
-    TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
-    TcpConnection(const TcpConnection&) = delete;
-    TcpConnection(TcpConnection&& other) noexcept;
-    ~TcpConnection();
-    TcpConnection& operator=(const TcpConnection&) = delete;
-    TcpConnection& operator=(TcpConnection&&) = delete;
+    /// Constructor.
+    /// @param serverRunning        Reference to flag indicating if parent network server is still running.
+    /// @param socket               Socket, which is used in current connection.
+    /// @param localEndpoint        Description of the local endpoint.
+    /// @param remoteEndpoint       Description of the remote endpoint.
+    Connection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
 
+    /// Copy constructor.
+    /// @note This constructor is deleted, because Connection is not meant to be copy-constructed.
+    Connection(const Connection&) = delete;
+
+    /// Move constructor.
+    /// @param other                Object to be moved from.
+    Connection(Connection&& other) noexcept;
+
+    /// Destructor.
+    ~Connection();
+
+    /// Copy assignment operator.
+    /// @return Reference to self.
+    /// @note This operator is deleted, because Connection is not meant to be copy-assigned.
+    Connection& operator=(const Connection&) = delete;
+
+    /// Move assignment operator.
+    /// @return Reference to self.
+    /// @note This operator is deleted, because Connection is not meant to be move-assigned.
+    Connection& operator=(Connection&&) = delete;
+
+    /// Returns object representing local endpoint (this side of the connection).
+    /// @return Object representing local endpoint (this side of the connection).
+    [[nodiscard]] Endpoint localEndpoint() const { return m_localEndpoint; };
+
+    /// Returns object representing remote endpoint (other side of the connection).
+    /// @return Object representing remote endpoint (other side of the connection).
     [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; };
     [[nodiscard]] bool isActive() const { return m_serverRunning && (m_socket != m_cUninitialized); }
 
