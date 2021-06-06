@@ -31,3 +31,13 @@ target_link_libraries(apputils-tests
     PUBLIC platform-init
     PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::types utils::bits utils::fsm
 )
+
+if (OSAL_PLATFORM STREQUAL linux)
+    target_sources(apputils-tests
+        PRIVATE TcpServer.cpp
+    )
+
+    target_link_libraries(apputils-tests
+        PRIVATE utils::network
+    )
+endif ()
