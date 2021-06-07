@@ -43,8 +43,11 @@ enum class Error {
     eOk,
     eInvalidArgument,
     eNoMemory,
+    eSocketError,
+    eBindError,
     eClientDisconnected,
     eTimeout,
+    eServerRunning,
     eServerStopped,
     eConnectionNotActive,
     eWriteError
