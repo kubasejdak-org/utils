@@ -52,8 +52,11 @@ std::string ErrorCategory::message(int value) const
         case Error::eOk: return "no error";
         case Error::eInvalidArgument: return "invalid argument";
         case Error::eNoMemory: return "no memory";
+        case Error::eSocketError: return "socket error";
+        case Error::eBindError: return "bind error";
         case Error::eClientDisconnected: return "client disconnected";
         case Error::eTimeout: return "timeout";
+        case Error::eServerRunning: return "server running";
         case Error::eServerStopped: return "server stopped";
         case Error::eConnectionNotActive: return "connection not active";
         case Error::eWriteError: return "write error";

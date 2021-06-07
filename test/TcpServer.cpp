@@ -62,8 +62,8 @@ TEST_CASE("1. Tests", "[unit][TcpServer]")
     });
     REQUIRE(result);
 
-    result = server.start();
-    REQUIRE(result);
+    auto error = server.start();
+    REQUIRE(!error);
 
     osal::sleep(20s);
     server.stop();
