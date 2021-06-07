@@ -41,6 +41,8 @@ namespace utils::network {
 // clang-format off
 enum class Error {
     eOk,
+    eInvalidArgument,
+    eNoMemory,
     eClientDisconnected,
     eTimeout,
     eServerStopped,

@@ -32,57 +32,22 @@
 
 #pragma once
 
-#include "utils/network/TcpConnection.hpp"
-
-#include <osal/Semaphore.hpp>
-#include <osal/Thread.hpp>
-
 #include <cstdint>
-#include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace utils::network {
 
-using TcpConnectionHandler = std::function<void(TcpConnection connection)>;
-
-class TcpServer {
-public:
-    explicit TcpServer(int port = m_cUninitialized,
-                       int maxConnections = m_cDefaultMaxConnections,
-                       int maxPendingConnections = m_cDefaultMaxPendingConnections);
-    TcpServer(const TcpServer&) = delete;
-    TcpServer(TcpServer&&) = default;
-    ~TcpServer();
-    TcpServer& operator=(const TcpServer&) = delete;
-    TcpServer& operator=(TcpServer&&) = delete;
-
-    bool setConnectionHandler(TcpConnectionHandler connectionHandler);
-
-    bool start();
-    bool start(int port);
-    void stop();
-
-private:
-    void listenThread();
-    void connectionThread(TcpConnection connection);
-    void closeSocket();
-
-private:
-    static constexpr int m_cUninitialized = -1;
-    static constexpr int m_cDefaultMaxConnections = 1;
-    static constexpr int m_cDefaultMaxPendingConnections = 10;
-
-    bool m_running{};
-    int m_port;
-    int m_maxConnections;
-    int m_maxPendingConnections;
-    int m_socket{m_cUninitialized};
-    TcpConnectionHandler m_connectionHandler;
-    osal::Semaphore m_startSemaphore{0};
-    osal::Semaphore m_connectionsSemaphore;
-    osal::Thread<> m_listenThread;
-    std::vector<osal::Thread<>> m_connectionThreads;
+/// Represents set of information about network endpoint (local or remote).
+/// @note This class will usually be used for debugging purposes as well as client filtering.
+struct Endpoint {
+    std::string ip;
+    int port;
+    std::optional<std::string> name;
 };
+
+/// Helper type alias representing vector of bytes.
+using BytesVector = std::vector<std::uint8_t>;
 
 } // namespace utils::network

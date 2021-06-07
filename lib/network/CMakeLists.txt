@@ -1,6 +1,6 @@
 add_library(utils-network EXCLUDE_FROM_ALL
-    Connection.cpp
     Error.cpp
+    TcpConnection.cpp
     TcpServer.cpp
 )
 add_library(utils::network ALIAS utils-network)
