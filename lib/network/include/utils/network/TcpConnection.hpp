@@ -32,58 +32,48 @@
 
 #pragma once
 
+#include "utils/network/types.hpp"
+
 #include <osal/Timeout.hpp>
 
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <system_error>
-#include <vector>
 
 namespace utils::network {
 
-/// Represents set of information about network endpoint (local or remote).
-/// @note This class will usually be used for debugging purposes as well as client filtering.
-struct Endpoint {
-    std::string ip;
-    int port;
-    std::optional<std::string> name;
-};
-
-/// Helper type alias representing vector of bytes.
-using BytesVector = std::vector<std::uint8_t>;
-
-/// Represents a network connection. This class should be used in user handlers to communicate with remote endpoint and
-/// control connection state on demand.
-class Connection {
+/// Represents a TCP/IP network connection. This class should be used in user handlers to communicate with
+/// remote endpoint and control connection state on demand.
+class TcpConnection {
 public:
     /// Constructor.
     /// @param serverRunning        Reference to flag indicating if parent network server is still running.
     /// @param socket               Socket, which is used in current connection.
     /// @param localEndpoint        Description of the local endpoint.
     /// @param remoteEndpoint       Description of the remote endpoint.
-    Connection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
+    TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
 
     /// Copy constructor.
-    /// @note This constructor is deleted, because Connection is not meant to be copy-constructed.
-    Connection(const Connection&) = delete;
+    /// @note This constructor is deleted, because TcpConnection is not meant to be copy-constructed.
+    TcpConnection(const TcpConnection&) = delete;
 
     /// Move constructor.
     /// @param other                Object to be moved from.
-    Connection(Connection&& other) noexcept;
+    TcpConnection(TcpConnection&& other) noexcept;
 
     /// Destructor.
-    ~Connection();
+    ~TcpConnection();
 
     /// Copy assignment operator.
     /// @return Reference to self.
-    /// @note This operator is deleted, because Connection is not meant to be copy-assigned.
-    Connection& operator=(const Connection&) = delete;
+    /// @note This operator is deleted, because TcpConnection is not meant to be copy-assigned.
+    TcpConnection& operator=(const TcpConnection&) = delete;
 
     /// Move assignment operator.
     /// @return Reference to self.
-    /// @note This operator is deleted, because Connection is not meant to be move-assigned.
-    Connection& operator=(Connection&&) = delete;
+    /// @note This operator is deleted, because TcpConnection is not meant to be move-assigned.
+    TcpConnection& operator=(TcpConnection&&) = delete;
 
     /// Returns object representing local endpoint (this side of the connection).
     /// @return Object representing local endpoint (this side of the connection).
@@ -92,10 +82,42 @@ public:
     /// Returns object representing remote endpoint (other side of the connection).
     /// @return Object representing remote endpoint (other side of the connection).
     [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; };
+
+    /// Returns flag indicating if this connection is still active. If not, then this object can and should be removed.
+    /// @return Flag indicating if this connection is still active.
     [[nodiscard]] bool isActive() const { return m_serverRunning && (m_socket != m_cUninitialized); }
 
+    /// Receives demanded number of bytes from the remote endpoint associated with this connection.
+    /// @param bytes                Vector where the received data will be placed by this method.
+    /// @param size                 Number of bytes to be received from the remote endpoint.
+    /// @param timeout              Maximal time to wait for the data.
+    /// @return Error code of the operation.
+    /// @note This method does not assume, that the output vector has the proper capacity. It will be
+    ///       automatically expanded, if needed, by the container itself. Size of the vector after call
+    ///       to this method will indicate the actual number of read bytes.
     std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
-    [[nodiscard]] std::error_code write(const std::vector<std::uint8_t>& bytes);
+
+    /// Receives demanded number of bytes from the remote endpoint associated with this connection.
+    /// @param bytes                Memory block where the received data will be placed by this method.
+    /// @param size                 Number of bytes to be received from the remote endpoint.
+    /// @param timeout              Maximal time to wait for the data.
+    /// @param actualReadSize       Actual number of received bytes.
+    /// @return Error code of the operation.
+    /// @note This method assumes, that the output memory block has the proper capacity. After call to this
+    ///       method the 'actualReadSize' parameter will indicate the actual number of received bytes.
+    ///       It is also assumed, that output memory block is empty.
+    std::error_code read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout, std::size_t& actualReadSize);
+
+    /// Sends given vector of bytes to the remote endpoint associated with this connection.
+    /// @param bytes                Vector of raw bytes to be sent.
+    /// @return Error code of the operation.
+    std::error_code write(const BytesVector& bytes);
+
+    /// Sends given memory block of bytes to the remote endpoint associated with this connection.
+    /// @param bytes                Memory block of raw bytes to be sent.
+    /// @param size                 Size of the memory block to be sent.
+    /// @return Error code of the operation.
+    std::error_code write(const std::uint8_t* bytes, std::size_t size);
 
     /// Closes the connection.
     /// @note After call to this method Connection object is unusable and should be removed.

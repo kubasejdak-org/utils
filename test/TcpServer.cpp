@@ -31,7 +31,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include <osal/sleep.hpp>
-#include <utils/network/Connection.hpp>
+#include <utils/network/TcpConnection.hpp>
 #include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
@@ -44,7 +44,7 @@ TEST_CASE("1. Tests", "[unit][TcpServer]")
 {
     constexpr int cPort = 10101;
     utils::network::TcpServer server(cPort);
-    auto result = server.setConnectionHandler([](utils::network::Connection connection) {
+    auto result = server.setConnectionHandler([](utils::network::TcpConnection connection) {
         std::vector<std::uint8_t> bytes;
         while (connection.isActive()) {
             constexpr std::size_t cSize = 255;
