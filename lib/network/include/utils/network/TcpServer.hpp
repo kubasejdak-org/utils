@@ -40,32 +40,82 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <system_error>
 #include <vector>
 
 namespace utils::network {
 
+/// Function that should be called in a separate thread by TcpServer in order to handle incoming connection.
+/// @param connection           Helper object allowing reading and writing from/to the remote endpoint.
 using TcpConnectionHandler = std::function<void(TcpConnection connection)>;
 
+/// Represents TCP/IP server allowing to handle single or multiple clients in parallel.
 class TcpServer {
 public:
+    /// Constructor.
+    /// @param port                     Port on which TCP server should listen.
+    /// @param maxConnections           Maximal number of concurrent connections (number of spawned threads).
+    /// @param maxPendingConnections    Maximal number of pending connections in the kernels queue.
     explicit TcpServer(int port = m_cUninitialized,
                        int maxConnections = m_cDefaultMaxConnections,
                        int maxPendingConnections = m_cDefaultMaxPendingConnections);
+
+    /// Copy constructor.
+    /// @note This constructor is deleted, because TcpServer is not meant to be copy-constructed.
     TcpServer(const TcpServer&) = delete;
+
+    /// Move constructor,
     TcpServer(TcpServer&&) = default;
+
+    /// Destructor. Stops the server if it is still running during destruction.
     ~TcpServer();
+
+    /// Copy assignment operator.
+    /// @return Reference to self.
+    /// @note This operator is deleted, because TcpServer is not meant to be copy-assigned.
     TcpServer& operator=(const TcpServer&) = delete;
+
+    /// Move assignment operator.
+    /// @return Reference to self.
+    /// @note This operator is deleted, because TcpServer is not meant to be move-assigned.
     TcpServer& operator=(TcpServer&&) = delete;
 
+    /// Registers user-defined connection handler that should be launched in a separate thread to handle new connection.
+    /// @param connectionHandler        Function to be invoked.
+    /// @return Flag indicating if this operation was successful.
+    /// @param true                     Handler has been registered.
+    /// @param false                    Handler has not been registered
     bool setConnectionHandler(TcpConnectionHandler connectionHandler);
 
-    bool start();
-    bool start(int port);
+    /// Starts TCP server. After call to this method a listening thread will be spawned and clients will be able to
+    /// connected.
+    /// @return Error code of the operation.
+    /// @note This call is non-blocking.
+    /// @note This method assumes, that port has already been set in server's constructor.
+    std::error_code start();
+
+    /// Starts TCP server. After call to this method a listening thread will be spawned and clients will be able to
+    /// connected.
+    /// @param port                     Port on which TCP server should listen.
+    /// @return Error code of the operation.
+    /// @note This call is non-blocking.
+    /// @note This method assumes, that port has already been set in server's constructor.
+    std::error_code start(int port);
+
+    /// Stops TCP server.
+    /// @note This method can block until all server threads are finished.
     void stop();
 
 private:
+    /// Thread function that listens for incoming connections and spawns connection-specific threads according to
+    /// server's settings.
     void listenThread();
+
+    /// Wrapper for the user-defined connection thread.
+    /// @param connection               Connection object that should be passed to the user handler.
     void connectionThread(TcpConnection connection);
+
+    /// Closes the underlying network socket.
     void closeSocket();
 
 private:

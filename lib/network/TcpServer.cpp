@@ -32,6 +32,7 @@
 
 #include "utils/network/TcpServer.hpp"
 
+#include "utils/network/Error.hpp"
 #include "utils/network/logger.hpp"
 
 #include <arpa/inet.h>
@@ -75,23 +76,23 @@ TcpServer::~TcpServer()
 
 bool TcpServer::setConnectionHandler(TcpConnectionHandler connectionHandler)
 {
-    if (m_connectionHandler)
+    if (m_running)
         return false;
 
     m_connectionHandler = std::move(connectionHandler);
     return true;
 }
 
-bool TcpServer::start()
+std::error_code TcpServer::start()
 {
     return start(m_cUninitialized);
 }
 
-bool TcpServer::start(int port)
+std::error_code TcpServer::start(int port)
 {
     if (m_running) {
         TcpServerLogger::error("Failed to start: server is already started");
-        return false;
+        return Error::eServerRunning;
     }
 
     if (port != m_cUninitialized)
@@ -99,7 +100,7 @@ bool TcpServer::start(int port)
 
     if (m_port == m_cUninitialized) {
         TcpServerLogger::error("Failed to start TCP/IP server: uninitialized port value ({})", m_port);
-        return false;
+        return Error::eInvalidArgument;
     }
 
     TcpServerLogger::info("Starting TCP/IP server with the following parameters:");
@@ -109,7 +110,7 @@ bool TcpServer::start(int port)
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socket == -1) {
         TcpServerLogger::error("Failed to create AF_INET socket: {}", strerror(errno));
-        return false;
+        return Error::eSocketError;
     }
 
     sockaddr_in addr{};
@@ -120,7 +121,7 @@ bool TcpServer::start(int port)
     if (bind(m_socket, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1) { // NOLINT
         TcpServerLogger::error("Failed to bind socket to address: {}", strerror(errno));
         closeSocket();
-        return false;
+        return Error::eBindError;
     }
 
     listen(m_socket, m_maxPendingConnections);
@@ -128,15 +129,17 @@ bool TcpServer::start(int port)
     if (auto error = m_listenThread.start([this] { listenThread(); })) {
         TcpServerLogger::error("Failed to start listening thread: err={}", error.message());
         closeSocket();
+        return error;
     }
 
     constexpr auto cStartupTimeout = 1s;
     if (m_startSemaphore.timedWait(cStartupTimeout)) {
         TcpServerLogger::error("Timeout in listening thread startup");
-        m_running = false;
+        return Error::eTimeout;
     }
 
-    return m_running;
+    m_running = true;
+    return Error::eOk;
 }
 
 void TcpServer::stop()
