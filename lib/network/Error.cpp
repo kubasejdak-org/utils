@@ -50,6 +50,8 @@ std::string ErrorCategory::message(int value) const
 {
     switch (static_cast<Error>(value)) {
         case Error::eOk: return "no error";
+        case Error::eInvalidArgument: return "invalid argument";
+        case Error::eNoMemory: return "no memory";
         case Error::eClientDisconnected: return "client disconnected";
         case Error::eTimeout: return "timeout";
         case Error::eServerStopped: return "server stopped";
