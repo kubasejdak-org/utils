@@ -85,7 +85,7 @@ bool TcpServer::setConnectionHandler(TcpConnectionHandler connectionHandler)
 
 std::error_code TcpServer::start()
 {
-    return start(m_cUninitialized);
+    return start(m_port);
 }
 
 std::error_code TcpServer::start(int port)
@@ -95,13 +95,12 @@ std::error_code TcpServer::start(int port)
         return Error::eServerRunning;
     }
 
-    if (port != m_cUninitialized)
-        m_port = port;
-
-    if (m_port == m_cUninitialized) {
-        TcpServerLogger::error("Failed to start TCP/IP server: uninitialized port value ({})", m_port);
+    if (port < 0) {
+        TcpServerLogger::error("Failed to start TCP/IP server: invalid port value ({})", port);
         return Error::eInvalidArgument;
     }
+
+    m_port = port;
 
     TcpServerLogger::info("Starting TCP/IP server with the following parameters:");
     TcpServerLogger::info("  port : {}", m_port);
@@ -144,9 +143,12 @@ std::error_code TcpServer::start(int port)
 
 void TcpServer::stop()
 {
-    m_running = false;
-    m_listenThread.join();
-    m_connectionThreads.clear();
+    if (m_running) {
+        m_running = false;
+        m_port = m_cUninitialized;
+        m_listenThread.join();
+        m_connectionThreads.clear();
+    }
 }
 
 void TcpServer::listenThread()
