@@ -43,8 +43,8 @@
 
 namespace utils::network {
 
-TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint)
-    : m_serverRunning(serverRunning)
+TcpConnection::TcpConnection(const bool& parentRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint)
+    : m_parentRunning(parentRunning)
     , m_socket(socket)
     , m_localEndpoint(std::move(localEndpoint))
     , m_remoteEndpoint(std::move(remoteEndpoint))
@@ -61,7 +61,7 @@ TcpConnection::TcpConnection(const bool& serverRunning, int socket, Endpoint loc
 }
 
 TcpConnection::TcpConnection(TcpConnection&& other) noexcept
-    : m_serverRunning(other.m_serverRunning)
+    : m_parentRunning(other.m_parentRunning)
     , m_socket(std::exchange(other.m_socket, m_cUninitialized))
     , m_remoteEndpoint(std::move(other.m_remoteEndpoint))
 {}
@@ -101,7 +101,7 @@ TcpConnection::read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout
 
     actualReadSize = 0;
 
-    while (m_serverRunning) {
+    while (isActive()) {
         if (timeout.isExpired()) {
             TcpConnectionLogger::debug("Read timeout occurred: {} ms", durationMs(timeout));
             close();
