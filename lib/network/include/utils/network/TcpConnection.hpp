@@ -37,8 +37,6 @@
 #include <osal/Timeout.hpp>
 
 #include <cstdint>
-#include <optional>
-#include <string>
 #include <system_error>
 
 namespace utils::network {
@@ -48,11 +46,11 @@ namespace utils::network {
 class TcpConnection {
 public:
     /// Constructor.
-    /// @param serverRunning        Reference to flag indicating if parent network server is still running.
+    /// @param parentRunning        Reference to flag indicating if parent object is still running.
     /// @param socket               Socket, which is used in current connection.
     /// @param localEndpoint        Description of the local endpoint.
     /// @param remoteEndpoint       Description of the remote endpoint.
-    TcpConnection(const bool& serverRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
+    TcpConnection(const bool& parentRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
 
     /// Copy constructor.
     /// @note This constructor is deleted, because TcpConnection is not meant to be copy-constructed.
@@ -85,7 +83,7 @@ public:
 
     /// Returns flag indicating if this connection is still active. If not, then this object can and should be removed.
     /// @return Flag indicating if this connection is still active.
-    [[nodiscard]] bool isActive() const { return m_serverRunning && (m_socket != m_cUninitialized); }
+    [[nodiscard]] bool isActive() const { return m_parentRunning && (m_socket != m_cUninitialized); }
 
     /// Receives demanded number of bytes from the remote endpoint associated with this connection.
     /// @param bytes                Vector where the received data will be placed by this method.
@@ -126,7 +124,7 @@ public:
 private:
     static constexpr int m_cUninitialized = -1;
 
-    const bool& m_serverRunning;
+    const bool& m_parentRunning;
     int m_socket;
     Endpoint m_localEndpoint;
     Endpoint m_remoteEndpoint;
