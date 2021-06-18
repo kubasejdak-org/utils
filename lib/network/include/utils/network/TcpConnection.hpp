@@ -37,6 +37,8 @@
 #include <osal/Timeout.hpp>
 
 #include <cstdint>
+#include <functional>
+#include <optional>
 #include <system_error>
 
 namespace utils::network {
@@ -45,12 +47,18 @@ namespace utils::network {
 /// remote endpoint and control connection state on demand.
 class TcpConnection {
 public:
+    /// Type representing optional reference boolean flag.
+    using OptionalReferenceFlag = std::optional<std::reference_wrapper<bool>>;
+
     /// Constructor.
-    /// @param parentRunning        Reference to flag indicating if parent object is still running.
     /// @param socket               Socket, which is used in current connection.
     /// @param localEndpoint        Description of the local endpoint.
     /// @param remoteEndpoint       Description of the remote endpoint.
-    TcpConnection(const bool& parentRunning, int socket, Endpoint localEndpoint, Endpoint remoteEndpoint);
+    /// @param parentRunning        Optional reference to flag indicating if parent object is still running.
+    TcpConnection(int socket,
+                  Endpoint localEndpoint,
+                  Endpoint remoteEndpoint,
+                  OptionalReferenceFlag parentRunning = {});
 
     /// Copy constructor.
     /// @note This constructor is deleted, because TcpConnection is not meant to be copy-constructed.
@@ -81,9 +89,14 @@ public:
     /// @return Object representing remote endpoint (other side of the connection).
     [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; };
 
+    /// Returns flag indicating if parent (if any exists) is running.
+    /// @return Flag indicating if parent (if any exists) is running.
+    /// @note This method makes sense only for TcpServer side.
+    [[nodiscard]] bool isParentRunning() const { return m_cParentRunning && *m_cParentRunning; }
+
     /// Returns flag indicating if this connection is still active. If not, then this object can and should be removed.
     /// @return Flag indicating if this connection is still active.
-    [[nodiscard]] bool isActive() const { return m_parentRunning && (m_socket != m_cUninitialized); }
+    [[nodiscard]] bool isActive() const { return m_socket != m_cUninitialized; }
 
     /// Receives demanded number of bytes from the remote endpoint associated with this connection.
     /// @param bytes                Vector where the received data will be placed by this method.
@@ -124,10 +137,10 @@ public:
 private:
     static constexpr int m_cUninitialized = -1;
 
-    const bool& m_parentRunning;
     int m_socket;
     Endpoint m_localEndpoint;
     Endpoint m_remoteEndpoint;
+    const OptionalReferenceFlag m_cParentRunning;
 };
 
 } // namespace utils::network
