@@ -39,6 +39,9 @@
 
 namespace utils::network {
 
+/// Helper type alias representing vector of bytes.
+using BytesVector = std::vector<std::uint8_t>;
+
 /// Represents set of information about network endpoint (local or remote).
 /// @note This class will usually be used for debugging purposes as well as client filtering.
 struct Endpoint {
@@ -46,8 +49,5 @@ struct Endpoint {
     int port;
     std::optional<std::string> name;
 };
-
-/// Helper type alias representing vector of bytes.
-using BytesVector = std::vector<std::uint8_t>;
 
 } // namespace utils::network

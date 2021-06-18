@@ -227,7 +227,7 @@ void TcpServer::listenThread()
                             remoteEndpoint.name = std::string(name.begin(), name.end());
                     }
 
-                    TcpConnection connection(m_running, clientSocket, localEndpoint, remoteEndpoint);
+                    TcpConnection connection(clientSocket, localEndpoint, remoteEndpoint, m_running);
                     connectionThread(std::move(connection));
                 });
                 break;

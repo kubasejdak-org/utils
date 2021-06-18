@@ -31,6 +31,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include <osal/sleep.hpp>
+#include <utils/network/Error.hpp>
 #include <utils/network/TcpConnection.hpp>
 #include <utils/network/TcpServer.hpp>
 
@@ -46,9 +47,12 @@ TEST_CASE("1. Tests", "[unit][TcpServer]")
     utils::network::TcpServer server(cPort);
     auto result = server.setConnectionHandler([](utils::network::TcpConnection connection) {
         std::vector<std::uint8_t> bytes;
-        while (connection.isActive()) {
+        while (connection.isParentRunning() && connection.isActive()) {
             constexpr std::size_t cSize = 255;
-            if (auto error = connection.read(bytes, cSize)) {
+            if (auto error = connection.read(bytes, cSize, 100ms)) {
+                if (error == utils::network::Error::eTimeout)
+                    continue;
+
                 fmt::print("Read error: {}\n", error.message());
                 break;
             }
