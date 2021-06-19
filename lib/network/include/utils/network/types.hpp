@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include <netinet/in.h>
+
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -49,5 +51,15 @@ struct Endpoint {
     int port;
     std::optional<std::string> name;
 };
+
+/// Creates and returns local Endpoint out of given connection socket.
+/// @param socket           Socket to be used.
+/// @return Local Endpoint created out of given connection socket.
+Endpoint getLocalEndpoint(int socket);
+
+/// Creates and returns remote Endpoint out of given sockaddr_in.
+/// @param addr             sockaddr_in to be used.
+/// @return Remote Endpoint created out of given sockaddr_in object.
+Endpoint getRemoteEndpoint(sockaddr_in addr);
 
 } // namespace utils::network

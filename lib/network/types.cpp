@@ -30,20 +30,57 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "utils/network/types.hpp"
 
-#include <utils/logger/Logger.hpp>
+#include "utils/network/logger.hpp"
+
+#include <arpa/inet.h>
+#include <netdb.h>
+
+#include <array>
+#include <cerrno>
+#include <cstring>
 
 namespace utils::network {
 
-#ifdef NDEBUG
-constexpr auto cDefaultLogLevel = spdlog::level::off;
-#else
-constexpr auto cDefaultLogLevel = spdlog::level::info;
-#endif
+/// Creates and returns Endpoint out of given sockaddr_in.
+/// @param addr             sockaddr_in to be used.
+/// @return Endpoint created out of given sockaddr_in object.
+static Endpoint addrToEndpoint(sockaddr_in addr)
+{
+    socklen_t addrSize = sizeof(addr);
 
-REGISTER_LOGGER(NetworkTypesLogger, "NetworkTypes", cDefaultLogLevel);
-REGISTER_LOGGER(TcpConnectionLogger, "TcpConnection", cDefaultLogLevel);
-REGISTER_LOGGER(TcpServerLogger, "TcpServer", cDefaultLogLevel);
+    Endpoint endpoint{};
+    endpoint.ip = inet_ntoa(addr.sin_addr);
+    endpoint.port = addr.sin_port;
+
+    std::array<char, NI_MAXHOST> name{};
+
+    // NOLINTNEXTLINE
+    if (getnameinfo(reinterpret_cast<sockaddr*>(&addr), addrSize, name.data(), name.size(), nullptr, 0, NI_NAMEREQD)
+        == 0)
+        endpoint.name = std::string(name.begin(), name.end());
+
+    return endpoint;
+}
+
+Endpoint getLocalEndpoint(int socket)
+{
+    sockaddr_in addr{};
+    socklen_t addrSize = sizeof(addr);
+
+    // NOLINTNEXTLINE
+    if (getsockname(socket, reinterpret_cast<sockaddr*>(&addr), &addrSize) == -1) {
+        NetworkTypesLogger::error("getsockname() returned error for local endpoint: err={}", strerror(errno));
+        return {};
+    }
+
+    return addrToEndpoint(addr);
+}
+
+Endpoint getRemoteEndpoint(sockaddr_in addr)
+{
+    return addrToEndpoint(addr);
+}
 
 } // namespace utils::network
