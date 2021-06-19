@@ -34,13 +34,12 @@
 
 #include "utils/network/Error.hpp"
 #include "utils/network/logger.hpp"
+#include "utils/network/types.hpp"
 
-#include <arpa/inet.h>
-#include <netdb.h>
+#include <netinet/in.h>
 #include <osal/timestamp.h>
 #include <sys/socket.h>
 
-#include <array>
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -180,52 +179,8 @@ void TcpServer::listenThread()
                 // NOLINTNEXTLINE
                 auto clientSocket = accept4(m_socket, reinterpret_cast<sockaddr*>(&clientAddr), &size, SOCK_CLOEXEC);
                 m_connectionThreads.emplace_back([&] {
-                    Endpoint localEndpoint{};
-                    {
-                        sockaddr_in serverAddr{};
-                        socklen_t serverSize = sizeof(serverAddr);
-
-                        // NOLINTNEXTLINE
-                        if (getsockname(clientSocket, reinterpret_cast<sockaddr*>(&serverAddr), &serverSize) == -1) {
-                            TcpServerLogger::error("getsockname() returned error for local endpoint: err={}",
-                                                   strerror(errno));
-                        }
-
-                        localEndpoint.ip = inet_ntoa(serverAddr.sin_addr);
-                        localEndpoint.port = serverAddr.sin_port;
-
-                        std::array<char, NI_MAXHOST> name{};
-
-                        // NOLINTNEXTLINE
-                        if (getnameinfo(reinterpret_cast<sockaddr*>(&clientAddr),
-                                        size,
-                                        name.data(),
-                                        name.size(),
-                                        nullptr,
-                                        0,
-                                        NI_NAMEREQD)
-                            == 0)
-                            localEndpoint.name = std::string(name.begin(), name.end());
-                    }
-
-                    Endpoint remoteEndpoint{};
-                    {
-                        remoteEndpoint.ip = inet_ntoa(clientAddr.sin_addr);
-                        remoteEndpoint.port = clientAddr.sin_port;
-
-                        std::array<char, NI_MAXHOST> name{};
-
-                        // NOLINTNEXTLINE
-                        if (getnameinfo(reinterpret_cast<sockaddr*>(&clientAddr),
-                                        size,
-                                        name.data(),
-                                        name.size(),
-                                        nullptr,
-                                        0,
-                                        NI_NAMEREQD)
-                            == 0)
-                            remoteEndpoint.name = std::string(name.begin(), name.end());
-                    }
+                    auto localEndpoint = getLocalEndpoint(clientSocket);
+                    auto remoteEndpoint = getRemoteEndpoint(clientAddr);
 
                     TcpConnection connection(clientSocket, localEndpoint, remoteEndpoint, m_running);
                     connectionThread(std::move(connection));
