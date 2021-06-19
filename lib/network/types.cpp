@@ -46,7 +46,7 @@ namespace utils::network {
 /// Creates and returns Endpoint out of given sockaddr_in.
 /// @param addr             sockaddr_in to be used.
 /// @return Endpoint created out of given sockaddr_in object.
-static Endpoint addrToEndpoint(sockaddr_in addr)
+static Endpoint addrToEndpoint(const sockaddr_in& addr)
 {
     socklen_t addrSize = sizeof(addr);
 
@@ -56,8 +56,13 @@ static Endpoint addrToEndpoint(sockaddr_in addr)
 
     std::array<char, NI_MAXHOST> name{};
 
-    // NOLINTNEXTLINE
-    if (getnameinfo(reinterpret_cast<sockaddr*>(&addr), addrSize, name.data(), name.size(), nullptr, 0, NI_NAMEREQD)
+    if (getnameinfo(reinterpret_cast<const sockaddr*>(&addr), // NOLINT
+                    addrSize,
+                    name.data(),
+                    name.size(),
+                    nullptr,
+                    0,
+                    NI_NAMEREQD)
         == 0)
         endpoint.name = std::string(name.begin(), name.end());
 
@@ -69,8 +74,7 @@ Endpoint getLocalEndpoint(int socket)
     sockaddr_in addr{};
     socklen_t addrSize = sizeof(addr);
 
-    // NOLINTNEXTLINE
-    if (getsockname(socket, reinterpret_cast<sockaddr*>(&addr), &addrSize) == -1) {
+    if (getsockname(socket, reinterpret_cast<sockaddr*>(&addr), &addrSize) == -1) { // NOLINT
         NetworkTypesLogger::error("getsockname() returned error for local endpoint: err={}", strerror(errno));
         return {};
     }
@@ -78,7 +82,7 @@ Endpoint getLocalEndpoint(int socket)
     return addrToEndpoint(addr);
 }
 
-Endpoint getRemoteEndpoint(sockaddr_in addr)
+Endpoint getRemoteEndpoint(const sockaddr_in& addr)
 {
     return addrToEndpoint(addr);
 }

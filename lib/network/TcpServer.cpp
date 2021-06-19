@@ -116,7 +116,7 @@ std::error_code TcpServer::start(int port)
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(m_port);
 
-    if (bind(m_socket, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1) { // NOLINT
+    if (bind(m_socket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) { // NOLINT
         TcpServerLogger::error("Failed to bind socket to address: {}", strerror(errno));
         closeSocket();
         return Error::eBindError;
