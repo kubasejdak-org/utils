@@ -30,46 +30,47 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include "utils/network/Error.hpp"
+#include "utils/network/TcpConnection.hpp"
+#include "utils/network/types.hpp"
 
+#include <osal/Timeout.hpp>
+
+#include <cstdint>
+#include <memory>
 #include <string>
+#include <system_error>
 
 namespace utils::network {
 
-struct ErrorCategory : std::error_category {
-    [[nodiscard]] const char* name() const noexcept override;
-    [[nodiscard]] std::string message(int value) const override;
+class TcpClient {
+public:
+    TcpClient();
+    TcpClient(std::string address, int port);
+    TcpClient(const TcpClient&) = delete;
+    TcpClient(TcpClient&& other) noexcept;
+    ~TcpClient();
+    TcpClient& operator=(const TcpClient&) = delete;
+    TcpClient& operator=(TcpClient&&) = delete;
+
+    std::error_code connect();
+    std::error_code connect(std::string address, int port);
+    void disconnect();
+
+    [[nodiscard]] Endpoint localEndpoint() const;
+    [[nodiscard]] Endpoint remoteEndpoint() const;
+
+    std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
+    std::error_code read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout, std::size_t& actualReadSize);
+    std::error_code write(const BytesVector& bytes);
+    std::error_code write(const std::uint8_t* bytes, std::size_t size);
+
+private:
+    static constexpr int m_cUninitialized = -1;
+
+    bool m_running{};
+    std::string m_address;
+    int m_port;
+    std::unique_ptr<TcpConnection> m_connection;
 };
-
-const char* ErrorCategory::name() const noexcept
-{
-    return "utils::network";
-}
-
-std::string ErrorCategory::message(int value) const
-{
-    switch (static_cast<Error>(value)) {
-        case Error::eOk: return "no error";
-        case Error::eInvalidArgument: return "invalid argument";
-        case Error::eNoMemory: return "no memory";
-        case Error::eSocketError: return "socket error";
-        case Error::eBindError: return "bind error";
-        case Error::eConnectError: return "connect error";
-        case Error::eClientRunning: return "client running";
-        case Error::eClientDisconnected: return "client disconnected";
-        case Error::eTimeout: return "timeout";
-        case Error::eServerRunning: return "server running";
-        case Error::eConnectionNotActive: return "connection not active";
-        case Error::eWriteError: return "write error";
-        default: return "(unrecognized error)";
-    }
-}
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-std::error_code make_error_code(Error error)
-{
-    static const ErrorCategory cErrorCategory{};
-    return {static_cast<int>(error), cErrorCategory};
-}
 
 } // namespace utils::network

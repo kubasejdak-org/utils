@@ -1,5 +1,6 @@
 add_library(utils-network EXCLUDE_FROM_ALL
     Error.cpp
+    TcpClient.cpp
     TcpConnection.cpp
     TcpServer.cpp
     types.cpp

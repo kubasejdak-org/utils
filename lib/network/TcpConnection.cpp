@@ -141,7 +141,7 @@ TcpConnection::read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout
     }
 
     close();
-    return Error::eServerStopped;
+    return Error::eConnectionNotActive;
 }
 
 std::error_code TcpConnection::write(const BytesVector& bytes)

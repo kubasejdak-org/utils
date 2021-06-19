@@ -87,4 +87,10 @@ Endpoint getRemoteEndpoint(const sockaddr_in& addr)
     return addrToEndpoint(addr);
 }
 
+bool isValidIp(std::string_view ip)
+{
+    sockaddr_in addr{};
+    return inet_pton(AF_INET, ip.data(), &(addr.sin_addr)) == 1;
+}
+
 } // namespace utils::network

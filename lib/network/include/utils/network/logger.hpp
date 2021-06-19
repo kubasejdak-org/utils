@@ -43,6 +43,7 @@ constexpr auto cDefaultLogLevel = spdlog::level::info;
 #endif
 
 REGISTER_LOGGER(NetworkTypesLogger, "NetworkTypes", cDefaultLogLevel);
+REGISTER_LOGGER(TcpClientLogger, "TcpClient", cDefaultLogLevel);
 REGISTER_LOGGER(TcpConnectionLogger, "TcpConnection", cDefaultLogLevel);
 REGISTER_LOGGER(TcpServerLogger, "TcpServer", cDefaultLogLevel);
 
