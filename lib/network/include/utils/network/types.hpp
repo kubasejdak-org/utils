@@ -60,6 +60,6 @@ Endpoint getLocalEndpoint(int socket);
 /// Creates and returns remote Endpoint out of given sockaddr_in.
 /// @param addr             sockaddr_in to be used.
 /// @return Remote Endpoint created out of given sockaddr_in object.
-Endpoint getRemoteEndpoint(sockaddr_in addr);
+Endpoint getRemoteEndpoint(const sockaddr_in& addr);
 
 } // namespace utils::network
