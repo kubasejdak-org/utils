@@ -75,8 +75,10 @@ TcpServer::~TcpServer()
 
 bool TcpServer::setConnectionHandler(TcpConnectionHandler connectionHandler)
 {
-    if (m_running)
+    if (m_running) {
+        TcpServerLogger::error("Failed to register connection handler: server is already running");
         return false;
+    }
 
     m_connectionHandler = std::move(connectionHandler);
     return true;
