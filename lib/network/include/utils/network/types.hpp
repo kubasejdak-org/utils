@@ -69,4 +69,10 @@ Endpoint getRemoteEndpoint(const sockaddr_in& addr);
 /// @retval false           Given string is not a valid IP address.
 bool isValidIp(std::string_view ip);
 
+/// Converts address (IP or hostname) to IP.
+/// @param address          Address to be converted.
+/// @return IP address converted from IP form or hostname form. On error empty string is returned
+/// @note If address is provided as IP, then no change is applied.
+std::string addressToIp(std::string_view address);
+
 } // namespace utils::network

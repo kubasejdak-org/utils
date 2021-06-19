@@ -46,7 +46,7 @@ namespace utils::network {
 /// Creates and returns Endpoint out of given sockaddr_in.
 /// @param addr             sockaddr_in to be used.
 /// @return Endpoint created out of given sockaddr_in object.
-static Endpoint addrToEndpoint(const sockaddr_in& addr)
+static Endpoint sockaddrToEndpoint(const sockaddr_in& addr)
 {
     socklen_t addrSize = sizeof(addr);
 
@@ -79,18 +79,49 @@ Endpoint getLocalEndpoint(int socket)
         return {};
     }
 
-    return addrToEndpoint(addr);
+    return sockaddrToEndpoint(addr);
 }
 
 Endpoint getRemoteEndpoint(const sockaddr_in& addr)
 {
-    return addrToEndpoint(addr);
+    return sockaddrToEndpoint(addr);
 }
 
 bool isValidIp(std::string_view ip)
 {
     sockaddr_in addr{};
     return inet_pton(AF_INET, ip.data(), &(addr.sin_addr)) == 1;
+}
+
+std::string addressToIp(std::string_view address)
+{
+    if (isValidIp(address))
+        return address.data();
+
+    addrinfo hints{};
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    addrinfo* addrInfos{};
+    int result = getaddrinfo(address.data(), nullptr, &hints, &addrInfos);
+    if (result != 0) {
+        NetworkTypesLogger::error("Failed to convert address to IP: err={}", gai_strerror(result));
+        return {};
+    }
+
+    std::string ip;
+    for (auto* addrInfo = addrInfos; addrInfo != nullptr; addrInfo = addrInfo->ai_next) {
+        auto* addr = reinterpret_cast<struct sockaddr_in*>(addrInfo->ai_addr); // NOLINT
+        ip = inet_ntoa(addr->sin_addr);
+        if (!ip.empty())
+            break;
+    }
+
+    freeaddrinfo(addrInfos);
+
+    NetworkTypesLogger::trace("Converted address={} to ip={}", address, ip);
+    return ip;
 }
 
 } // namespace utils::network

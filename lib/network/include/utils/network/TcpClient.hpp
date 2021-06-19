@@ -53,7 +53,7 @@ public:
     TcpClient& operator=(TcpClient&&) = delete;
 
     std::error_code connect();
-    std::error_code connect(std::string address, int port);
+    std::error_code connect(std::string_view address, int port);
     void disconnect();
 
     [[nodiscard]] Endpoint localEndpoint() const;

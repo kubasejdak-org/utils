@@ -75,7 +75,7 @@ std::error_code TcpClient::connect()
     return connect(m_address, m_port);
 }
 
-std::error_code TcpClient::connect(std::string address, int port)
+std::error_code TcpClient::connect(std::string_view address, int port)
 {
     if (m_running) {
         TcpClientLogger::error("Failed to connect: client is already running");
@@ -88,13 +88,19 @@ std::error_code TcpClient::connect(std::string address, int port)
         return Error::eSocketError;
     }
 
+    auto ip = addressToIp(address);
+    if (ip.empty()) {
+        TcpClientLogger::error("Failed to convert address to IP: address={}", address);
+        return Error::eInvalidArgument;
+    }
+
     sockaddr_in serverAddr{};
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = inet_addr(address.data());
+    serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
     serverAddr.sin_port = htons(port);
 
     if (::connect(clientSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) != 0) { // NOLINT
-        TcpClientLogger::error("Failed to connect to server: addr={}, port={}, err={}", address, port, strerror(errno));
+        TcpClientLogger::error("Failed to connect to server: ip={}, port={}, err={}", ip, port, strerror(errno));
         close(clientSocket);
         return Error::eConnectError;
     }
