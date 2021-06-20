@@ -36,3 +36,8 @@ StateMachine_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
     TestTags: "[StateMachine]"
+
+TcpServer_Linux_Valgrind:
+  extends: .Run_Valgrind_Linux
+  variables:
+    TestTags: "[TcpServer]"

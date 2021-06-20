@@ -74,6 +74,7 @@ Coverage_Total:
            -a ../Logger_Coverage/coverage/coverage.info \
            -a ../Property_Coverage/coverage/coverage.info \
            -a ../StateMachine_Coverage/coverage/coverage.info \
+           -a ../TcpServer_Coverage/coverage/coverage.info \
            -o coverage.info
     - sed -i "s|SF:|SF:${CI_PROJECT_DIR}/|g" coverage.info
     - genhtml coverage.info -o html
