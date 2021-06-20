@@ -105,6 +105,10 @@ std::error_code TcpClient::connect(std::string_view address, int port)
         return Error::eConnectError;
     }
 
+    TcpClientLogger::info("Connected to TCP/IP server with the following parameters:");
+    TcpClientLogger::info("  IP   : {}", ip);
+    TcpClientLogger::info("  port : {}", port);
+
     auto localEndpoint = getLocalEndpoint(clientSocket);
     auto remoteEndpoint = getRemoteEndpoint(serverAddr);
     m_connection = std::make_unique<TcpConnection>(clientSocket, localEndpoint, remoteEndpoint);
@@ -124,6 +128,7 @@ void TcpClient::disconnect()
 Endpoint TcpClient::localEndpoint() const
 {
     if (!m_running) {
+        TcpClientLogger::error("Cannot get local endpoint: client is not connected");
         return {};
     }
 
@@ -133,6 +138,7 @@ Endpoint TcpClient::localEndpoint() const
 Endpoint TcpClient::remoteEndpoint() const
 {
     if (!m_running) {
+        TcpClientLogger::error("Cannot get remote endpoint: client is not connected");
         return {};
     }
 
@@ -142,6 +148,7 @@ Endpoint TcpClient::remoteEndpoint() const
 std::error_code TcpClient::read(BytesVector& bytes, std::size_t size, osal::Timeout timeout)
 {
     if (!m_running) {
+        TcpClientLogger::error("Failed to read: client is not connected");
         return Error::eClientDisconnected;
     }
 
@@ -152,6 +159,7 @@ std::error_code
 TcpClient::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualReadSize, osal::Timeout timeout)
 {
     if (!m_running) {
+        TcpClientLogger::error("Failed to read: client is not connected");
         return Error::eClientDisconnected;
     }
 
@@ -161,6 +169,7 @@ TcpClient::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualReadSi
 std::error_code TcpClient::write(std::string_view text)
 {
     if (!m_running) {
+        TcpClientLogger::error("Failed to write: client is not connected");
         return Error::eClientDisconnected;
     }
 
@@ -170,6 +179,7 @@ std::error_code TcpClient::write(std::string_view text)
 std::error_code TcpClient::write(const BytesVector& bytes)
 {
     if (!m_running) {
+        TcpClientLogger::error("Failed to write: client is not connected");
         return Error::eClientDisconnected;
     }
 
@@ -179,6 +189,7 @@ std::error_code TcpClient::write(const BytesVector& bytes)
 std::error_code TcpClient::write(const std::uint8_t* bytes, std::size_t size)
 {
     if (!m_running) {
+        TcpClientLogger::error("Failed to write: client is not connected");
         return Error::eClientDisconnected;
     }
 

@@ -65,7 +65,8 @@ public:
     TcpServer(const TcpServer&) = delete;
 
     /// Move constructor.
-    TcpServer(TcpServer&&) = default;
+    /// @param other                    Object to be moved from.
+    TcpServer(TcpServer&& other) noexcept;
 
     /// Destructor. Automatically stops the server if it is still running during destruction.
     ~TcpServer();
