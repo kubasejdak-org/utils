@@ -30,45 +30,74 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <osal/sleep.hpp>
-#include <utils/network/Error.hpp>
-#include <utils/network/TcpConnection.hpp>
 #include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
-#include <fmt/printf.h>
 
-#include <cstdio>
-#include <string>
-
-TEST_CASE("1. Tests", "[unit][TcpServer]")
+TEST_CASE("1. Creating TCP/IP server multiple time on the same port", "[unit][TcpServer]")
 {
+    constexpr int cIterationsCount = 10;
     constexpr int cPort = 10101;
-    utils::network::TcpServer server(cPort);
-    auto result = server.setConnectionHandler([](utils::network::TcpConnection connection) {
-        std::vector<std::uint8_t> bytes;
-        while (connection.isParentRunning() && connection.isActive()) {
-            constexpr std::size_t cSize = 255;
-            if (auto error = connection.read(bytes, cSize, 100ms)) {
-                if (error == utils::network::Error::eTimeout)
-                    continue;
 
-                fmt::print("Read error: {}\n", error.message());
-                break;
-            }
-
-            fmt::print("Received: {}", std::string(bytes.begin(), bytes.end()));
-            if (auto error = connection.write(bytes)) {
-                fmt::print("Write error: {}\n", error.message());
-                break;
-            }
+    SECTION("1.1. Uninitialized server")
+    {
+        for (int i = 0; i < cIterationsCount; ++i) {
+            utils::network::TcpServer server;
+            REQUIRE(!server.isRunning());
         }
-    });
-    REQUIRE(result);
+    }
 
-    auto error = server.start();
-    REQUIRE(!error);
+    SECTION("1.2. Port initialized server")
+    {
+        for (int i = 0; i < cIterationsCount; ++i) {
+            utils::network::TcpServer server(cPort);
+            REQUIRE(!server.isRunning());
+        }
+    }
 
-    osal::sleep(20s);
-    server.stop();
+    SECTION("1.3. Fully initialized server")
+    {
+        constexpr int cMaxConnections = 6;
+        constexpr int cMaxPendingConnections = 20;
+        for (int i = 0; i < cIterationsCount; ++i) {
+            utils::network::TcpServer server(cPort, cMaxConnections, cMaxPendingConnections);
+            REQUIRE(!server.isRunning());
+        }
+    }
+}
+
+TEST_CASE("2. Starting TCP/IP server multiple times on the same port", "[unit][TcpServer]")
+{
+    constexpr int cIterationsCount = 10;
+    constexpr int cPort = 10101;
+
+    SECTION("2.1. Uninitialized server")
+    {
+        for (int i = 0; i < cIterationsCount; ++i) {
+            utils::network::TcpServer server;
+            REQUIRE(!server.isRunning());
+
+            auto error = server.start(cPort);
+            REQUIRE(!error);
+            REQUIRE(server.isRunning());
+
+            server.stop();
+            REQUIRE(!server.isRunning());
+        }
+    }
+
+    SECTION("2.2. Initialized server")
+    {
+        for (int i = 0; i < cIterationsCount; ++i) {
+            utils::network::TcpServer server;
+            REQUIRE(!server.isRunning());
+
+            auto error = server.start(cPort);
+            REQUIRE(!error);
+            REQUIRE(server.isRunning());
+
+            server.stop();
+            REQUIRE(!server.isRunning());
+        }
+    }
 }

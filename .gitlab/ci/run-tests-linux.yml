@@ -75,3 +75,13 @@ StateMachine_Linux_UT:
   extends: .Run_Test_Linux
   variables:
     TestTags: "[StateMachine]"
+
+TcpServer_Linux_ARM_UT:
+  extends: .Run_Test_Linux_ARM
+  variables:
+    TestTags: "[TcpServer]"
+
+TcpServer_Linux_UT:
+  extends: .Run_Test_Linux
+  variables:
+    TestTags: "[TcpServer]"
