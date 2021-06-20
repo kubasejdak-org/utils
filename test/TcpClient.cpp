@@ -30,51 +30,30 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include "utils/network/TcpConnection.hpp"
-#include "utils/network/types.hpp"
+#include <utils/network/Error.hpp>
+#include <utils/network/TcpClient.hpp>
 
-#include <osal/Timeout.hpp>
+#include <catch2/catch.hpp>
+#include <fmt/printf.h>
 
-#include <cstdint>
-#include <memory>
+#include <cstdio>
 #include <string>
-#include <system_error>
 
-namespace utils::network {
+TEST_CASE("1. Tests client", "[unit][TcpClient]")
+{
+    constexpr int cPort = 10101;
+    utils::network::TcpClient client("localhost", cPort);
 
-class TcpClient {
-public:
-    TcpClient();
-    TcpClient(std::string address, int port);
-    TcpClient(const TcpClient&) = delete;
-    TcpClient(TcpClient&& other) noexcept;
-    ~TcpClient();
-    TcpClient& operator=(const TcpClient&) = delete;
-    TcpClient& operator=(TcpClient&&) = delete;
+    auto error = client.connect();
+    REQUIRE(!error);
 
-    std::error_code connect();
-    std::error_code connect(std::string_view address, int port);
-    void disconnect();
+    client.write("HELLO, WORLD!\n");
 
-    [[nodiscard]] Endpoint localEndpoint() const;
-    [[nodiscard]] Endpoint remoteEndpoint() const;
+    std::vector<std::uint8_t> bytes;
+    constexpr std::size_t cSize = 255;
+    error = client.read(bytes, cSize, 5s);
+    if (error != utils::network::Error::eTimeout)
+        fmt::print("Received: {}\n", bytes.data());
 
-    std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
-    std::error_code read(std::uint8_t* bytes,
-                         std::size_t size,
-                         std::size_t& actualReadSize,
-                         osal::Timeout timeout = osal::Timeout::infinity());
-    std::error_code write(std::string_view text);
-    std::error_code write(const BytesVector& bytes);
-    std::error_code write(const std::uint8_t* bytes, std::size_t size);
-
-private:
-    static constexpr int m_cUninitialized = -1;
-
-    bool m_running{};
-    std::string m_address;
-    int m_port;
-    std::unique_ptr<TcpConnection> m_connection;
-};
-
-} // namespace utils::network
+    client.disconnect();
+}

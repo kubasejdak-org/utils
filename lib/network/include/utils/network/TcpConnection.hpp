@@ -111,13 +111,21 @@ public:
     /// Receives demanded number of bytes from the remote endpoint associated with this connection.
     /// @param bytes                Memory block where the received data will be placed by this method.
     /// @param size                 Number of bytes to be received from the remote endpoint.
-    /// @param timeout              Maximal time to wait for the data.
     /// @param actualReadSize       Actual number of received bytes.
+    /// @param timeout              Maximal time to wait for the data.
     /// @return Error code of the operation.
     /// @note This method assumes, that the output memory block has the proper capacity. After call to this
     ///       method the 'actualReadSize' parameter will indicate the actual number of received bytes.
     ///       It is also assumed, that output memory block is empty.
-    std::error_code read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout, std::size_t& actualReadSize);
+    std::error_code read(std::uint8_t* bytes,
+                         std::size_t size,
+                         std::size_t& actualReadSize,
+                         osal::Timeout timeout = osal::Timeout::infinity());
+
+    /// Sends given string to the remote endpoint associated with this connection.
+    /// @param text                 String to be sent.
+    /// @return Error code of the operation.
+    std::error_code write(std::string_view text);
 
     /// Sends given vector of bytes to the remote endpoint associated with this connection.
     /// @param bytes                Vector of raw bytes to be sent.

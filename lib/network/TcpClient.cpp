@@ -149,13 +149,22 @@ std::error_code TcpClient::read(BytesVector& bytes, std::size_t size, osal::Time
 }
 
 std::error_code
-TcpClient::read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout, std::size_t& actualReadSize)
+TcpClient::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualReadSize, osal::Timeout timeout)
 {
     if (!m_running) {
         return Error::eClientDisconnected;
     }
 
-    return m_connection->read(bytes, size, timeout, actualReadSize);
+    return m_connection->read(bytes, size, actualReadSize, timeout);
+}
+
+std::error_code TcpClient::write(std::string_view text)
+{
+    if (!m_running) {
+        return Error::eClientDisconnected;
+    }
+
+    return m_connection->write(text);
 }
 
 std::error_code TcpClient::write(const BytesVector& bytes)
