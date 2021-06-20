@@ -62,4 +62,17 @@ Endpoint getLocalEndpoint(int socket);
 /// @return Remote Endpoint created out of given sockaddr_in object.
 Endpoint getRemoteEndpoint(const sockaddr_in& addr);
 
+/// Validates given IP address according to the dotted-decimal format (ddd.ddd.ddd.ddd).
+/// @param ip               IP to be verified.
+/// @return Flag indicating if given string is a valid IP address.
+/// @retval true            Given string is a valid IP address.
+/// @retval false           Given string is not a valid IP address.
+bool isValidIp(std::string_view ip);
+
+/// Converts address (IP or hostname) to IP.
+/// @param address          Address to be converted.
+/// @return IP address converted from IP form or hostname form. On error empty string is returned
+/// @note If address is provided as IP, then no change is applied.
+std::string addressToIp(std::string_view address);
+
 } // namespace utils::network

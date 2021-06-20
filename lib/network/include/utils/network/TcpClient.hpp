@@ -30,75 +30,73 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
+#include "utils/network/TcpConnection.hpp"
 #include "utils/network/types.hpp"
 
 #include <osal/Timeout.hpp>
 
 #include <cstdint>
-#include <functional>
-#include <optional>
+#include <memory>
+#include <string>
 #include <system_error>
 
 namespace utils::network {
 
-/// Represents a TCP/IP network connection. This class should be used in user handlers to communicate with
-/// remote endpoint and control connection state on demand.
-class TcpConnection {
+/// Represents TCP/IP client allowing to handle one connection with the server.
+class TcpClient {
 public:
-    /// Type representing optional reference boolean flag.
-    using OptionalReferenceFlag = std::optional<std::reference_wrapper<bool>>;
+    /// Constructor. Creates na uninitialized TCP/IP client.
+    /// @note This constructor requires calling connect(address, port) overload for connecting with remote endpoint.
+    TcpClient();
 
-    /// Constructor.
-    /// @param socket               Socket, which is used in current connection.
-    /// @param localEndpoint        Description of the local endpoint.
-    /// @param remoteEndpoint       Description of the remote endpoint.
-    /// @param parentRunning        Optional reference to flag indicating if parent object is still running.
-    TcpConnection(int socket,
-                  Endpoint localEndpoint,
-                  Endpoint remoteEndpoint,
-                  OptionalReferenceFlag parentRunning = {});
+    /// Constructor. Creates na initialized TCP/IP client with given remote server address and port.
+    /// @param address          Address of the endpoint to which we want to connect to (can be both IP and hostname).
+    /// @param port             Address of the endpoint to which we want to connect to.
+    /// @note Even if client is created with this constructor it is allowed to call the connect(address, port) overload
+    ///       for connecting with remote endpoint. A typical use case is when you need to change IP/port in runtime.
+    TcpClient(std::string address, int port);
 
     /// Copy constructor.
-    /// @note This constructor is deleted, because TcpConnection is not meant to be copy-constructed.
-    TcpConnection(const TcpConnection&) = delete;
+    /// @note This constructor is deleted, because TcpClient is not meant to be copy-constructed.
+    TcpClient(const TcpClient&) = delete;
 
     /// Move constructor.
-    /// @param other                Object to be moved from.
-    TcpConnection(TcpConnection&& other) noexcept;
+    /// @param other            Object to be moved from.
+    TcpClient(TcpClient&& other) noexcept;
 
-    /// Destructor. Automatically closes the connection.
-    ~TcpConnection();
+    /// Destructor. Automatically disconnects if it is still connected during destruction.
+    ~TcpClient();
 
     /// Copy assignment operator.
     /// @return Reference to self.
-    /// @note This operator is deleted, because TcpConnection is not meant to be copy-assigned.
-    TcpConnection& operator=(const TcpConnection&) = delete;
+    /// @note This operator is deleted, because TcpClient is not meant to be copy-assigned.
+    TcpClient& operator=(const TcpClient&) = delete;
 
     /// Move assignment operator.
     /// @return Reference to self.
-    /// @note This operator is deleted, because TcpConnection is not meant to be move-assigned.
-    TcpConnection& operator=(TcpConnection&&) = delete;
+    /// @note This operator is deleted, because TcpClient is not meant to be move-assigned.
+    TcpClient& operator=(TcpClient&&) = delete;
+
+    /// Connects to the remote endpoint using address and port set in proper constructor.
+    /// @return Error code of the operation.
+    std::error_code connect();
+
+    /// Connects to the remote endpoint using given address and port.
+    /// @param address          Address of the endpoint to which we want to connect to (can be both IP and hostname).
+    /// @param port             Address of the endpoint to which we want to connect to.
+    /// @return Error code of the operation.
+    std::error_code connect(std::string_view address, int port);
+    void disconnect();
 
     /// Returns object representing local endpoint (this side of the connection).
     /// @return Object representing local endpoint (this side of the connection).
-    [[nodiscard]] Endpoint localEndpoint() const { return m_localEndpoint; };
+    [[nodiscard]] Endpoint localEndpoint() const;
 
     /// Returns object representing remote endpoint (other side of the connection).
     /// @return Object representing remote endpoint (other side of the connection).
-    [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; };
+    [[nodiscard]] Endpoint remoteEndpoint() const;
 
-    /// Returns flag indicating if parent (if any exists) is running.
-    /// @return Flag indicating if parent (if any exists) is running.
-    /// @note This method makes sense only for TcpServer side.
-    [[nodiscard]] bool isParentRunning() const { return m_cParentRunning && *m_cParentRunning; }
-
-    /// Returns flag indicating if this connection is still active. If not, then this object can and should be removed.
-    /// @return Flag indicating if this connection is still active.
-    [[nodiscard]] bool isActive() const { return m_socket != m_cUninitialized; }
-
-    /// Receives demanded number of bytes from the remote endpoint associated with this connection.
+    /// Receives demanded number of bytes from the remote endpoint associated with this client.
     /// @param bytes                Vector where the received data will be placed by this method.
     /// @param size                 Number of bytes to be received from the remote endpoint.
     /// @param timeout              Maximal time to wait for the data.
@@ -108,7 +106,7 @@ public:
     ///       to this method will indicate the actual number of read bytes.
     std::error_code read(BytesVector& bytes, std::size_t size, osal::Timeout timeout = osal::Timeout::infinity());
 
-    /// Receives demanded number of bytes from the remote endpoint associated with this connection.
+    /// Receives demanded number of bytes from the remote endpoint associated with this client.
     /// @param bytes                Memory block where the received data will be placed by this method.
     /// @param size                 Number of bytes to be received from the remote endpoint.
     /// @param actualReadSize       Actual number of received bytes.
@@ -122,33 +120,29 @@ public:
                          std::size_t& actualReadSize,
                          osal::Timeout timeout = osal::Timeout::infinity());
 
-    /// Sends given string to the remote endpoint associated with this connection.
+    /// Sends given string to the remote endpoint associated with this client.
     /// @param text                 String to be sent.
     /// @return Error code of the operation.
     std::error_code write(std::string_view text);
 
-    /// Sends given vector of bytes to the remote endpoint associated with this connection.
+    /// Sends given vector of bytes to the remote endpoint associated with this client.
     /// @param bytes                Vector of raw bytes to be sent.
     /// @return Error code of the operation.
     std::error_code write(const BytesVector& bytes);
 
-    /// Sends given memory block of bytes to the remote endpoint associated with this connection.
+    /// Sends given memory block of bytes to the remote endpoint associated with this client.
     /// @param bytes                Memory block of raw bytes to be sent.
     /// @param size                 Size of the memory block to be sent.
     /// @return Error code of the operation.
     std::error_code write(const std::uint8_t* bytes, std::size_t size);
 
-    /// Closes the connection.
-    /// @note After call to this method Connection object is unusable and should be removed.
-    void close();
-
 private:
     static constexpr int m_cUninitialized = -1;
 
-    int m_socket;
-    Endpoint m_localEndpoint;
-    Endpoint m_remoteEndpoint;
-    const OptionalReferenceFlag m_cParentRunning;
+    bool m_running{};
+    std::string m_address;
+    int m_port;
+    std::unique_ptr<TcpConnection> m_connection;
 };
 
 } // namespace utils::network

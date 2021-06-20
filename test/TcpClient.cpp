@@ -30,46 +30,30 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include "utils/network/Error.hpp"
+#include <utils/network/Error.hpp>
+#include <utils/network/TcpClient.hpp>
 
+#include <catch2/catch.hpp>
+#include <fmt/printf.h>
+
+#include <cstdio>
 #include <string>
 
-namespace utils::network {
-
-struct ErrorCategory : std::error_category {
-    [[nodiscard]] const char* name() const noexcept override;
-    [[nodiscard]] std::string message(int value) const override;
-};
-
-const char* ErrorCategory::name() const noexcept
+TEST_CASE("1. Tests client", "[unit][TcpClient]")
 {
-    return "utils::network";
-}
+    constexpr int cPort = 10101;
+    utils::network::TcpClient client("localhost", cPort);
 
-std::string ErrorCategory::message(int value) const
-{
-    switch (static_cast<Error>(value)) {
-        case Error::eOk: return "no error";
-        case Error::eInvalidArgument: return "invalid argument";
-        case Error::eNoMemory: return "no memory";
-        case Error::eSocketError: return "socket error";
-        case Error::eBindError: return "bind error";
-        case Error::eConnectError: return "connect error";
-        case Error::eClientRunning: return "client running";
-        case Error::eClientDisconnected: return "client disconnected";
-        case Error::eTimeout: return "timeout";
-        case Error::eServerRunning: return "server running";
-        case Error::eConnectionNotActive: return "connection not active";
-        case Error::eWriteError: return "write error";
-        default: return "(unrecognized error)";
-    }
-}
+    auto error = client.connect();
+    REQUIRE(!error);
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-std::error_code make_error_code(Error error)
-{
-    static const ErrorCategory cErrorCategory{};
-    return {static_cast<int>(error), cErrorCategory};
-}
+    client.write("HELLO, WORLD!\n");
 
-} // namespace utils::network
+    std::vector<std::uint8_t> bytes;
+    constexpr std::size_t cSize = 255;
+    error = client.read(bytes, cSize, 5s);
+    if (error != utils::network::Error::eTimeout)
+        fmt::print("Received: {}\n", bytes.data());
+
+    client.disconnect();
+}
