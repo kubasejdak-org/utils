@@ -83,13 +83,13 @@ std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::
     }
 
     std::size_t actualReadSize{};
-    auto error = read(bytes.data(), size, timeout, actualReadSize);
+    auto error = read(bytes.data(), size, actualReadSize, timeout);
     bytes.resize(actualReadSize);
     return error;
 }
 
 std::error_code
-TcpConnection::read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout, std::size_t& actualReadSize)
+TcpConnection::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualReadSize, osal::Timeout timeout)
 {
     if (!isActive()) {
         TcpConnectionLogger::error("read: Connection is not active");
@@ -141,7 +141,12 @@ TcpConnection::read(std::uint8_t* bytes, std::size_t size, osal::Timeout timeout
     }
 
     close();
-    return Error::eServerStopped;
+    return Error::eConnectionNotActive;
+}
+
+std::error_code TcpConnection::write(std::string_view text)
+{
+    return write(reinterpret_cast<const uint8_t*>(text.data()), text.size()); // NOLINT
 }
 
 std::error_code TcpConnection::write(const BytesVector& bytes)

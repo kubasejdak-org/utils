@@ -68,6 +68,18 @@ TcpServer::TcpServer(int port, int maxConnections, int maxPendingConnections)
     TcpServerLogger::info("  max pending connections : {}", m_maxPendingConnections);
 }
 
+TcpServer::TcpServer(TcpServer&& other) noexcept
+    : m_running(std::exchange(other.m_running, false))
+    , m_port(std::exchange(other.m_port, m_cUninitialized))
+    , m_maxConnections(other.m_maxConnections)
+    , m_maxPendingConnections(other.m_maxPendingConnections)
+    , m_connectionHandler(std::move(other.m_connectionHandler))
+    , m_startSemaphore(std::move(other.m_startSemaphore))
+    , m_connectionsSemaphore(std::move(other.m_connectionsSemaphore))
+    , m_listenThread(std::move(other.m_listenThread))
+    , m_connectionThreads(std::move(other.m_connectionThreads))
+{}
+
 TcpServer::~TcpServer()
 {
     stop();
@@ -103,7 +115,7 @@ std::error_code TcpServer::start(int port)
 
     m_port = port;
 
-    TcpServerLogger::info("Starting TCP/IP server with the following parameters:");
+    TcpServerLogger::info("Started TCP/IP server with the following parameters:");
     TcpServerLogger::info("  port : {}", m_port);
 
     assert(m_socket == -1);

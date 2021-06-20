@@ -45,10 +45,11 @@ enum class Error {
     eNoMemory,
     eSocketError,
     eBindError,
+    eConnectError,
+    eClientRunning,
     eClientDisconnected,
     eTimeout,
     eServerRunning,
-    eServerStopped,
     eConnectionNotActive,
     eWriteError
 };
