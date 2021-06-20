@@ -83,6 +83,9 @@ TEST_CASE("2. Starting TCP/IP server multiple times on the same port", "[unit][T
 
             server.stop();
             REQUIRE(!server.isRunning());
+
+            server.stop();
+            REQUIRE(!server.isRunning());
         }
     }
 
@@ -95,6 +98,9 @@ TEST_CASE("2. Starting TCP/IP server multiple times on the same port", "[unit][T
             auto error = server.start(cPort);
             REQUIRE(!error);
             REQUIRE(server.isRunning());
+
+            server.stop();
+            REQUIRE(!server.isRunning());
 
             server.stop();
             REQUIRE(!server.isRunning());

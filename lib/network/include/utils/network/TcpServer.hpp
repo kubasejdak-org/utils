@@ -92,7 +92,7 @@ public:
     /// @return Flag indicating if server has been started.
     /// @retval true                    Sever has been started.
     /// @retval false                   Server has not been started.
-    bool isRunning() const { return m_running; }
+    [[nodiscard]] bool isRunning() const { return m_running; }
 
     /// Starts TCP server. After call to this method a listening thread will be spawned and clients will be able to
     /// connected.
