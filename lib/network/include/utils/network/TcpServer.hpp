@@ -64,10 +64,10 @@ public:
     /// @note This constructor is deleted, because TcpServer is not meant to be copy-constructed.
     TcpServer(const TcpServer&) = delete;
 
-    /// Move constructor,
+    /// Move constructor.
     TcpServer(TcpServer&&) = default;
 
-    /// Destructor. Stops the server if it is still running during destruction.
+    /// Destructor. Automatically stops the server if it is still running during destruction.
     ~TcpServer();
 
     /// Copy assignment operator.

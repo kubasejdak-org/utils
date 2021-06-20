@@ -68,7 +68,7 @@ public:
     /// @param other                Object to be moved from.
     TcpConnection(TcpConnection&& other) noexcept;
 
-    /// Destructor.
+    /// Destructor. Automatically closes the connection.
     ~TcpConnection();
 
     /// Copy assignment operator.
