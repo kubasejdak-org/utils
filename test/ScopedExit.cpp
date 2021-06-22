@@ -97,3 +97,63 @@ TEST_CASE("2. Multiple ScopedExit calls", "[unit][ScopedExit]")
     REQUIRE(called3);
     REQUIRE(called4);
 }
+
+TEST_CASE("3. More complex logic of ScopedExit calls", "[unit][ScopedExit]")
+{
+    bool called1{};
+    bool called2{};
+    bool called3{};
+    bool called4{};
+
+    {
+        ON_EXIT([&] { called1 = true; });
+        REQUIRE(!called1);
+        REQUIRE(!called2);
+        REQUIRE(!called3);
+        REQUIRE(!called4);
+
+        {
+            ON_EXIT([&] { called2 = true; });
+            REQUIRE(!called1);
+            REQUIRE(!called2);
+            REQUIRE(!called3);
+            REQUIRE(!called4);
+
+            {
+                ON_EXIT([&] { called3 = true; });
+                REQUIRE(!called1);
+                REQUIRE(!called2);
+                REQUIRE(!called3);
+                REQUIRE(!called4);
+            }
+
+            REQUIRE(!called1);
+            REQUIRE(!called2);
+            REQUIRE(called3);
+            REQUIRE(!called4);
+
+            {
+                ON_EXIT([&] { called4 = true; });
+                REQUIRE(!called1);
+                REQUIRE(!called2);
+                REQUIRE(called3);
+                REQUIRE(!called4);
+            }
+
+            REQUIRE(!called1);
+            REQUIRE(!called2);
+            REQUIRE(called3);
+            REQUIRE(called4);
+        }
+
+        REQUIRE(!called1);
+        REQUIRE(called2);
+        REQUIRE(called3);
+        REQUIRE(called4);
+    }
+
+    REQUIRE(called1);
+    REQUIRE(called2);
+    REQUIRE(called3);
+    REQUIRE(called4);
+}

@@ -39,20 +39,49 @@
 
 namespace utils::functional {
 
+/// Function prototype that can be registered in ScopedExit callback. This method will be called when ScopedExit
+/// is actually destroyed.
 using ScopedExitCallback = std::function<void()>;
 
+/// Helper class that allows registering custom callback function to be called when given scope is finished.
+/// Scope end is determined by the lifetime of the ScopedExit object.
 class ScopedExit {
 public:
-    ScopedExit(ScopedExitCallback callback)
+    /// Constructor.
+    /// @param callback         Callback to be executed one this object is destroyed.
+    explicit ScopedExit(ScopedExitCallback callback)
         : m_callback(std::move(callback))
     {}
 
-    ~ScopedExit() { m_callback(); }
+    /// Copy constructor.
+    /// @note This constructor is deleted, because ScopedExit is not meant to be copy-constructed.
+    ScopedExit(const ScopedExit&) = delete;
+
+    /// Copy constructor.
+    /// @note This constructor is deleted, because ScopedExit is not meant to be move-constructed.
+    ScopedExit(ScopedExit&&) = delete;
+
+    /// Destructor. Executes user-defined callback.
+    ~ScopedExit()
+    {
+        if (m_callback)
+            m_callback();
+    }
+
+    /// Copy assignment operator.
+    /// @return Reference to self.
+    /// @note This operator is deleted, because ScopedExit is not meant to be copy-assigned.
+    ScopedExit& operator=(const ScopedExit&) = delete;
+
+    /// Move assignment operator.
+    /// @return Reference to self.
+    /// @note This operator is deleted, because ScopedExit is not meant to be move-assigned.
+    ScopedExit& operator=(ScopedExit&&) = delete;
 
 private:
     ScopedExitCallback m_callback;
 };
 
-#define ON_EXIT(callback)       utils::functional::ScopedExit UNIQUE_NAME(onExit)(callback)
-
 } // namespace utils::functional
+
+#define ON_EXIT(callback) utils::functional::ScopedExit UNIQUE_NAME(onExit)(callback) // NOLINT
