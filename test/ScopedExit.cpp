@@ -41,7 +41,7 @@ TEST_CASE("1. Single ScopedExit call", "[unit][ScopedExit]")
     SECTION("1.1. Explicit object creation")
     {
         {
-            utils::functional::ScopedExit onExit([&] { called = true; })
+            utils::functional::ScopedExit onExit([&] { called = true; });
             REQUIRE(!called);
         }
     }
@@ -67,10 +67,10 @@ TEST_CASE("2. Multiple ScopedExit calls", "[unit][ScopedExit]")
     SECTION("2.1. Explicit object creation")
     {
         {
-            utils::functional::ScopedExit onExit1([&] { called1 = true; })
-            utils::functional::ScopedExit onExit2([&] { called2 = true; })
-            utils::functional::ScopedExit onExit3([&] { called3 = true; })
-            utils::functional::ScopedExit onExit4([&] { called4 = true; })
+            utils::functional::ScopedExit onExit1([&] { called1 = true; });
+            utils::functional::ScopedExit onExit2([&] { called2 = true; });
+            utils::functional::ScopedExit onExit3([&] { called3 = true; });
+            utils::functional::ScopedExit onExit4([&] { called4 = true; });
             REQUIRE(!called1);
             REQUIRE(!called2);
             REQUIRE(!called3);
