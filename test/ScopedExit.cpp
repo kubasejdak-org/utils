@@ -57,14 +57,14 @@ TEST_CASE("1. Single ScopedExit call", "[unit][ScopedExit]")
     REQUIRE(called);
 }
 
-TEST_CASE("1. Multiple ScopedExit calls", "[unit][ScopedExit]")
+TEST_CASE("2. Multiple ScopedExit calls", "[unit][ScopedExit]")
 {
     bool called1{};
     bool called2{};
     bool called3{};
     bool called4{};
 
-    SECTION("1.1. Explicit object creation")
+    SECTION("2.1. Explicit object creation")
     {
         {
             utils::functional::ScopedExit onExit1([&] { called1 = true; })
@@ -78,7 +78,7 @@ TEST_CASE("1. Multiple ScopedExit calls", "[unit][ScopedExit]")
         }
     }
 
-    SECTION("1.2. Object creation with helper macro")
+    SECTION("2.2. Object creation with helper macro")
     {
         {
             ON_EXIT([&] { called1 = true; });
