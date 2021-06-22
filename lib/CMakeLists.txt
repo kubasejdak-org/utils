@@ -7,6 +7,7 @@ add_subdirectory(bits)
 add_subdirectory(fsm)
 add_subdirectory(functional)
 add_subdirectory(logger)
+add_subdirectory(preprocessor)
 add_subdirectory(registry)
 add_subdirectory(types)
 

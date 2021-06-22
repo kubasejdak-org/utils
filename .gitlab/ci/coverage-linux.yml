@@ -42,6 +42,11 @@ Property_Coverage:
   variables:
     Tags: "[property]"
 
+ScopedExit_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[ScopedExit]"
+
 StateMachine_Coverage:
   extends: .Linux_Coverage
   variables:
