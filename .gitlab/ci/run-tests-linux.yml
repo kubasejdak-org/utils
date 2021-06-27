@@ -86,6 +86,16 @@ StateMachine_Linux_UT:
   variables:
     TestTags: "[StateMachine]"
 
+TcpConnection_Linux_ARM_UT:
+  extends: .Run_Test_Linux_ARM
+  variables:
+    TestTags: "[TcpConnection]"
+
+TcpConnection_Linux_UT:
+  extends: .Run_Test_Linux
+  variables:
+    TestTags: "[TcpConnection]"
+
 TcpServer_Linux_ARM_UT:
   extends: .Run_Test_Linux_ARM
   variables:

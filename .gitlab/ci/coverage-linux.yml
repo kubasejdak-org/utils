@@ -52,6 +52,11 @@ StateMachine_Coverage:
   variables:
     Tags: "[StateMachine]"
 
+TcpConnection_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[TcpConnection]"
+
 TcpServer_Coverage:
   extends: .Linux_Coverage
   variables:
