@@ -37,6 +37,27 @@
 
 #include <catch2/catch.hpp>
 
+#include <cstdint>
+#include <limits>
+#include <random>
+#include <vector>
+
+template <typename T = std::size_t>
+T generateRandomNumber(T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max())
+{
+    std::random_device randomDevice;
+    std::mt19937 generator(randomDevice());
+    std::uniform_int_distribution<T> distribution(min, max);
+
+    return distribution(generator);
+}
+
+void generateRandomData(std::size_t size, utils::network::BytesVector& bytes)
+{
+    bytes.resize(size);
+    std::generate(bytes.begin(), bytes.end(), [] { return generateRandomNumber<std::uint8_t>(); });
+}
+
 TEST_CASE("1. Connect and disconnect from server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
@@ -79,5 +100,79 @@ TEST_CASE("1. Connect and disconnect from server", "[unit][TcpConnection]")
     REQUIRE(clientLocalEndpoint.name == serverRemoteEndpoint.name);
     REQUIRE(clientRemoteEndpoint.name == serverLocalEndpoint.name);
 
+    client.disconnect();
+}
+
+TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+
+    utils::network::TcpServer server(cPort);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            if (auto error = connection.read(bytes, cMaxSize, 100ms)) {
+                if (error == utils::network::Error::eTimeout)
+                    continue;
+            }
+
+            if (connection.write(bytes))
+                break;
+        }
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    osal::sleep(10ms);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    osal::sleep(5ms);
+
+    std::size_t toSend{};
+
+    SECTION("2.1. Send 0 B.")
+    {
+        toSend = 0;
+    }
+
+    SECTION("2.2. Send 1 B.")
+    {
+        toSend = 1;
+    }
+
+    SECTION("2.3. Send 4 KB.")
+    {
+        constexpr std::size_t cToSend = 4 * 1024;
+        toSend = cToSend;
+    }
+
+//    SECTION("2.4. Send 897987 B.")
+//    {
+//        constexpr std::size_t cToSend = 897987;
+//        toSend = cToSend;
+//    }
+
+    while (toSend != 0) {
+        auto size = std::min(toSend, generateRandomNumber<std::size_t>(0, cMaxSize));
+        std::vector<std::uint8_t> writeBytes;
+        generateRandomData(size, writeBytes);
+
+        error = client.write(writeBytes);
+        REQUIRE(!error);
+
+        std::vector<std::uint8_t> readBytes;
+        error = client.read(readBytes, size);
+        REQUIRE(!error);
+        REQUIRE(readBytes == writeBytes);
+
+        toSend -= size;
+    }
+
+    osal::sleep(10ms);
     client.disconnect();
 }
