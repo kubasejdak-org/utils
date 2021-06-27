@@ -34,7 +34,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("1. Invalid data given to getLocalEndpoint()", "[unit][NetworkTypes]")
+TEST_CASE("1. Invalid data given to getLocalEndpoint()", "[unit][TcpConnection]")
 {
     auto endpoint = utils::network::getLocalEndpoint(-1);
     REQUIRE(endpoint.ip.empty());
@@ -42,7 +42,7 @@ TEST_CASE("1. Invalid data given to getLocalEndpoint()", "[unit][NetworkTypes]")
     REQUIRE(!endpoint.name);
 }
 
-TEST_CASE("2. Checking if IP is valid", "[unit][NetworkTypes]")
+TEST_CASE("2. Checking if IP is valid", "[unit][TcpConnection]")
 {
     REQUIRE(utils::network::isValidIp("127.0.0.1"));
     REQUIRE(utils::network::isValidIp("192.168.0.15"));
@@ -53,7 +53,7 @@ TEST_CASE("2. Checking if IP is valid", "[unit][NetworkTypes]")
     REQUIRE(!utils::network::isValidIp("-1.-1.-1.-1"));
 }
 
-TEST_CASE("3. Resolving address to IP", "[unit][NetworkTypes]")
+TEST_CASE("3. Resolving address to IP", "[unit][TcpConnection]")
 {
     REQUIRE(utils::network::addressToIp("127.0.0.1") == "127.0.0.1");
     REQUIRE(utils::network::addressToIp("192.168.0.15") == "192.168.0.15");
