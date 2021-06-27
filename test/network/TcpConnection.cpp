@@ -115,6 +115,8 @@ TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
             if (auto error = connection.read(bytes, cMaxSize, 100ms)) {
                 if (error == utils::network::Error::eTimeout)
                     continue;
+
+                break;
             }
 
             if (connection.write(bytes))
@@ -145,11 +147,11 @@ TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
         toSend = cToSend;
     }
 
-    //    SECTION("2.4. Send 897987 B.")
-    //    {
-    //        constexpr std::size_t cToSend = 897987;
-    //        toSend = cToSend;
-    //    }
+    SECTION("2.4. Send 897987 B.")
+    {
+        constexpr std::size_t cToSend = 897987;
+        toSend = cToSend;
+    }
 
     while (toSend != 0) {
         auto size = std::min(toSend, generateRandomNumber<std::size_t>(0, cMaxSize));
