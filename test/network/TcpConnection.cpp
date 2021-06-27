@@ -41,10 +41,14 @@ TEST_CASE("1. Connect and disconnect from server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     bool connected{};
+    utils::network::Endpoint serverLocalEndpoint{};
+    utils::network::Endpoint serverRemoteEndpoint{};
 
     utils::network::TcpServer server(cPort);
     server.setConnectionHandler([&](utils::network::TcpConnection connection) {
         connected = true;
+        serverLocalEndpoint = connection.localEndpoint();
+        serverRemoteEndpoint = connection.remoteEndpoint();
 
         while (connection.isParentRunning() && connection.isActive())
             osal::sleep(1ms);
@@ -60,7 +64,20 @@ TEST_CASE("1. Connect and disconnect from server", "[unit][TcpConnection]")
     REQUIRE(!error);
 
     osal::sleep(5ms);
-    client.disconnect();
-
     REQUIRE(connected);
+
+    auto clientLocalEndpoint = client.localEndpoint();
+    auto clientRemoteEndpoint = client.remoteEndpoint();
+    REQUIRE(clientLocalEndpoint.ip == "127.0.0.1");
+    REQUIRE(clientRemoteEndpoint.ip == "127.0.0.1");
+    REQUIRE(*clientLocalEndpoint.name == "localhost");
+    REQUIRE(*clientRemoteEndpoint.name == "localhost");
+    REQUIRE(clientLocalEndpoint.ip == serverRemoteEndpoint.ip);
+    REQUIRE(clientRemoteEndpoint.ip == serverLocalEndpoint.ip);
+    REQUIRE(clientLocalEndpoint.port == serverRemoteEndpoint.port);
+    REQUIRE(clientRemoteEndpoint.port == serverLocalEndpoint.port);
+    REQUIRE(clientLocalEndpoint.name == serverRemoteEndpoint.name);
+    REQUIRE(clientRemoteEndpoint.name == serverLocalEndpoint.name);
+
+    client.disconnect();
 }

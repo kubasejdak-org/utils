@@ -65,6 +65,7 @@ TcpConnection::TcpConnection(int socket,
 
 TcpConnection::TcpConnection(TcpConnection&& other) noexcept
     : m_socket(std::exchange(other.m_socket, m_cUninitialized))
+    , m_localEndpoint(std::move(other.m_localEndpoint))
     , m_remoteEndpoint(std::move(other.m_remoteEndpoint))
     , m_cParentRunning(other.m_cParentRunning)
 {}

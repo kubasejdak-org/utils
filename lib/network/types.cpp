@@ -64,7 +64,7 @@ static Endpoint sockaddrToEndpoint(const sockaddr_in& addr)
                     0,
                     NI_NAMEREQD)
         == 0)
-        endpoint.name = std::string(name.begin(), name.end());
+        endpoint.name = std::string(name.data());
 
     return endpoint;
 }
