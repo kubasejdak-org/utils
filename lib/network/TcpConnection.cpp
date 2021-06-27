@@ -98,6 +98,9 @@ TcpConnection::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualRe
         return Error::eConnectionNotActive;
     }
 
+    if (size == 0)
+        return Error::eOk;
+
     if (bytes == nullptr) {
         TcpConnectionLogger::error("read: Bytes pointer is nullptr");
         return Error::eInvalidArgument;
@@ -163,13 +166,13 @@ std::error_code TcpConnection::write(const std::uint8_t* bytes, std::size_t size
         return Error::eConnectionNotActive;
     }
 
+    if (size == 0)
+        return Error::eOk;
+
     if (bytes == nullptr) {
         TcpConnectionLogger::error("write: Bytes pointer is nullptr");
         return Error::eInvalidArgument;
     }
-
-    if (size == 0)
-        return Error::eOk;
 
     auto toWrite = size;
     while (toWrite != 0) {
