@@ -135,15 +135,9 @@ TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
 
     std::size_t toSend{};
 
-    SECTION("2.1. Send 0 B.")
-    {
-        toSend = 0;
-    }
+    SECTION("2.1. Send 0 B.") { toSend = 0; }
 
-    SECTION("2.2. Send 1 B.")
-    {
-        toSend = 1;
-    }
+    SECTION("2.2. Send 1 B.") { toSend = 1; }
 
     SECTION("2.3. Send 4 KB.")
     {
@@ -151,11 +145,11 @@ TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
         toSend = cToSend;
     }
 
-//    SECTION("2.4. Send 897987 B.")
-//    {
-//        constexpr std::size_t cToSend = 897987;
-//        toSend = cToSend;
-//    }
+    //    SECTION("2.4. Send 897987 B.")
+    //    {
+    //        constexpr std::size_t cToSend = 897987;
+    //        toSend = cToSend;
+    //    }
 
     while (toSend != 0) {
         auto size = std::min(toSend, generateRandomNumber<std::size_t>(0, cMaxSize));
