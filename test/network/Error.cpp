@@ -37,7 +37,7 @@
 #include <string_view>
 #include <system_error>
 
-TEST_CASE("1. Errors have proper human readable messages", "[unit][error]")
+TEST_CASE("4. Errors have proper human readable messages", "[unit][TcpConnection]")
 {
     const std::string_view cUnrecognizedMsg = "(unrecognized error)";
     constexpr int cErrorsCount = 12;

@@ -58,7 +58,7 @@ void generateRandomData(std::size_t size, utils::network::BytesVector& bytes)
     std::generate(bytes.begin(), bytes.end(), [] { return generateRandomNumber<std::uint8_t>(); });
 }
 
-TEST_CASE("4. Connect and disconnect from server", "[unit][TcpConnection]")
+TEST_CASE("5. Connect and disconnect from server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     bool connected{};
@@ -103,7 +103,7 @@ TEST_CASE("4. Connect and disconnect from server", "[unit][TcpConnection]")
     client.disconnect();
 }
 
-TEST_CASE("5. Simple server echo test", "[unit][TcpConnection]")
+TEST_CASE("6. Simple server echo test", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -137,17 +137,17 @@ TEST_CASE("5. Simple server echo test", "[unit][TcpConnection]")
 
     std::size_t toSend{};
 
-    SECTION("5.1. Send 0 B.") { toSend = 0; }
+    SECTION("6.1. Send 0 B.") { toSend = 0; }
 
-    SECTION("5.2. Send 1 B.") { toSend = 1; }
+    SECTION("6.2. Send 1 B.") { toSend = 1; }
 
-    SECTION("5.3. Send 4 KB.")
+    SECTION("6.3. Send 4 KB.")
     {
         constexpr std::size_t cToSend = 4 * 1024;
         toSend = cToSend;
     }
 
-    SECTION("5.4. Send 897987 B.")
+    SECTION("6.4. Send 897987 B.")
     {
         constexpr std::size_t cToSend = 897987;
         toSend = cToSend;
