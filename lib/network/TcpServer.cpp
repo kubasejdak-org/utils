@@ -36,6 +36,7 @@
 #include "utils/network/logger.hpp"
 #include "utils/network/types.hpp"
 
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <osal/timestamp.h>
 #include <sys/socket.h>
@@ -122,6 +123,12 @@ std::error_code TcpServer::start(int port)
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socket == -1) {
         TcpServerLogger::error("Failed to create AF_INET socket: {}", strerror(errno));
+        return Error::eSocketError;
+    }
+
+    if (fcntl(m_socket, F_SETFD, FD_CLOEXEC) == -1) {
+        TcpServerLogger::error("Failed to set FD_CLOEXEC flag in socket: {}", strerror(errno));
+        closeSocket();
         return Error::eSocketError;
     }
 
