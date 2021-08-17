@@ -129,7 +129,7 @@ std::error_code TcpServer::start(int port)
     if (fcntl(m_socket, F_SETFD, FD_CLOEXEC) == -1) {
         TcpServerLogger::error("Failed to set FD_CLOEXEC flag in socket: {}", strerror(errno));
         closeSocket();
-        return false;
+        return Error::eSocketError;
     }
 
     sockaddr_in addr{};
