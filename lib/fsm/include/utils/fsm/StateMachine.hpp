@@ -36,7 +36,7 @@
 #include <osal/ScopedLock.hpp>
 #include <utils/fsm/IState.hpp>
 #include <utils/fsm/logger.hpp>
-#include <utils/functional/ExecuteAround.hpp>
+#include <utils/functional/ExecAround.hpp>
 
 #include <cassert>
 #include <functional>
