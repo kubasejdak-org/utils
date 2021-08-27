@@ -50,8 +50,8 @@
     using LoggerType = utils::logger::ModuleLogger<LoggerType##Tag, logLevel, loggerCreator> // NOLINT
 
 #ifdef APPLICATION_LOGGER
-    #if __has_include("ApplicationLogger.h")
-        #include "ApplicationLogger.h"
+    #if __has_include("ApplicationLogger.hpp")
+        #include "ApplicationLogger.hpp"
     #endif
 
     // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
