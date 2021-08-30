@@ -15,7 +15,7 @@ target_include_directories(apputils-tests
     PRIVATE .
 )
 
-conan_get(REQUIRES catch2/2.13.6 fmt/7.1.3 OPTIONS fmt:header_only=True)
+conan_get(REQUIRES catch2/2.13.7 fmt/8.0.1 OPTIONS fmt:header_only=True)
 find_package(Catch2 REQUIRED)
 find_package(fmt REQUIRED)
 
