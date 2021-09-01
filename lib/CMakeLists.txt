@@ -10,6 +10,7 @@ add_subdirectory(logger)
 add_subdirectory(preprocessor)
 add_subdirectory(registry)
 add_subdirectory(types)
+add_subdirectory(watchdog)
 
 if (OSAL_PLATFORM STREQUAL linux)
     add_subdirectory(network)

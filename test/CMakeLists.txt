@@ -3,12 +3,13 @@ add_subdirectory(init)
 # Object library type is used to prevent compiler from removing unit test functions from the binary.
 add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
-    bits.cpp
-    GlobalRegistry.cpp
-    Logger.cpp
-    property.cpp
-    ScopedExit.cpp
-    StateMachine.cpp
+#    bits.cpp
+#    GlobalRegistry.cpp
+#    Logger.cpp
+#    property.cpp
+#    ScopedExit.cpp
+#    StateMachine.cpp
+    Watchdog.cpp
 )
 
 target_include_directories(apputils-tests
@@ -31,8 +32,9 @@ target_compile_definitions(Catch2::Catch2
 target_link_libraries(apputils-tests
     PUBLIC platform-init
     PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::types utils::bits utils::fsm utils::functional
+            utils::watchdog
 )
 
-if (OSAL_PLATFORM STREQUAL linux)
-    add_subdirectory(network)
-endif ()
+#if (OSAL_PLATFORM STREQUAL linux)
+#    add_subdirectory(network)
+#endif ()
