@@ -40,12 +40,10 @@
 #include <chrono>
 #include <string>
 
-struct Client
-{
+struct Client {
     std::chrono::milliseconds timeout{};
     bool expired{};
     osal::Timestamp end;
-
 };
 
 TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
@@ -93,11 +91,8 @@ TEST_CASE("2. Multiple identical timeouts without resetting", "[unit][Watchdog]"
 
     SECTION("2.3. Timeout 3 s") { timeout = 3s; }
 
-    std::map<std::string, Client> clientData = {
-        {"test1", {timeout, false, {}}},
-        {"test2", {timeout, false, {}}},
-        {"test3", {timeout, false, {}}}
-    };
+    std::map<std::string, Client> clientData
+        = {{"test1", {timeout, false, {}}}, {"test2", {timeout, false, {}}}, {"test3", {timeout, false, {}}}};
 
     auto timeoutHandler = [&](std::string_view client) {
         clientData[client.data()].expired = true;
