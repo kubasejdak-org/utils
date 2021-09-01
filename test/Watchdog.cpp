@@ -100,9 +100,8 @@ TEST_CASE("2. Multiple identical timeouts without resetting", "[unit][Watchdog]"
     };
 
     utils::watchdog::Watchdog watchdog;
-    for (const auto& client : clientData) {
+    for (const auto& client : clientData)
         watchdog.registerClient(client.first, timeoutHandler, timeout);
-    }
 
     auto start = osal::timestamp();
     watchdog.start();
