@@ -51,3 +51,8 @@ TcpServer_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
     TestTags: "[TcpServer]"
+
+Watchdog_Linux_Valgrind:
+  extends: .Run_Valgrind_Linux
+  variables:
+    TestTags: "[Watchdog]"
