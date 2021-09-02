@@ -59,29 +59,41 @@ TEST_CASE("1. Calling watchdog functions in wrong state", "[unit][Watchdog]")
 
     SECTION("1.2. Watchdog is already started")
     {
-        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(watchdog.registerClient(
+            "client1",
+            [](std::string_view /*unused*/) {},
+            1s));
         REQUIRE(watchdog.start());
 
         REQUIRE(!watchdog.start());
-        REQUIRE(!watchdog.registerClient("client2", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(!watchdog.registerClient(
+            "client2",
+            [](std::string_view /*unused*/) {},
+            1s));
 
         REQUIRE(watchdog.stop());
     }
 
-    SECTION("1.3. Watchdog has no clients")
-    {
-        REQUIRE(!watchdog.start());
-    }
+    SECTION("1.3. Watchdog has no clients") { REQUIRE(!watchdog.start()); }
 
     SECTION("1.4. Client is already registered")
     {
-        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
-        REQUIRE(!watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(watchdog.registerClient(
+            "client1",
+            [](std::string_view /*unused*/) {},
+            1s));
+        REQUIRE(!watchdog.registerClient(
+            "client1",
+            [](std::string_view /*unused*/) {},
+            1s));
     }
 
     SECTION("1.5. No such client")
     {
-        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(watchdog.registerClient(
+            "client1",
+            [](std::string_view /*unused*/) {},
+            1s));
         REQUIRE(watchdog.start());
 
         REQUIRE(!watchdog.reset("client2"));
