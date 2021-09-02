@@ -126,7 +126,7 @@ TEST_CASE("2. Timeouts without resetting", "[unit][Watchdog]")
 
     auto start = osal::timestamp();
     watchdog.start();
-    osal::sleep(timeout + 1ms);
+    osal::sleep(timeout + 2ms);
     watchdog.stop();
 
     auto elapsed = clientData.end - start;
@@ -134,7 +134,7 @@ TEST_CASE("2. Timeouts without resetting", "[unit][Watchdog]")
 
     REQUIRE(clientData.timeoutCounter == 1);
     REQUIRE(elapsed >= timeout);
-    REQUIRE(elapsed <= (timeout + 1ms));
+    REQUIRE(elapsed <= (timeout + 2ms));
     REQUIRE(timedOutClient == client);
 }
 
@@ -162,7 +162,7 @@ TEST_CASE("3. Multiple identical timeouts without resetting", "[unit][Watchdog]"
 
     auto start = osal::timestamp();
     watchdog.start();
-    osal::sleep(timeout + 1ms);
+    osal::sleep(timeout + 2ms);
     watchdog.stop();
 
     for (const auto& [name, data] : clientData) {
@@ -171,7 +171,7 @@ TEST_CASE("3. Multiple identical timeouts without resetting", "[unit][Watchdog]"
 
         REQUIRE(data.timeoutCounter == 1);
         REQUIRE(elapsed >= timeout);
-        REQUIRE(elapsed <= (timeout + 1ms));
+        REQUIRE(elapsed <= (timeout + 2ms));
     }
 }
 
