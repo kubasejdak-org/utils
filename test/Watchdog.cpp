@@ -422,7 +422,7 @@ TEST_CASE("8. Multiple watchdogs, resetting only half of them", "[unit][Watchdog
         watchdog.reset("test3");
     }
 
-    osal::sleep(5ms);
+    osal::sleep(10ms);
     watchdog.stop();
     auto end = osal::timestamp();
     auto elapsed = end - start;
