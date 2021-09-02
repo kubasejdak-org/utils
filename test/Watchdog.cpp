@@ -434,7 +434,9 @@ TEST_CASE("8. Multiple watchdogs, resetting only half of them", "[unit][Watchdog
         fmt::print("{}: {}\n", name, data.timeoutCounter);
 
     REQUIRE(clientData["test1"].timeoutCounter == 0);
-    REQUIRE(clientData["test2"].timeoutCounter == expiredCount);
+    REQUIRE(clientData["test2"].timeoutCounter <= expiredCount);
+    REQUIRE(clientData["test2"].timeoutCounter >= expiredCount - 1);
     REQUIRE(clientData["test3"].timeoutCounter == 0);
-    REQUIRE(clientData["test4"].timeoutCounter == expiredCount);
+    REQUIRE(clientData["test4"].timeoutCounter <= expiredCount);
+    REQUIRE(clientData["test4"].timeoutCounter >= expiredCount - 1);
 }
