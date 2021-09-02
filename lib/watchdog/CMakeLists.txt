@@ -1,5 +1,4 @@
 add_library(utils-watchdog EXCLUDE_FROM_ALL
-    Error.cpp
     Watchdog.cpp
 )
 add_library(utils::watchdog ALIAS utils-watchdog)

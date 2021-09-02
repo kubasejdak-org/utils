@@ -157,7 +157,6 @@ std::error_code TcpServer::start(int port)
         return Error::eTimeout;
     }
 
-    m_running = true;
     return Error::eOk;
 }
 

@@ -49,8 +49,10 @@ Watchdog::Watchdog(std::string_view name)
 
 bool Watchdog::registerClient(std::string_view clientName, WatchdogCallback callback, osal::Timeout timeout)
 {
-    if (m_running)
+    if (m_running) {
+        WatchdogLogger::error("<{}> Watchdog is already started", m_name);
         return false;
+    }
 
     if (m_clients.find(clientName.data()) != m_clients.end()) {
         WatchdogLogger::error("<{}> Client already registered: name={}", m_name, clientName);
@@ -65,21 +67,39 @@ bool Watchdog::registerClient(std::string_view clientName, WatchdogCallback call
 
 bool Watchdog::start()
 {
-    if (m_running)
+    if (m_running) {
+        WatchdogLogger::error("<{}> Watchdog is already started", m_name);
         return false;
+    }
+
+    if (m_clients.empty()) {
+        WatchdogLogger::error("<{}> Watchdog has no registered clients", m_name);
+        return false;
+    }
 
     for (auto& clientData : m_clients)
         clientData.second.timeout.reset();
 
-    m_thread.start([this] { threadFunc(); });
-    WatchdogLogger::info("<{}> Watchdog started", m_name);
+    if (auto error = m_thread.start([this] { threadFunc(); })) {
+        WatchdogLogger::error("Failed to start watchdog thread: err={}", error.message());
+        return false;
+    }
+
+    constexpr auto cStartupTimeout = 1s;
+    if (m_startSemaphore.timedWait(cStartupTimeout)) {
+        WatchdogLogger::error("Timeout in watchdog thread startup");
+        return false;
+    }
+
     return true;
 }
 
 bool Watchdog::stop()
 {
-    if (!m_running)
+    if (!m_running) {
+        WatchdogLogger::error("<{}> Watchdog is not started", m_name);
         return false;
+    }
 
     m_running = false;
     m_semaphore.signal();
@@ -90,8 +110,10 @@ bool Watchdog::stop()
 
 bool Watchdog::reset(std::string_view clientName)
 {
-    if (!m_running)
+    if (!m_running) {
+        WatchdogLogger::error("<{}> Watchdog is not started", m_name);
         return false;
+    }
 
     if (m_clients.find(clientName.data()) == m_clients.end()) {
         WatchdogLogger::error("<{}> Client not registered: name={}", m_name, clientName);
@@ -107,6 +129,9 @@ bool Watchdog::reset(std::string_view clientName)
 void Watchdog::threadFunc()
 {
     m_running = true;
+    m_startSemaphore.signal();
+
+    WatchdogLogger::info("<{}> Watchdog started", m_name);
 
     auto timeoutComparator
         = [](const auto& a, const auto& b) { return a.second.timeout.timeLeft() < b.second.timeout.timeLeft(); };

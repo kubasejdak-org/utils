@@ -47,20 +47,58 @@ struct Client {
     osal::Timestamp end;
 };
 
-TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
+TEST_CASE("1. Calling watchdog functions in wrong state", "[unit][Watchdog]")
 {
+    utils::watchdog::Watchdog watchdog("TestWdg");
 
+    SECTION("1.1. Watchdog is not started")
+    {
+        REQUIRE(!watchdog.stop());
+        REQUIRE(!watchdog.reset("client1"));
+    }
+
+    SECTION("1.2. Watchdog is already started")
+    {
+        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(watchdog.start());
+
+        REQUIRE(!watchdog.start());
+        REQUIRE(!watchdog.registerClient("client2", [](std::string_view /*unused*/) {}, 1s));
+
+        REQUIRE(watchdog.stop());
+    }
+
+    SECTION("1.3. Watchdog has no clients")
+    {
+        REQUIRE(!watchdog.start());
+    }
+
+    SECTION("1.4. Client is already registered")
+    {
+        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(!watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+    }
+
+    SECTION("1.5. No such client")
+    {
+        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(watchdog.start());
+
+        REQUIRE(!watchdog.reset("client2"));
+
+        REQUIRE(watchdog.stop());
+    }
 }
 
-TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
+TEST_CASE("2. Timeouts without resetting", "[unit][Watchdog]")
 {
     std::chrono::milliseconds timeout;
 
-    SECTION("1.1. Timeout 300 ms") { timeout = 300ms; }
+    SECTION("2.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("1.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("2.2. Timeout 10 ms") { timeout = 10ms; }
 
-    SECTION("1.3. Timeout 3 s") { timeout = 3s; }
+    SECTION("2.3. Timeout 3 s") { timeout = 3s; }
 
     Client clientData{};
     std::string timedOutClient;
@@ -79,23 +117,24 @@ TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
     osal::sleep(timeout + 1ms);
     watchdog.stop();
 
-    fmt::print("end - start : {}\n", (clientData.end - start).count());
+    auto elapsed = clientData.end - start;
+    fmt::print("end - start : {}\n", elapsed.count());
 
     REQUIRE(clientData.timeoutCounter == 1);
-    REQUIRE((clientData.end - start) >= timeout);
-    REQUIRE((clientData.end - start) <= (timeout + 1ms));
+    REQUIRE(elapsed >= timeout);
+    REQUIRE(elapsed <= (timeout + 1ms));
     REQUIRE(timedOutClient == client);
 }
 
-TEST_CASE("2. Multiple identical timeouts without resetting", "[unit][Watchdog]")
+TEST_CASE("3. Multiple identical timeouts without resetting", "[unit][Watchdog]")
 {
     std::chrono::milliseconds timeout;
 
-    SECTION("2.1. Timeout 300 ms") { timeout = 300ms; }
+    SECTION("3.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("2.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("3.2. Timeout 10 ms") { timeout = 10ms; }
 
-    SECTION("2.3. Timeout 3 s") { timeout = 3s; }
+    SECTION("3.3. Timeout 3 s") { timeout = 3s; }
 
     std::map<std::string, Client> clientData
         = {{"test1", {timeout, 0, {}}}, {"test2", {timeout, 0, {}}}, {"test3", {timeout, 0, {}}}};
@@ -115,23 +154,24 @@ TEST_CASE("2. Multiple identical timeouts without resetting", "[unit][Watchdog]"
     watchdog.stop();
 
     for (const auto& [name, data] : clientData) {
-        fmt::print("{}: end - start : {}\n", name, (data.end - start).count());
+        auto elapsed = data.end - start;
+        fmt::print("{}: end - start : {}\n", name, elapsed.count());
 
         REQUIRE(data.timeoutCounter == 1);
-        REQUIRE((data.end - start) >= timeout);
-        REQUIRE((data.end - start) <= (timeout + 1ms));
+        REQUIRE(elapsed >= timeout);
+        REQUIRE(elapsed <= (timeout + 1ms));
     }
 }
 
-TEST_CASE("3. Resetting single watchdog before timeout", "[unit][Watchdog]")
+TEST_CASE("4. Resetting single watchdog before timeout", "[unit][Watchdog]")
 {
     std::chrono::milliseconds timeout;
 
-    SECTION("3.1. Timeout 300 ms") { timeout = 300ms; }
+    SECTION("4.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("3.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("4.2. Timeout 10 ms") { timeout = 10ms; }
 
-    SECTION("3.3. Timeout 3 s") { timeout = 3s; }
+    SECTION("4.3. Timeout 3 s") { timeout = 3s; }
 
     Client clientData{};
     std::string timedOutClient;
@@ -156,15 +196,15 @@ TEST_CASE("3. Resetting single watchdog before timeout", "[unit][Watchdog]")
     REQUIRE(clientData.timeoutCounter == 0);
 }
 
-TEST_CASE("4. Resetting multiple identical watchdogs before timeout", "[unit][Watchdog]")
+TEST_CASE("5. Resetting multiple identical watchdogs before timeout", "[unit][Watchdog]")
 {
     std::chrono::milliseconds timeout;
 
-    SECTION("4.1. Timeout 300 ms") { timeout = 300ms; }
+    SECTION("5.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("4.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("5.2. Timeout 10 ms") { timeout = 10ms; }
 
-    SECTION("4.3. Timeout 3 s") { timeout = 3s; }
+    SECTION("5.3. Timeout 3 s") { timeout = 3s; }
 
     std::map<std::string, Client> clientData
         = {{"test1", {timeout, 0, {}}}, {"test2", {timeout, 0, {}}}, {"test3", {timeout, 0, {}}}};
@@ -192,7 +232,7 @@ TEST_CASE("4. Resetting multiple identical watchdogs before timeout", "[unit][Wa
         REQUIRE(data.timeoutCounter == 0);
 }
 
-TEST_CASE("5. Resetting multiple watchdogs in separate threads before timeout, fixed scenario", "[unit][Watchdog]")
+TEST_CASE("6. Resetting multiple watchdogs in separate threads before timeout, fixed scenario", "[unit][Watchdog]")
 {
     std::map<std::string, Client> clientData
         = {{"test1", {400ms, 0, {}}}, {"test2", {400ms, 0, {}}}, {"test3", {300ms, 0, {}}}};
@@ -289,7 +329,7 @@ TEST_CASE("5. Resetting multiple watchdogs in separate threads before timeout, f
         REQUIRE(data.timeoutCounter == 0);
 }
 
-TEST_CASE("5. Resetting multiple identical watchdogs in separate threads, fixed scenario", "[unit][Watchdog]")
+TEST_CASE("7. Resetting multiple identical watchdogs in separate threads, fixed scenario", "[unit][Watchdog]")
 {
     auto timeout = 100ms;
     std::map<std::string, Client> clientData
@@ -343,7 +383,7 @@ TEST_CASE("5. Resetting multiple identical watchdogs in separate threads, fixed 
         REQUIRE(data.timeoutCounter == 0);
 }
 
-TEST_CASE("6. Multiple watchdogs, resetting only half of them", "[unit][Watchdog]")
+TEST_CASE("8. Multiple watchdogs, resetting only half of them", "[unit][Watchdog]")
 {
     auto timeout = 100ms;
     std::map<std::string, Client> clientData = {{"test1", {timeout, 0, {}}},

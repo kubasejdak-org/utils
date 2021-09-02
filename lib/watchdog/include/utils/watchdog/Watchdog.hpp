@@ -40,21 +40,49 @@
 
 namespace utils::watchdog {
 
+/// Alias for type representing callback when watchdog gets timeout.
 using WatchdogCallback = std::function<void(std::string_view)>;
 
 class Watchdog {
 public:
+    /// Constructor.
+    /// @param name             Optional name of the watchdog (appears in logs).
     explicit Watchdog(std::string_view name = "unnamed");
 
+    /// Registers callback for given client to be called by watchdog after specified timeout expires.
+    /// @param clientName       Name of the client.
+    /// @param callback         Callback to be called when
+    /// @param timeout
+    /// @return Flag indicating if registering was successful.
     bool registerClient(std::string_view clientName, WatchdogCallback callback, osal::Timeout timeout);
+
+    /// Starts the watchdog.
+    /// @return Flag indicating if start was successful.
+    /// @retval true            Start was successful.
+    /// @retval false           Start was not successful.
     bool start();
+
+    /// Stops the watchdog.
+    /// @return Flag indicating if stop was successful.
+    /// @retval true            Stop was successful.
+    /// @retval false           Stop was not successful.
     bool stop();
+
+    /// Resets timeout for the specified client.
+    /// @param clientName       Client for which timeout should be restarted.
+    /// @return Flag indicating if reset was successful.
+    /// @retval true            Reset was successful.
+    /// @retval false           Reset was not successful.
     bool reset(std::string_view clientName);
 
 private:
+    /// Internal thread function. It is responsible for calculating earliest available deadline to be used in
+    /// blocking on the semaphore. Once this timeout expires, it searches for the first expired timeout and calls its
+    /// handler.
     void threadFunc();
 
 private:
+    /// Represents internal meta data about the clients.
     struct ClientData {
         WatchdogCallback callback;
         osal::Timeout timeout;
@@ -63,6 +91,7 @@ private:
     std::string m_name;
     std::map<std::string, ClientData> m_clients;
     bool m_running{};
+    osal::Semaphore m_startSemaphore{0};
     osal::Thread<> m_thread;
     osal::Semaphore m_semaphore{0};
 };
