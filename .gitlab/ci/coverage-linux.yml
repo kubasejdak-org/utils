@@ -61,3 +61,8 @@ TcpServer_Coverage:
   extends: .Linux_Coverage
   variables:
     Tags: "[TcpServer]"
+
+Watchdog_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[Watchdog]"
