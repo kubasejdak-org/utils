@@ -412,8 +412,8 @@ TEST_CASE("8. Multiple watchdogs, resetting only half of them", "[unit][Watchdog
     for (const auto& [name, data] : clientData)
         watchdog.registerClient(name, timeoutHandler, data.timeout);
 
-    auto start = osal::timestamp();
     watchdog.start();
+    auto start = osal::timestamp();
 
     constexpr int cIterationCount = 100;
     for (int i = 0; i < cIterationCount; ++i) {
@@ -422,9 +422,9 @@ TEST_CASE("8. Multiple watchdogs, resetting only half of them", "[unit][Watchdog
         watchdog.reset("test3");
     }
 
-    osal::sleep(10ms);
-    watchdog.stop();
     auto end = osal::timestamp();
+    watchdog.stop();
+
     auto elapsed = end - start;
     auto expiredCount = elapsed / timeout;
     fmt::print("elapsed      : {} ms\n", elapsed.count());
