@@ -44,11 +44,11 @@ using WatchdogCallback = std::function<void(std::string_view)>;
 
 class Watchdog {
 public:
-    explicit Watchdog(std::string_view name = "<unnamed>");
+    explicit Watchdog(std::string_view name = "unnamed");
 
     bool registerClient(std::string_view clientName, WatchdogCallback callback, osal::Timeout timeout);
-    void start();
-    void stop();
+    bool start();
+    bool stop();
     bool reset(std::string_view clientName);
 
 private:

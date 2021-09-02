@@ -13,4 +13,5 @@ target_include_directories(utils-network
 
 target_link_libraries(utils-network
     PUBLIC osal::cpp
+    PRIVATE utils::logger
 )

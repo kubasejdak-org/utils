@@ -49,6 +49,9 @@ Watchdog::Watchdog(std::string_view name)
 
 bool Watchdog::registerClient(std::string_view clientName, WatchdogCallback callback, osal::Timeout timeout)
 {
+    if (m_running)
+        return false;
+
     if (m_clients.find(clientName.data()) != m_clients.end()) {
         WatchdogLogger::error("<{}> Client already registered: name={}", m_name, clientName);
         return false;
@@ -60,25 +63,36 @@ bool Watchdog::registerClient(std::string_view clientName, WatchdogCallback call
     return true;
 }
 
-void Watchdog::start()
+bool Watchdog::start()
 {
+    if (m_running)
+        return false;
+
     for (auto& clientData : m_clients)
         clientData.second.timeout.reset();
 
     m_thread.start([this] { threadFunc(); });
     WatchdogLogger::info("<{}> Watchdog started", m_name);
+    return true;
 }
 
-void Watchdog::stop()
+bool Watchdog::stop()
 {
+    if (!m_running)
+        return false;
+
     m_running = false;
     m_semaphore.signal();
     m_thread.join();
     WatchdogLogger::info("<{}> Watchdog stopped", m_name);
+    return true;
 }
 
 bool Watchdog::reset(std::string_view clientName)
 {
+    if (!m_running)
+        return false;
+
     if (m_clients.find(clientName.data()) == m_clients.end()) {
         WatchdogLogger::error("<{}> Client not registered: name={}", m_name, clientName);
         return false;
@@ -110,8 +124,6 @@ void Watchdog::threadFunc()
 
     while (m_running) {
         auto timeout = getSmallestTimeout();
-        auto timeLeftMs = std::chrono::duration_cast<std::chrono::milliseconds>(timeout.timeLeft()).count();
-        WatchdogLogger::info("sleep for: {} ms", timeLeftMs);
         if (m_semaphore.timedWait(timeout) == OsalError::eTimeout) {
             auto client = getExpiredClient();
             assert(client != m_clients.end());

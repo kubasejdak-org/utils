@@ -10,4 +10,5 @@ target_include_directories(utils-watchdog
 
 target_link_libraries(utils-watchdog
     PUBLIC osal::cpp
+    PRIVATE utils::logger
 )

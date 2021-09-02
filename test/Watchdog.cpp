@@ -30,6 +30,7 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <osal/Thread.hpp>
 #include <osal/sleep.hpp>
 #include <osal/timestamp.hpp>
 #include <utils/watchdog/Watchdog.hpp>
@@ -42,9 +43,14 @@
 
 struct Client {
     std::chrono::milliseconds timeout{};
-    bool expired{};
+    int timeoutCounter{};
     osal::Timestamp end;
 };
+
+TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
+{
+
+}
 
 TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
 {
@@ -59,7 +65,7 @@ TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
     Client clientData{};
     std::string timedOutClient;
     auto timeoutHandler = [&](std::string_view client) {
-        clientData.expired = true;
+        clientData.timeoutCounter++;
         clientData.end = osal::timestamp();
         timedOutClient = client;
     };
@@ -75,7 +81,7 @@ TEST_CASE("1. Timeouts without resetting", "[unit][Watchdog]")
 
     fmt::print("end - start : {}\n", (clientData.end - start).count());
 
-    REQUIRE(clientData.expired);
+    REQUIRE(clientData.timeoutCounter == 1);
     REQUIRE((clientData.end - start) >= timeout);
     REQUIRE((clientData.end - start) <= (timeout + 1ms));
     REQUIRE(timedOutClient == client);
@@ -92,16 +98,16 @@ TEST_CASE("2. Multiple identical timeouts without resetting", "[unit][Watchdog]"
     SECTION("2.3. Timeout 3 s") { timeout = 3s; }
 
     std::map<std::string, Client> clientData
-        = {{"test1", {timeout, false, {}}}, {"test2", {timeout, false, {}}}, {"test3", {timeout, false, {}}}};
+        = {{"test1", {timeout, 0, {}}}, {"test2", {timeout, 0, {}}}, {"test3", {timeout, 0, {}}}};
 
     auto timeoutHandler = [&](std::string_view client) {
-        clientData[client.data()].expired = true;
+        clientData[client.data()].timeoutCounter++;
         clientData[client.data()].end = osal::timestamp();
     };
 
     utils::watchdog::Watchdog watchdog;
-    for (const auto& client : clientData)
-        watchdog.registerClient(client.first, timeoutHandler, timeout);
+    for (const auto& [name, _] : clientData)
+        watchdog.registerClient(name, timeoutHandler, timeout);
 
     auto start = osal::timestamp();
     watchdog.start();
@@ -111,8 +117,272 @@ TEST_CASE("2. Multiple identical timeouts without resetting", "[unit][Watchdog]"
     for (const auto& [name, data] : clientData) {
         fmt::print("{}: end - start : {}\n", name, (data.end - start).count());
 
-        REQUIRE(data.expired);
+        REQUIRE(data.timeoutCounter == 1);
         REQUIRE((data.end - start) >= timeout);
         REQUIRE((data.end - start) <= (timeout + 1ms));
     }
+}
+
+TEST_CASE("3. Resetting single watchdog before timeout", "[unit][Watchdog]")
+{
+    std::chrono::milliseconds timeout;
+
+    SECTION("3.1. Timeout 300 ms") { timeout = 300ms; }
+
+    SECTION("3.2. Timeout 10 ms") { timeout = 10ms; }
+
+    SECTION("3.3. Timeout 3 s") { timeout = 3s; }
+
+    Client clientData{};
+    std::string timedOutClient;
+    auto timeoutHandler = [&](std::string_view client) {
+        clientData.timeoutCounter++;
+        clientData.end = osal::timestamp();
+        timedOutClient = client;
+    };
+
+    utils::watchdog::Watchdog watchdog("TestWdg");
+    std::string client = "test1";
+    watchdog.registerClient(client, timeoutHandler, timeout);
+
+    watchdog.start();
+    osal::sleep(timeout / 2);
+
+    watchdog.reset(client);
+
+    osal::sleep(timeout / 2);
+    watchdog.stop();
+
+    REQUIRE(clientData.timeoutCounter == 0);
+}
+
+TEST_CASE("4. Resetting multiple identical watchdogs before timeout", "[unit][Watchdog]")
+{
+    std::chrono::milliseconds timeout;
+
+    SECTION("4.1. Timeout 300 ms") { timeout = 300ms; }
+
+    SECTION("4.2. Timeout 10 ms") { timeout = 10ms; }
+
+    SECTION("4.3. Timeout 3 s") { timeout = 3s; }
+
+    std::map<std::string, Client> clientData
+        = {{"test1", {timeout, 0, {}}}, {"test2", {timeout, 0, {}}}, {"test3", {timeout, 0, {}}}};
+
+    auto timeoutHandler = [&](std::string_view client) {
+        clientData[client.data()].timeoutCounter++;
+        clientData[client.data()].end = osal::timestamp();
+    };
+
+    utils::watchdog::Watchdog watchdog;
+    for (const auto& [name, _] : clientData)
+        watchdog.registerClient(name, timeoutHandler, timeout);
+
+    watchdog.start();
+    osal::sleep(timeout / 2);
+
+    for (const auto& [name, _] : clientData) {
+        watchdog.reset(name);
+    }
+
+    osal::sleep(timeout / 2);
+    watchdog.stop();
+
+    for (const auto& [_, data] : clientData)
+        REQUIRE(data.timeoutCounter == 0);
+}
+
+TEST_CASE("5. Resetting multiple watchdogs in separate threads before timeout, fixed scenario", "[unit][Watchdog]")
+{
+    std::map<std::string, Client> clientData
+        = {{"test1", {400ms, 0, {}}}, {"test2", {400ms, 0, {}}}, {"test3", {300ms, 0, {}}}};
+
+    auto timeoutHandler = [&](std::string_view client) {
+        clientData[client.data()].timeoutCounter++;
+        clientData[client.data()].end = osal::timestamp();
+    };
+
+    utils::watchdog::Watchdog watchdog;
+    for (const auto& [name, data] : clientData)
+        watchdog.registerClient(name, timeoutHandler, data.timeout);
+
+    watchdog.start();
+
+    osal::Thread<> thread1([&] {
+        const auto* name = "test1";
+
+        osal::sleep(398ms);
+        watchdog.reset(name);
+
+        osal::sleep(398ms);
+        watchdog.reset(name);
+
+        osal::sleep(398ms);
+        watchdog.reset(name);
+
+        osal::sleep(100ms);
+        watchdog.reset(name);
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+    });
+
+    osal::Thread<> thread2([&] {
+        const auto* name = "test2";
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+
+        osal::sleep(398ms);
+        watchdog.reset(name);
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+
+        osal::sleep(100ms);
+        watchdog.reset(name);
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+
+        osal::sleep(100ms);
+        watchdog.reset(name);
+
+        osal::sleep(300ms);
+        watchdog.reset(name);
+    });
+
+    osal::Thread<> thread3([&] {
+        const auto* name = "test3";
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+
+        osal::sleep(298ms);
+        watchdog.reset(name);
+
+        osal::sleep(100ms);
+        watchdog.reset(name);
+
+        osal::sleep(100ms);
+        watchdog.reset(name);
+
+        osal::sleep(298ms);
+        watchdog.reset(name);
+
+        osal::sleep(200ms);
+        watchdog.reset(name);
+
+        osal::sleep(100ms);
+        watchdog.reset(name);
+    });
+
+    thread1.join();
+    thread2.join();
+    thread3.join();
+    watchdog.stop();
+
+    for (const auto& [_, data] : clientData)
+        REQUIRE(data.timeoutCounter == 0);
+}
+
+TEST_CASE("5. Resetting multiple identical watchdogs in separate threads, fixed scenario", "[unit][Watchdog]")
+{
+    auto timeout = 100ms;
+    std::map<std::string, Client> clientData
+        = {{"test1", {timeout, 0, {}}}, {"test2", {timeout, 0, {}}}, {"test3", {timeout, 0, {}}}};
+
+    auto timeoutHandler = [&](std::string_view client) {
+        clientData[client.data()].timeoutCounter++;
+        clientData[client.data()].end = osal::timestamp();
+    };
+
+    utils::watchdog::Watchdog watchdog;
+    for (const auto& [name, data] : clientData)
+        watchdog.registerClient(name, timeoutHandler, data.timeout);
+
+    watchdog.start();
+
+    constexpr int cIterationCount = 100;
+    osal::Thread<> thread1([&] {
+        const auto* name = "test1";
+
+        for (int i = 0; i < cIterationCount; ++i) {
+            osal::sleep(timeout - 2ms);
+            watchdog.reset(name);
+        }
+    });
+
+    osal::Thread<> thread2([&] {
+        const auto* name = "test2";
+
+        for (int i = 0; i < cIterationCount; ++i) {
+            osal::sleep(timeout - 2ms);
+            watchdog.reset(name);
+        }
+    });
+
+    osal::Thread<> thread3([&] {
+        const auto* name = "test3";
+
+        for (int i = 0; i < cIterationCount; ++i) {
+            osal::sleep(timeout - 2ms);
+            watchdog.reset(name);
+        }
+    });
+
+    thread1.join();
+    thread2.join();
+    thread3.join();
+    watchdog.stop();
+
+    for (const auto& [_, data] : clientData)
+        REQUIRE(data.timeoutCounter == 0);
+}
+
+TEST_CASE("6. Multiple watchdogs, resetting only half of them", "[unit][Watchdog]")
+{
+    auto timeout = 100ms;
+    std::map<std::string, Client> clientData = {{"test1", {timeout, 0, {}}},
+                                                {"test2", {timeout, 0, {}}},
+                                                {"test3", {timeout, 0, {}}},
+                                                {"test4", {timeout, 0, {}}}};
+
+    auto timeoutHandler = [&](std::string_view client) {
+        clientData[client.data()].timeoutCounter++;
+        clientData[client.data()].end = osal::timestamp();
+    };
+
+    utils::watchdog::Watchdog watchdog;
+    for (const auto& [name, data] : clientData)
+        watchdog.registerClient(name, timeoutHandler, data.timeout);
+
+    auto start = osal::timestamp();
+    watchdog.start();
+
+    constexpr int cIterationCount = 100;
+    for (int i = 0; i < cIterationCount; ++i) {
+        osal::sleep(timeout - 2ms);
+        watchdog.reset("test1");
+        watchdog.reset("test3");
+    }
+
+    osal::sleep(5ms);
+    watchdog.stop();
+    auto end = osal::timestamp();
+    auto elapsed = end - start;
+    auto expiredCount = elapsed / timeout;
+    fmt::print("elapsed      : {} ms\n", elapsed.count());
+    fmt::print("expiredCount : {}\n", expiredCount);
+
+    for (const auto& [name, data] : clientData)
+        fmt::print("{}: {}\n", name, data.timeoutCounter);
+
+    REQUIRE(clientData["test1"].timeoutCounter == 0);
+    REQUIRE(clientData["test2"].timeoutCounter == expiredCount);
+    REQUIRE(clientData["test3"].timeoutCounter == 0);
+    REQUIRE(clientData["test4"].timeoutCounter == expiredCount);
 }
