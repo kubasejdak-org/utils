@@ -115,13 +115,14 @@ bool Watchdog::reset(std::string_view clientName)
         return false;
     }
 
-    if (m_clients.find(clientName.data()) == m_clients.end()) {
+    auto clientIt = m_clients.find(clientName.data());
+    if (clientIt == m_clients.end()) {
         WatchdogLogger::error("<{}> Client not registered: name={}", m_name, clientName);
         return false;
     }
 
     WatchdogLogger::debug("<{}> Resetting watchdog: client={}", m_name, clientName);
-    m_clients.at(clientName.data()).timeout.reset();
+    clientIt->second.timeout.reset();
     m_semaphore.signal();
     return true;
 }
@@ -151,7 +152,10 @@ void Watchdog::threadFunc()
         auto timeout = getSmallestTimeout();
         if (m_semaphore.timedWait(timeout) == OsalError::eTimeout) {
             auto client = getExpiredClient();
-            assert(client != m_clients.end());
+            if (client == m_clients.end()) {
+                WatchdogLogger::warn("<{}> Timeout almost occurred: reset() called after semaphore timed-out", m_name);
+                continue;
+            }
 
             auto clientName = client->first;
             WatchdogLogger::info("<{}> Timeout occurred: client={}", m_name, clientName);
