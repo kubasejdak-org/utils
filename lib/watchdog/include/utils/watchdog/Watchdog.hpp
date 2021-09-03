@@ -53,7 +53,7 @@ public:
     /// Registers callback for given client to be called by watchdog after specified timeout expires.
     /// @param clientName       Name of the client.
     /// @param callback         Callback to be called when
-    /// @param timeout
+    /// @param timeout          Timeout to be set for given client.
     /// @return Flag indicating if registering was successful.
     /// @retval true            Start was successful.
     /// @retval false           Start was not successful.
