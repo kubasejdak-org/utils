@@ -55,6 +55,8 @@ public:
     /// @param callback         Callback to be called when
     /// @param timeout
     /// @return Flag indicating if registering was successful.
+    /// @retval true            Start was successful.
+    /// @retval false           Start was not successful.
     bool registerClient(std::string_view clientName, WatchdogCallback callback, osal::Timeout timeout);
 
     /// Starts the watchdog.
