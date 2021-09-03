@@ -43,6 +43,7 @@ namespace utils::watchdog {
 /// Alias for type representing callback when watchdog gets timeout.
 using WatchdogCallback = std::function<void(std::string_view)>;
 
+/// Generic software watchdog capable of handling multiple separate clients.
 class Watchdog {
 public:
     /// Constructor.
