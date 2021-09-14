@@ -30,12 +30,14 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <osal/Mutex.hpp>
 #include <osal/Semaphore.hpp>
 #include <osal/Thread.hpp>
 #include <osal/Timeout.hpp>
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 
 namespace utils::watchdog {
@@ -94,8 +96,9 @@ private:
     std::string m_name;
     std::map<std::string, ClientData> m_clients;
     bool m_running{};
+    osal::Mutex m_mutex;
     osal::Semaphore m_startSemaphore{0};
-    osal::Thread<> m_thread;
+    std::unique_ptr<osal::Thread<>> m_thread;
     osal::Semaphore m_semaphore{0};
 };
 
