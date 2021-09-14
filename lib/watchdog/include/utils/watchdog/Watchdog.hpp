@@ -98,7 +98,6 @@ private:
     bool m_running{};
     osal::Mutex m_mutex;
     osal::Semaphore m_startSemaphore{0};
-//    osal::Semaphore m_stopSemaphore{1};
     std::unique_ptr<osal::Thread<>> m_thread;
     osal::Semaphore m_semaphore{0};
 };
