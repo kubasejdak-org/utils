@@ -35,9 +35,9 @@
 #include "utils/watchdog/logger.hpp"
 
 #include <osal/Error.hpp>
+#include <osal/ScopedLock.hpp>
 
 #include <algorithm>
-#include <cassert>
 
 namespace utils::watchdog {
 
@@ -49,6 +49,8 @@ Watchdog::Watchdog(std::string_view name)
 
 bool Watchdog::registerClient(std::string_view clientName, WatchdogCallback callback, osal::Timeout timeout)
 {
+    osal::ScopedLock lock(m_mutex);
+
     if (m_running) {
         WatchdogLogger::error("<{}> Watchdog is already started", m_name);
         return false;
@@ -67,6 +69,8 @@ bool Watchdog::registerClient(std::string_view clientName, WatchdogCallback call
 
 bool Watchdog::start()
 {
+    osal::ScopedLock lock(m_mutex);
+
     if (m_running) {
         WatchdogLogger::error("<{}> Watchdog is already started", m_name);
         return false;
@@ -80,7 +84,8 @@ bool Watchdog::start()
     for (auto& clientData : m_clients)
         clientData.second.timeout.reset();
 
-    if (auto error = m_thread.start([this] { threadFunc(); })) {
+    m_thread = std::make_unique<osal::Thread<>>();
+    if (auto error = m_thread->start([this] { threadFunc(); })) {
         WatchdogLogger::error("Failed to start watchdog thread: err={}", error.message());
         return false;
     }
@@ -96,6 +101,8 @@ bool Watchdog::start()
 
 bool Watchdog::stop()
 {
+    osal::ScopedLock lock(m_mutex);
+
     if (!m_running) {
         WatchdogLogger::error("<{}> Watchdog is not started", m_name);
         return false;
@@ -103,13 +110,16 @@ bool Watchdog::stop()
 
     m_running = false;
     m_semaphore.signal();
-    m_thread.join();
+    m_thread->join();
+    m_thread.reset();
     WatchdogLogger::info("<{}> Watchdog stopped", m_name);
     return true;
 }
 
 bool Watchdog::reset(std::string_view clientName)
 {
+    osal::ScopedLock lock(m_mutex);
+
     if (!m_running) {
         WatchdogLogger::error("<{}> Watchdog is not started", m_name);
         return false;
