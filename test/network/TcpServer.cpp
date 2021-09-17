@@ -139,11 +139,12 @@ TEST_CASE("4. Registering connection handler when server is running", "[unit][Tc
 {
     constexpr int cPort = 10101;
     utils::network::TcpServer server(cPort);
-    REQUIRE(server.isRunning());
     auto error = server.start();
     REQUIRE(!error);
+    REQUIRE(server.isRunning());
 
-    server.setConnectionHandler([&](utils::network::TcpConnection /*unused*/) {});
+    auto result = server.setConnectionHandler([&](utils::network::TcpConnection /*unused*/) {});
+    REQUIRE(!result);
 
     server.stop();
     REQUIRE(!server.isRunning());
