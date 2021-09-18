@@ -152,7 +152,11 @@ std::error_code TcpClient::read(BytesVector& bytes, std::size_t size, osal::Time
         return Error::eClientDisconnected;
     }
 
-    return m_connection->read(bytes, size, timeout);
+    auto error = m_connection->read(bytes, size, timeout);
+    if (error == Error::eRemoteEndpointDisconnected)
+        disconnect();
+
+    return error;
 }
 
 std::error_code
@@ -163,7 +167,11 @@ TcpClient::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualReadSi
         return Error::eClientDisconnected;
     }
 
-    return m_connection->read(bytes, size, actualReadSize, timeout);
+    auto error = m_connection->read(bytes, size, actualReadSize, timeout);
+    if (error == Error::eRemoteEndpointDisconnected)
+        disconnect();
+
+    return error;
 }
 
 std::error_code TcpClient::write(std::string_view text)
@@ -173,7 +181,11 @@ std::error_code TcpClient::write(std::string_view text)
         return Error::eClientDisconnected;
     }
 
-    return m_connection->write(text);
+    auto error = m_connection->write(text);
+    if (error == Error::eRemoteEndpointDisconnected)
+        disconnect();
+
+    return error;
 }
 
 std::error_code TcpClient::write(const BytesVector& bytes)
@@ -183,7 +195,11 @@ std::error_code TcpClient::write(const BytesVector& bytes)
         return Error::eClientDisconnected;
     }
 
-    return m_connection->write(bytes);
+    auto error = m_connection->write(bytes);
+    if (error == Error::eRemoteEndpointDisconnected)
+        disconnect();
+
+    return error;
 }
 
 std::error_code TcpClient::write(const std::uint8_t* bytes, std::size_t size)
@@ -193,7 +209,11 @@ std::error_code TcpClient::write(const std::uint8_t* bytes, std::size_t size)
         return Error::eClientDisconnected;
     }
 
-    return m_connection->write(bytes, size);
+    auto error = m_connection->write(bytes, size);
+    if (error == Error::eRemoteEndpointDisconnected)
+        disconnect();
+
+    return error;
 }
 
 } // namespace utils::network
