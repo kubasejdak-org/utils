@@ -48,31 +48,21 @@
 
 namespace utils::network {
 
-TcpServer::TcpServer(int port, int maxConnections, int maxPendingConnections)
+TcpServer::TcpServer(int port, unsigned int maxConnections, unsigned int maxPendingConnections)
     : m_port(port)
-    , m_maxConnections(maxConnections)
     , m_maxPendingConnections(maxPendingConnections)
-    , m_connectionsSemaphore(m_maxConnections)
+    , m_connectionsSemaphore(maxConnections)
 {
-    if (m_maxConnections < 1) {
-        TcpServerLogger::critical("Failed to create TCP/IP server: maxConnections cannot be less than 1");
-        assert(false);
-    }
-
-    if (m_maxPendingConnections < 0) {
-        TcpServerLogger::critical("Failed to create TCP/IP server: maxPendingConnections cannot be less than 0");
-        assert(false);
-    }
+    assert(maxConnections > 0);
 
     TcpServerLogger::info("Created TCP/IP server with the following parameters:");
-    TcpServerLogger::info("  max connections         : {}", m_maxConnections);
+    TcpServerLogger::info("  max connections         : {}", maxConnections);
     TcpServerLogger::info("  max pending connections : {}", m_maxPendingConnections);
 }
 
 TcpServer::TcpServer(TcpServer&& other) noexcept
     : m_running(std::exchange(other.m_running, false))
     , m_port(std::exchange(other.m_port, m_cUninitialized))
-    , m_maxConnections(other.m_maxConnections)
     , m_maxPendingConnections(other.m_maxPendingConnections)
     , m_connectionHandler(std::move(other.m_connectionHandler))
     , m_startSemaphore(std::move(other.m_startSemaphore))
@@ -126,6 +116,13 @@ std::error_code TcpServer::start(int port)
         return Error::eSocketError;
     }
 
+    int enable = 1;
+    if (setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+        TcpServerLogger::error("Failed to set SO_REUSEADDR flag in socket: {}", strerror(errno));
+        closeSocket();
+        return Error::eSocketError;
+    }
+
     if (fcntl(m_socket, F_SETFD, FD_CLOEXEC) == -1) {
         TcpServerLogger::error("Failed to set FD_CLOEXEC flag in socket: {}", strerror(errno));
         closeSocket();
@@ -143,7 +140,7 @@ std::error_code TcpServer::start(int port)
         return Error::eBindError;
     }
 
-    listen(m_socket, m_maxPendingConnections);
+    listen(m_socket, int(m_maxPendingConnections));
 
     if (auto error = m_listenThread.start([this] { listenThread(); })) {
         TcpServerLogger::error("Failed to start listening thread: err={}", error.message());
