@@ -391,7 +391,7 @@ TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
     REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
 }
 
-TEST_CASE("9. Server is stopped while connection is active, client manages the test", "[unit][TcpConnection][aaa]")
+TEST_CASE("9. Server is stopped while connection is active, check server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -491,6 +491,130 @@ TEST_CASE("9. Server is stopped while connection is active, client manages the t
 
         // Allow server to call write().
         synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+}
+
+TEST_CASE("10. Server is stopped while connection is active, check client", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+    ThreadSynchro synchro;
+    std::error_code serverError{};
+
+    utils::network::TcpServer server(cPort);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            synchro.waitForManagerApproval();
+
+            serverError = connection.read(bytes, cMaxSize, 500ms);
+            if (serverError) {
+                if (serverError == utils::network::Error::eTimeout)
+                    continue;
+
+                break;
+            }
+
+            synchro.waitForManagerApproval();
+
+            serverError = connection.write(bytes);
+            if (serverError)
+                break;
+
+            synchro.waitForManagerApproval();
+        }
+
+        synchro.notifyManagerOnExit();
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    osal::sleep(100ms);
+
+    SECTION("10.1. Client is about to call write()")
+    {
+        osal::Thread<> stopThread([&] { server.stop(); });
+        osal::sleep(100ms);
+
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+
+    SECTION("10.2. Client is about to call read()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        osal::Thread<> stopThread([&] { server.stop(); });
+        osal::sleep(100ms);
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        std::vector<std::uint8_t> bytes;
+        error = client.read(bytes, cMaxSize, 500ms);
+        REQUIRE(!error);
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+
+    SECTION("10.3. Client is blocked on read()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        osal::Thread<> helperThread([&] {
+            osal::sleep(100ms);
+            osal::Thread<> stopThread([&] { server.stop(); });
+            osal::sleep(100ms);
+
+            // Allow server to call write().
+            synchro.allowSubjectToWork();
+
+            server.stop();
+        });
+
+        std::vector<std::uint8_t> bytes;
+        error = client.read(bytes, cMaxSize, 500ms);
+        REQUIRE(!error);
 
         // Allow server to start next iteration.
         synchro.allowSubjectToWork();
