@@ -37,7 +37,6 @@
 #include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
-#include <fmt/printf.h>
 
 #include <cstdint>
 #include <limits>
@@ -208,7 +207,7 @@ struct ThreadSynchro {
     }
 };
 
-TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection][aaa]")
+TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -298,4 +297,94 @@ TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection][aaa]")
         synchro.waitForSubjectExit();
         REQUIRE(serverError == utils::network::Error::eRemoteEndpointDisconnected);
     }
+}
+
+TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection][aaa]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+    ThreadSynchro synchro;
+
+    utils::network::TcpServer server(cPort);
+
+    SECTION("8.1. Client is about to call write()")
+    {
+        server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+            std::vector<std::uint8_t> bytes;
+            while (connection.isParentRunning() && connection.isActive()) {
+                connection.close();
+
+                // Allow client to call write().
+                synchro.allowSubjectToWork();
+
+                // Allow client to call read().
+                synchro.allowSubjectToWork();
+            }
+        });
+    }
+
+    SECTION("8.2. Client is about to call read()")
+    {
+        server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+            std::vector<std::uint8_t> bytes;
+            while (connection.isParentRunning() && connection.isActive()) {
+                // Allow client to call write().
+                synchro.allowSubjectToWork();
+
+                if (auto error = connection.read(bytes, cMaxSize, 500ms)) {
+                    if (error == utils::network::Error::eTimeout)
+                        continue;
+
+                    break;
+                }
+
+                connection.close();
+
+                // Allow client to call read().
+                synchro.allowSubjectToWork();
+            }
+        });
+    }
+
+    SECTION("8.3. Client is blocked on read()")
+    {
+        server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+            std::vector<std::uint8_t> bytes;
+            while (connection.isParentRunning() && connection.isActive()) {
+                // Allow client to call write().
+                synchro.allowSubjectToWork();
+
+                if (auto error = connection.read(bytes, cMaxSize, 500ms)) {
+                    if (error == utils::network::Error::eTimeout)
+                        continue;
+
+                    break;
+                }
+
+                // Allow client to call read().
+                synchro.allowSubjectToWork();
+
+                osal::sleep(50ms);
+                connection.close();
+            }
+        });
+    }
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    synchro.waitForManagerApproval();
+
+    error = client.write("Hello world");
+    REQUIRE(!error);
+
+    synchro.waitForManagerApproval();
+
+    std::vector<std::uint8_t> bytes;
+    error = client.read(bytes, cMaxSize, 100ms);
+    REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
 }

@@ -116,6 +116,13 @@ std::error_code TcpServer::start(int port)
         return Error::eSocketError;
     }
 
+    int enable = 1;
+    if (setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+        TcpServerLogger::error("Failed to set SO_REUSEADDR flag in socket: {}", strerror(errno));
+        closeSocket();
+        return Error::eSocketError;
+    }
+
     if (fcntl(m_socket, F_SETFD, FD_CLOEXEC) == -1) {
         TcpServerLogger::error("Failed to set FD_CLOEXEC flag in socket: {}", strerror(errno));
         closeSocket();
