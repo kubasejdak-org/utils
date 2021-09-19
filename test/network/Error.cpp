@@ -40,7 +40,7 @@
 TEST_CASE("4. Errors have proper human readable messages", "[unit][TcpConnection]")
 {
     const std::string_view cUnrecognizedMsg = "(unrecognized error)";
-    constexpr int cErrorsCount = 12;
+    constexpr int cErrorsCount = 13;
 
     for (int i = 0; i < cErrorsCount; ++i) {
         std::error_code error = static_cast<utils::network::Error>(i);
