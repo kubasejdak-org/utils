@@ -30,11 +30,12 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <utils/network/Error.hpp>
 #include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("1. Creating TCP/IP server multiple time on the same port", "[unit][TcpServer]")
+TEST_CASE("1. Creating TCP/IP server multiple times on the same port", "[unit][TcpServer]")
 {
     constexpr int cIterationsCount = 10;
     constexpr int cPort = 10101;
@@ -81,6 +82,10 @@ TEST_CASE("2. Starting TCP/IP server multiple times on the same port", "[unit][T
             REQUIRE(!error);
             REQUIRE(server.isRunning());
 
+            error = server.start(cPort);
+            REQUIRE(error == utils::network::Error::eServerRunning);
+            REQUIRE(server.isRunning());
+
             server.stop();
             REQUIRE(!server.isRunning());
 
@@ -92,11 +97,15 @@ TEST_CASE("2. Starting TCP/IP server multiple times on the same port", "[unit][T
     SECTION("2.2. Initialized server")
     {
         for (int i = 0; i < cIterationsCount; ++i) {
-            utils::network::TcpServer server;
+            utils::network::TcpServer server(cPort);
             REQUIRE(!server.isRunning());
 
-            auto error = server.start(cPort);
+            auto error = server.start();
             REQUIRE(!error);
+            REQUIRE(server.isRunning());
+
+            error = server.start();
+            REQUIRE(error == utils::network::Error::eServerRunning);
             REQUIRE(server.isRunning());
 
             server.stop();
@@ -105,5 +114,63 @@ TEST_CASE("2. Starting TCP/IP server multiple times on the same port", "[unit][T
             server.stop();
             REQUIRE(!server.isRunning());
         }
+    }
+}
+
+TEST_CASE("3. Moving server around", "[unit][TcpServer]")
+{
+    utils::network::TcpServer server1;
+    REQUIRE(!server1.isRunning());
+
+    constexpr int cPort = 10101;
+    auto error = server1.start(cPort);
+    REQUIRE(!error);
+    REQUIRE(server1.isRunning());
+
+    utils::network::TcpServer server2(std::move(server1));
+    REQUIRE(server2.isRunning());
+    REQUIRE(!server1.isRunning()); // NOLINT
+
+    server2.stop();
+    REQUIRE(!server2.isRunning());
+}
+
+TEST_CASE("4. Registering connection handler when server is running", "[unit][TcpServer]")
+{
+    constexpr int cPort = 10101;
+    utils::network::TcpServer server(cPort);
+    auto error = server.start();
+    REQUIRE(!error);
+    REQUIRE(server.isRunning());
+
+    auto result = server.setConnectionHandler([&](utils::network::TcpConnection /*unused*/) {});
+    REQUIRE(!result);
+
+    server.stop();
+    REQUIRE(!server.isRunning());
+}
+
+TEST_CASE("5. Starting TCP/IP server with invalid port number", "[unit][TcpServer]")
+{
+    constexpr int cPort = -50000;
+
+    SECTION("5.1. Uninitialized server")
+    {
+        utils::network::TcpServer server;
+        REQUIRE(!server.isRunning());
+
+        auto error = server.start(cPort);
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
+        REQUIRE(!server.isRunning());
+    }
+
+    SECTION("5.2. Initialized server")
+    {
+        utils::network::TcpServer server(cPort);
+        REQUIRE(!server.isRunning());
+
+        auto error = server.start();
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
+        REQUIRE(!server.isRunning());
     }
 }

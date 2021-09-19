@@ -30,6 +30,8 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <osal/Semaphore.hpp>
+#include <osal/Thread.hpp>
 #include <osal/sleep.hpp>
 #include <utils/network/Error.hpp>
 #include <utils/network/TcpClient.hpp>
@@ -171,4 +173,454 @@ TEST_CASE("6. Simple server echo test", "[unit][TcpConnection]")
 
     osal::sleep(10ms);
     client.disconnect();
+}
+
+struct ThreadSynchro {
+    osal::Semaphore subject{0};
+    osal::Semaphore manager{0};
+
+    void waitForManagerApproval()
+    {
+        auto error = subject.wait();
+        REQUIRE(!error);
+        error = manager.signal();
+        REQUIRE(!error);
+    }
+
+    void allowSubjectToWork()
+    {
+        auto error = subject.signal();
+        REQUIRE(!error);
+        error = manager.timedWait(100ms);
+        REQUIRE(!error);
+    }
+
+    void notifyManagerOnExit()
+    {
+        auto error = manager.signal();
+        REQUIRE(!error);
+    }
+
+    void waitForSubjectExit()
+    {
+        auto error = manager.timedWait(1s);
+        REQUIRE(!error);
+    }
+};
+
+TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+    ThreadSynchro synchro;
+    std::error_code serverError{};
+
+    utils::network::TcpServer server(cPort);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            synchro.waitForManagerApproval();
+
+            serverError = connection.read(bytes, cMaxSize, 500ms);
+            if (serverError) {
+                if (serverError == utils::network::Error::eTimeout)
+                    continue;
+
+                break;
+            }
+
+            synchro.waitForManagerApproval();
+
+            serverError = connection.write(bytes);
+            if (serverError)
+                break;
+
+            synchro.waitForManagerApproval();
+        }
+
+        synchro.notifyManagerOnExit();
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    osal::sleep(100ms);
+
+    SECTION("7.1. Server is about to call read()")
+    {
+        client.disconnect();
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(serverError == utils::network::Error::eRemoteEndpointDisconnected);
+    }
+
+    SECTION("7.2. Server is blocked on read()")
+    {
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        client.disconnect();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(serverError == utils::network::Error::eRemoteEndpointDisconnected);
+    }
+
+    SECTION("7.3. Server is about to call write()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(500ms);
+        client.disconnect();
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(serverError == utils::network::Error::eRemoteEndpointDisconnected);
+    }
+}
+
+TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+    ThreadSynchro synchro;
+
+    utils::network::TcpServer server(cPort);
+
+    SECTION("8.1. Client is about to call write()")
+    {
+        server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+            std::vector<std::uint8_t> bytes;
+            while (connection.isParentRunning() && connection.isActive()) {
+                connection.close();
+
+                // Allow client to call write().
+                synchro.allowSubjectToWork();
+
+                // Allow client to call read().
+                synchro.allowSubjectToWork();
+            }
+        });
+    }
+
+    SECTION("8.2. Client is about to call read()")
+    {
+        server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+            std::vector<std::uint8_t> bytes;
+            while (connection.isParentRunning() && connection.isActive()) {
+                // Allow client to call write().
+                synchro.allowSubjectToWork();
+
+                if (auto error = connection.read(bytes, cMaxSize, 500ms)) {
+                    if (error == utils::network::Error::eTimeout)
+                        continue;
+
+                    break;
+                }
+
+                connection.close();
+
+                // Allow client to call read().
+                synchro.allowSubjectToWork();
+            }
+        });
+    }
+
+    SECTION("8.3. Client is blocked on read()")
+    {
+        server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+            std::vector<std::uint8_t> bytes;
+            while (connection.isParentRunning() && connection.isActive()) {
+                // Allow client to call write().
+                synchro.allowSubjectToWork();
+
+                if (auto error = connection.read(bytes, cMaxSize, 500ms)) {
+                    if (error == utils::network::Error::eTimeout)
+                        continue;
+
+                    break;
+                }
+
+                // Allow client to call read().
+                synchro.allowSubjectToWork();
+
+                osal::sleep(50ms);
+                connection.close();
+            }
+        });
+    }
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    synchro.waitForManagerApproval();
+
+    error = client.write("Hello world");
+    REQUIRE(!error);
+
+    synchro.waitForManagerApproval();
+
+    std::vector<std::uint8_t> bytes;
+    error = client.read(bytes, cMaxSize, 100ms);
+    REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
+}
+
+TEST_CASE("9. Server is stopped while connection is active, check server", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+    ThreadSynchro synchro;
+    std::error_code serverError{};
+
+    utils::network::TcpServer server(cPort);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            synchro.waitForManagerApproval();
+
+            serverError = connection.read(bytes, cMaxSize, 500ms);
+            if (serverError) {
+                if (serverError == utils::network::Error::eTimeout)
+                    continue;
+
+                break;
+            }
+
+            synchro.waitForManagerApproval();
+
+            serverError = connection.write(bytes);
+            if (serverError)
+                break;
+
+            synchro.waitForManagerApproval();
+        }
+
+        synchro.notifyManagerOnExit();
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    osal::sleep(100ms);
+
+    SECTION("9.1. Server is about to call read()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        osal::Thread<> stopThread([&] { server.stop(); });
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+
+    SECTION("9.2. Server is blocked on read()")
+    {
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        osal::Thread<> stopThread([&] { server.stop(); });
+
+        osal::sleep(100ms);
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+
+    SECTION("9.3. Server is about to call write()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        osal::Thread<> stopThread([&] { server.stop(); });
+        osal::sleep(100ms);
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+}
+
+TEST_CASE("10. Server is stopped while connection is active, check client", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+    ThreadSynchro synchro;
+    std::error_code serverError{};
+
+    utils::network::TcpServer server(cPort);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            synchro.waitForManagerApproval();
+
+            serverError = connection.read(bytes, cMaxSize, 500ms);
+            if (serverError) {
+                if (serverError == utils::network::Error::eTimeout)
+                    continue;
+
+                break;
+            }
+
+            synchro.waitForManagerApproval();
+
+            serverError = connection.write(bytes);
+            if (serverError)
+                break;
+
+            synchro.waitForManagerApproval();
+        }
+
+        synchro.notifyManagerOnExit();
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    osal::sleep(100ms);
+
+    SECTION("10.1. Client is about to call write()")
+    {
+        osal::Thread<> stopThread([&] { server.stop(); });
+        osal::sleep(100ms);
+
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+
+    SECTION("10.2. Client is about to call read()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        osal::Thread<> stopThread([&] { server.stop(); });
+        osal::sleep(100ms);
+
+        // Allow server to call write().
+        synchro.allowSubjectToWork();
+
+        std::vector<std::uint8_t> bytes;
+        error = client.read(bytes, cMaxSize, 500ms);
+        REQUIRE(!error);
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
+
+    SECTION("10.3. Client is blocked on read()")
+    {
+        error = client.write("Hello world");
+        REQUIRE(!error);
+
+        // Allow server to call read().
+        synchro.allowSubjectToWork();
+
+        osal::sleep(100ms);
+        osal::Thread<> helperThread([&] {
+            osal::sleep(100ms);
+            osal::Thread<> stopThread([&] { server.stop(); });
+            osal::sleep(100ms);
+
+            // Allow server to call write().
+            synchro.allowSubjectToWork();
+
+            server.stop();
+        });
+
+        std::vector<std::uint8_t> bytes;
+        error = client.read(bytes, cMaxSize, 500ms);
+        REQUIRE(!error);
+
+        // Allow server to start next iteration.
+        synchro.allowSubjectToWork();
+
+        // Wait for server to close connection.
+        synchro.waitForSubjectExit();
+        REQUIRE(!serverError);
+    }
 }

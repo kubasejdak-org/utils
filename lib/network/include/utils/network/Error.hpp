@@ -46,11 +46,12 @@ enum class Error {
     eSocketError,
     eBindError,
     eConnectError,
+    eTimeout,
     eClientRunning,
     eClientDisconnected,
-    eTimeout,
     eServerRunning,
     eConnectionNotActive,
+    eRemoteEndpointDisconnected,
     eWriteError
 };
 // clang-format on
