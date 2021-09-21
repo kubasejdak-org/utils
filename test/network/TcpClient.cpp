@@ -30,30 +30,20 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <utils/network/Error.hpp>
 #include <utils/network/TcpClient.hpp>
 
 #include <catch2/catch.hpp>
-#include <fmt/printf.h>
 
-#include <cstdio>
-#include <string>
-
-TEST_CASE("1. Tests client", "[unit][TcpClient]")
+TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")
 {
-    constexpr int cPort = 10101;
-    utils::network::TcpClient client("localhost", cPort);
+    SECTION("1.1. Client is uninitialized")
+    {
+            utils::network::TcpClient client;
+    }
 
-    auto error = client.connect();
-    REQUIRE(!error);
-
-    client.write("HELLO, WORLD!\n");
-
-    std::vector<std::uint8_t> bytes;
-    constexpr std::size_t cSize = 255;
-    error = client.read(bytes, cSize, 5s);
-    if (error != utils::network::Error::eTimeout)
-        fmt::print("Received: {}\n", bytes.data());
-
-    client.disconnect();
+    SECTION("1.2. Client is initialized")
+    {
+        constexpr int cPort = 10101;
+        utils::network::TcpClient client("localhost", cPort);
+    }
 }
