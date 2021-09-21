@@ -78,10 +78,7 @@ TcpConnection::~TcpConnection()
 std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::Timeout timeout)
 {
     bytes.resize(size);
-    if (bytes.size() != size) {
-        TcpConnectionLogger::error("read: Failed to resize vector");
-        return Error::eNoMemory;
-    }
+    assert (bytes.size() == size);
 
     std::size_t actualReadSize{};
     auto error = read(bytes.data(), size, actualReadSize, timeout);

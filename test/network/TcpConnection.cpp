@@ -537,8 +537,8 @@ TEST_CASE("10. Server is stopped while connection is active, check client", "[un
     auto error = server.start();
     REQUIRE(!error);
 
-    utils::network::TcpClient client("localhost", cPort);
-    error = client.connect();
+    utils::network::TcpClient client;
+    error = client.connect("localhost", cPort);
     REQUIRE(!error);
 
     osal::sleep(100ms);
@@ -623,4 +623,42 @@ TEST_CASE("10. Server is stopped while connection is active, check client", "[un
         synchro.waitForSubjectExit();
         REQUIRE(!serverError);
     }
+}
+
+TEST_CASE("11. Performing operations in incorrect connection state", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 256;
+    ThreadSynchro synchro;
+
+    utils::network::TcpServer server(cPort);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        auto error = connection.read(bytes, cMaxSize, 100ms);
+        REQUIRE(error == utils::network::Error::eTimeout);
+
+        std::size_t actualReadSize{};
+        error = connection.read(nullptr, cMaxSize, actualReadSize, 100ms);
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
+
+        error = connection.write(nullptr, cMaxSize);
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
+
+        connection.close();
+
+        error = connection.read(bytes, cMaxSize, 100ms);
+        REQUIRE(error == utils::network::Error::eConnectionNotActive);
+
+        error = connection.write("Hello world");
+        REQUIRE(error == utils::network::Error::eConnectionNotActive);
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client("localhost", cPort);
+    error = client.connect();
+    REQUIRE(!error);
+
+    osal::sleep(500ms);
 }
