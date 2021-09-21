@@ -42,7 +42,6 @@ namespace utils::network {
 enum class Error {
     eOk,
     eInvalidArgument,
-    eNoMemory,
     eSocketError,
     eBindError,
     eConnectError,

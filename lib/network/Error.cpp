@@ -51,7 +51,6 @@ std::string ErrorCategory::message(int value) const
     switch (static_cast<Error>(value)) {
         case Error::eOk: return "no error";
         case Error::eInvalidArgument: return "invalid argument";
-        case Error::eNoMemory: return "no memory";
         case Error::eSocketError: return "socket error";
         case Error::eBindError: return "bind error";
         case Error::eConnectError: return "connect error";

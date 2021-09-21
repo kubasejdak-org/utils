@@ -32,28 +32,61 @@
 
 #include <utils/network/Error.hpp>
 #include <utils/network/TcpClient.hpp>
+#include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
-#include <fmt/printf.h>
 
-#include <cstdio>
-#include <string>
+TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")
+{
+    SECTION("1.1. Client is uninitialized") { utils::network::TcpClient client; }
 
-TEST_CASE("1. Tests client", "[unit][TcpClient]")
+    SECTION("1.2. Client is initialized")
+    {
+        constexpr int cPort = 10101;
+        utils::network::TcpClient client("localhost", cPort);
+    }
+}
+
+TEST_CASE("2. Moving TcpClient around", "[unit][TcpClient]")
+{
+    constexpr int cPort = 10101;
+    utils::network::TcpServer server(cPort);
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client1("localhost", cPort);
+    utils::network::TcpClient client2(std::move(client1));
+    error = client2.connect();
+    REQUIRE(!error);
+}
+
+TEST_CASE("3. Performing operations in incorrect TcpClient state", "[unit][TcpClient]")
 {
     constexpr int cPort = 10101;
     utils::network::TcpClient client("localhost", cPort);
 
-    auto error = client.connect();
-    REQUIRE(!error);
+    SECTION("3.1. No remote endpoint")
+    {
+        auto error = client.connect();
+        REQUIRE(error == utils::network::Error::eConnectError);
+    }
 
-    client.write("HELLO, WORLD!\n");
+    SECTION("3.2. Client is already running")
+    {
+        utils::network::TcpServer server(cPort);
+        auto error = server.start();
+        REQUIRE(!error);
 
-    std::vector<std::uint8_t> bytes;
-    constexpr std::size_t cSize = 255;
-    error = client.read(bytes, cSize, 5s);
-    if (error != utils::network::Error::eTimeout)
-        fmt::print("Received: {}\n", bytes.data());
+        error = client.connect();
+        REQUIRE(!error);
 
-    client.disconnect();
+        error = client.connect();
+        REQUIRE(error == utils::network::Error::eClientRunning);
+    }
+
+    SECTION("3.3. Bad endpoint address")
+    {
+        auto error = client.connect("badAddress", cPort);
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
+    }
 }

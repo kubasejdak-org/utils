@@ -216,7 +216,8 @@ void TcpServer::connectionThread(TcpConnection connection)
     auto endpoint = connection.remoteEndpoint();
     TcpServerLogger::debug("Starting connection thread: remote endpoint ip={}", endpoint.ip);
 
-    m_connectionHandler(std::move(connection));
+    if (m_connectionHandler)
+        m_connectionHandler(std::move(connection));
 
     TcpServerLogger::debug("Connection thread stopped");
     m_connectionsSemaphore.signal();
