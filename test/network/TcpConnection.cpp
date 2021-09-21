@@ -60,7 +60,7 @@ void generateRandomData(std::size_t size, utils::network::BytesVector& bytes)
     std::generate(bytes.begin(), bytes.end(), [] { return generateRandomNumber<std::uint8_t>(); });
 }
 
-TEST_CASE("5. Connect and disconnect from server", "[unit][TcpConnection]")
+TEST_CASE("1. Connect and disconnect from server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     bool connected{};
@@ -105,7 +105,7 @@ TEST_CASE("5. Connect and disconnect from server", "[unit][TcpConnection]")
     client.disconnect();
 }
 
-TEST_CASE("6. Simple server echo test", "[unit][TcpConnection]")
+TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -139,17 +139,17 @@ TEST_CASE("6. Simple server echo test", "[unit][TcpConnection]")
 
     std::size_t toSend{};
 
-    SECTION("6.1. Send 0 B.") { toSend = 0; }
+    SECTION("2.1. Send 0 B.") { toSend = 0; }
 
-    SECTION("6.2. Send 1 B.") { toSend = 1; }
+    SECTION("2.2. Send 1 B.") { toSend = 1; }
 
-    SECTION("6.3. Send 4 KB.")
+    SECTION("2.3. Send 4 KB.")
     {
         constexpr std::size_t cToSend = 4 * 1024;
         toSend = cToSend;
     }
 
-    SECTION("6.4. Send 897987 B.")
+    SECTION("2.4. Send 897987 B.")
     {
         constexpr std::size_t cToSend = 897987;
         toSend = cToSend;
@@ -208,7 +208,7 @@ struct ThreadSynchro {
     }
 };
 
-TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
+TEST_CASE("3. Client disconnects from server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -250,7 +250,7 @@ TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
 
     osal::sleep(100ms);
 
-    SECTION("7.1. Server is about to call read()")
+    SECTION("3.1. Server is about to call read()")
     {
         client.disconnect();
 
@@ -262,7 +262,7 @@ TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
         REQUIRE(serverError == utils::network::Error::eRemoteEndpointDisconnected);
     }
 
-    SECTION("7.2. Server is blocked on read()")
+    SECTION("3.2. Server is blocked on read()")
     {
         // Allow server to call read().
         synchro.allowSubjectToWork();
@@ -275,7 +275,7 @@ TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
         REQUIRE(serverError == utils::network::Error::eRemoteEndpointDisconnected);
     }
 
-    SECTION("7.3. Server is about to call write()")
+    SECTION("3.3. Server is about to call write()")
     {
         error = client.write("Hello world");
         REQUIRE(!error);
@@ -301,7 +301,7 @@ TEST_CASE("7. Client disconnects from server", "[unit][TcpConnection]")
     }
 }
 
-TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
+TEST_CASE("4. Server disconnects from client", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -309,7 +309,7 @@ TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
 
     utils::network::TcpServer server(cPort);
 
-    SECTION("8.1. Client is about to call write()")
+    SECTION("4.1. Client is about to call write()")
     {
         server.setConnectionHandler([&](utils::network::TcpConnection connection) {
             std::vector<std::uint8_t> bytes;
@@ -325,7 +325,7 @@ TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
         });
     }
 
-    SECTION("8.2. Client is about to call read()")
+    SECTION("4.2. Client is about to call read()")
     {
         server.setConnectionHandler([&](utils::network::TcpConnection connection) {
             std::vector<std::uint8_t> bytes;
@@ -348,7 +348,7 @@ TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
         });
     }
 
-    SECTION("8.3. Client is blocked on read()")
+    SECTION("4.3. Client is blocked on read()")
     {
         server.setConnectionHandler([&](utils::network::TcpConnection connection) {
             std::vector<std::uint8_t> bytes;
@@ -391,7 +391,7 @@ TEST_CASE("8. Server disconnects from client", "[unit][TcpConnection]")
     REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
 }
 
-TEST_CASE("9. Server is stopped while connection is active, check server", "[unit][TcpConnection]")
+TEST_CASE("5. Server is stopped while connection is active, check server", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -433,7 +433,7 @@ TEST_CASE("9. Server is stopped while connection is active, check server", "[uni
 
     osal::sleep(100ms);
 
-    SECTION("9.1. Server is about to call read()")
+    SECTION("5.1. Server is about to call read()")
     {
         error = client.write("Hello world");
         REQUIRE(!error);
@@ -454,7 +454,7 @@ TEST_CASE("9. Server is stopped while connection is active, check server", "[uni
         REQUIRE(!serverError);
     }
 
-    SECTION("9.2. Server is blocked on read()")
+    SECTION("5.2. Server is blocked on read()")
     {
         // Allow server to call read().
         synchro.allowSubjectToWork();
@@ -477,7 +477,7 @@ TEST_CASE("9. Server is stopped while connection is active, check server", "[uni
         REQUIRE(!serverError);
     }
 
-    SECTION("9.3. Server is about to call write()")
+    SECTION("5.3. Server is about to call write()")
     {
         error = client.write("Hello world");
         REQUIRE(!error);
@@ -501,7 +501,7 @@ TEST_CASE("9. Server is stopped while connection is active, check server", "[uni
     }
 }
 
-TEST_CASE("10. Server is stopped while connection is active, check client", "[unit][TcpConnection]")
+TEST_CASE("6. Server is stopped while connection is active, check client", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
@@ -543,7 +543,7 @@ TEST_CASE("10. Server is stopped while connection is active, check client", "[un
 
     osal::sleep(100ms);
 
-    SECTION("10.1. Client is about to call write()")
+    SECTION("6.1. Client is about to call write()")
     {
         osal::Thread<> stopThread([&] { server.stop(); });
         osal::sleep(100ms);
@@ -565,7 +565,7 @@ TEST_CASE("10. Server is stopped while connection is active, check client", "[un
         REQUIRE(!serverError);
     }
 
-    SECTION("10.2. Client is about to call read()")
+    SECTION("6.2. Client is about to call read()")
     {
         error = client.write("Hello world");
         REQUIRE(!error);
@@ -592,7 +592,7 @@ TEST_CASE("10. Server is stopped while connection is active, check client", "[un
         REQUIRE(!serverError);
     }
 
-    SECTION("10.3. Client is blocked on read()")
+    SECTION("6.3. Client is blocked on read()")
     {
         error = client.write("Hello world");
         REQUIRE(!error);
@@ -625,7 +625,7 @@ TEST_CASE("10. Server is stopped while connection is active, check client", "[un
     }
 }
 
-TEST_CASE("11. Performing operations in incorrect connection state", "[unit][TcpConnection]")
+TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 256;
