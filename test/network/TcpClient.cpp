@@ -30,7 +30,9 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <utils/network/Error.hpp>
 #include <utils/network/TcpClient.hpp>
+#include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -42,5 +44,49 @@ TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")
     {
         constexpr int cPort = 10101;
         utils::network::TcpClient client("localhost", cPort);
+    }
+}
+
+TEST_CASE("2. Moving TcpClient around", "[unit][TcpClient]")
+{
+    constexpr int cPort = 10101;
+    utils::network::TcpServer server(cPort);
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client1("localhost", cPort);
+    utils::network::TcpClient client2(std::move(client1));
+    error = client2.connect();
+    REQUIRE(!error);
+}
+
+TEST_CASE("3. Performing operations in incorrect TcpClient state", "[unit][TcpClient]")
+{
+    constexpr int cPort = 10101;
+    utils::network::TcpClient client("localhost", cPort);
+
+    SECTION("3.1. No remote endpoint")
+    {
+        auto error = client.connect();
+        REQUIRE(error == utils::network::Error::eConnectError);
+    }
+
+    SECTION("3.2. Client is already running")
+    {
+        utils::network::TcpServer server(cPort);
+        auto error = server.start();
+        REQUIRE(!error);
+
+        error = client.connect();
+        REQUIRE(!error);
+
+        error = client.connect();
+        REQUIRE(error == utils::network::Error::eClientRunning);
+    }
+
+    SECTION("3.3. Bad endpoint address")
+    {
+        auto error = client.connect("badAddress", cPort);
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
     }
 }
