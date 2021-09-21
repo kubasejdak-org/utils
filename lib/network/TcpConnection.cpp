@@ -78,7 +78,7 @@ TcpConnection::~TcpConnection()
 std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::Timeout timeout)
 {
     bytes.resize(size);
-    assert (bytes.size() == size);
+    assert(bytes.size() == size);
 
     std::size_t actualReadSize{};
     auto error = read(bytes.data(), size, actualReadSize, timeout);
