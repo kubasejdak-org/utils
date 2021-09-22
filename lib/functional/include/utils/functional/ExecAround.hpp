@@ -63,10 +63,10 @@ public:
     /// @param preAction                Callback to be called before executing UnderlyingType's method.
     /// @param postAction               Callback to be called after executing UnderlyingType's method.
     /// @param underlyingObject         Object to be wrapped with ExecAround mechanism.
-    ExecAround(Action preAction, Action postAction, UnderlyingType underlyingObject)
+    ExecAround(Action preAction, Action postAction, UnderlyingType&& underlyingObject)
         : preAction(std::move(preAction))
         , postAction(std::move(postAction))
-        , underlyingObject(std::move(underlyingObject))
+        , underlyingObject(std::forward<UnderlyingType>(underlyingObject))
     {}
 
     /// Copy constructor.
