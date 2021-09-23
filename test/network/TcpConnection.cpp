@@ -385,6 +385,7 @@ TEST_CASE("4. Server disconnects from client", "[unit][TcpConnection]")
         // Use different versions of TcpClient::write() and TcpClient::read().
         std::vector<std::uint8_t> writeBytes{1, 2, 3};
         std::vector<std::uint8_t> readBytes;
+        readBytes.reserve(cMaxSize);
         std::size_t actualReadSize{};
 
         switch (i) {
