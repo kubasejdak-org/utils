@@ -375,20 +375,48 @@ TEST_CASE("4. Server disconnects from client", "[unit][TcpConnection]")
     auto error = server.start();
     REQUIRE(!error);
 
-    utils::network::TcpClient client("localhost", cPort);
-    error = client.connect();
-    REQUIRE(!error);
+    for (int i = 0; i < 3; ++i) {
+        utils::network::TcpClient client("localhost", cPort);
+        error = client.connect();
+        REQUIRE(!error);
 
-    synchro.waitForManagerApproval();
+        synchro.waitForManagerApproval();
 
-    error = client.write("Hello world");
-    REQUIRE(!error);
+        // Use different versions of TcpClient::write() and TcpClient::read().
+        std::vector<std::uint8_t> writeBytes{1, 2, 3};
+        std::vector<std::uint8_t> readBytes;
+        std::size_t actualReadSize{};
 
-    synchro.waitForManagerApproval();
+        switch (i) {
+            case 0:
+                error = client.write(writeBytes);
+                REQUIRE(!error);
 
-    std::vector<std::uint8_t> bytes;
-    error = client.read(bytes, cMaxSize, 100ms);
-    REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
+                synchro.waitForManagerApproval();
+
+                error = client.read(readBytes, cMaxSize, 100ms);
+                break;
+            case 1:
+                error = client.write(writeBytes.data(), writeBytes.size());
+                REQUIRE(!error);
+
+                synchro.waitForManagerApproval();
+
+                error = client.read(readBytes.data(), cMaxSize, actualReadSize, 100ms);
+                break;
+            case 2:
+                error = client.write("Hello world");
+                REQUIRE(!error);
+
+                synchro.waitForManagerApproval();
+
+                error = client.read(readBytes, cMaxSize, 100ms);
+                break;
+            default: break;
+        }
+
+        REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
+    }
 }
 
 TEST_CASE("5. Server is stopped while connection is active, check server", "[unit][TcpConnection]")

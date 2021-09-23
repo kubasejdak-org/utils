@@ -36,6 +36,9 @@
 
 #include <catch2/catch.hpp>
 
+#include <cstdint>
+#include <vector>
+
 TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")
 {
     SECTION("1.1. Client is uninitialized") { utils::network::TcpClient client; }
@@ -88,5 +91,44 @@ TEST_CASE("3. Performing operations in incorrect TcpClient state", "[unit][TcpCl
     {
         auto error = client.connect("badAddress", cPort);
         REQUIRE(error == utils::network::Error::eInvalidArgument);
+    }
+
+    SECTION("3.4. Getting local/remote endpoints when client is not connected")
+    {
+        auto localEndpoint = client.localEndpoint();
+        REQUIRE(localEndpoint.ip.empty());
+        REQUIRE(localEndpoint.port == 0);
+        REQUIRE(!localEndpoint.name);
+
+        auto remoteEndpoint = client.remoteEndpoint();
+        REQUIRE(remoteEndpoint.ip.empty());
+        REQUIRE(remoteEndpoint.port == 0);
+        REQUIRE(!remoteEndpoint.name);
+    }
+
+    SECTION("3.5. Reading when client is not connected")
+    {
+        constexpr std::size_t cSize = 15;
+        std::vector<std::uint8_t> bytes;
+        auto error = client.read(bytes, cSize);
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+
+        bytes.reserve(cSize);
+        std::size_t actualReadSize{};
+        error = client.read(bytes.data(), cSize, actualReadSize);
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+    }
+
+    SECTION("3.6. Writing when client is not connected")
+    {
+        std::vector<std::uint8_t> bytes{1, 2, 3};
+        auto error = client.write({1, 2, 3});
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+
+        error = client.write(bytes.data(), bytes.size());
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+
+        error = client.write("Hello world");
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
     }
 }
