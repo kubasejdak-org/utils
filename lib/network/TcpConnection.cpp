@@ -183,7 +183,7 @@ std::error_code TcpConnection::write(const std::uint8_t* bytes, std::size_t size
             if (errno != EAGAIN) {
                 TcpConnectionLogger::error("Closing connection on error");
                 close();
-                return Error::eRemoteEndpointDisconnected;
+                return Error::eWriteError;
             }
 
             continue;

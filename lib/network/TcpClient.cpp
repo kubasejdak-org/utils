@@ -182,7 +182,7 @@ std::error_code TcpClient::write(std::string_view text)
     }
 
     auto error = m_connection->write(text);
-    if (error == Error::eRemoteEndpointDisconnected)
+    if ((error == Error::eWriteError) && !m_connection->isActive())
         disconnect();
 
     return error;
@@ -196,7 +196,7 @@ std::error_code TcpClient::write(const BytesVector& bytes)
     }
 
     auto error = m_connection->write(bytes);
-    if (error == Error::eRemoteEndpointDisconnected)
+    if ((error == Error::eWriteError) && !m_connection->isActive())
         disconnect();
 
     return error;
@@ -210,7 +210,7 @@ std::error_code TcpClient::write(const std::uint8_t* bytes, std::size_t size)
     }
 
     auto error = m_connection->write(bytes, size);
-    if (error == Error::eRemoteEndpointDisconnected)
+    if ((error == Error::eWriteError) && !m_connection->isActive())
         disconnect();
 
     return error;
