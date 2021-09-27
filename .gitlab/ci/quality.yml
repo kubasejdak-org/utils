@@ -60,7 +60,6 @@ Coverage_Total:
     - ScopedExit_Coverage
     - StateMachine_Coverage
     - TcpConnection_Coverage
-    - TcpServer_Coverage
     - Watchdog_Coverage
   artifacts:
     name: "${CI_JOB_NAME}_${CI_JOB_ID}"
@@ -79,7 +78,6 @@ Coverage_Total:
            -a ../ScopedExit_Coverage/coverage/coverage.info \
            -a ../StateMachine_Coverage/coverage/coverage.info \
            -a ../TcpConnection_Coverage/coverage/coverage.info \
-           -a ../TcpServer_Coverage/coverage/coverage.info \
            -a ../Watchdog_Coverage/coverage/coverage.info \
            -o coverage.info
     - sed -i "s|SF:|SF:${CI_PROJECT_DIR}/|g" coverage.info

@@ -32,28 +32,103 @@
 
 #include <utils/network/Error.hpp>
 #include <utils/network/TcpClient.hpp>
+#include <utils/network/TcpServer.hpp>
 
 #include <catch2/catch.hpp>
-#include <fmt/printf.h>
 
-#include <cstdio>
-#include <string>
+#include <cstdint>
+#include <vector>
 
-TEST_CASE("1. Tests client", "[unit][TcpClient]")
+TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")
+{
+    SECTION("1.1. Client is uninitialized") { utils::network::TcpClient client; }
+
+    SECTION("1.2. Client is initialized")
+    {
+        constexpr int cPort = 10101;
+        utils::network::TcpClient client("localhost", cPort);
+    }
+}
+
+TEST_CASE("2. Moving TcpClient around", "[unit][TcpClient]")
+{
+    constexpr int cPort = 10101;
+    utils::network::TcpServer server(cPort);
+    auto error = server.start();
+    REQUIRE(!error);
+
+    utils::network::TcpClient client1("localhost", cPort);
+    utils::network::TcpClient client2(std::move(client1));
+    error = client2.connect();
+    REQUIRE(!error);
+}
+
+TEST_CASE("3. Performing operations in incorrect TcpClient state", "[unit][TcpClient]")
 {
     constexpr int cPort = 10101;
     utils::network::TcpClient client("localhost", cPort);
 
-    auto error = client.connect();
-    REQUIRE(!error);
+    SECTION("3.1. No remote endpoint")
+    {
+        auto error = client.connect();
+        REQUIRE(error == utils::network::Error::eConnectError);
+    }
 
-    client.write("HELLO, WORLD!\n");
+    SECTION("3.2. Client is already running")
+    {
+        utils::network::TcpServer server(cPort);
+        auto error = server.start();
+        REQUIRE(!error);
 
-    std::vector<std::uint8_t> bytes;
-    constexpr std::size_t cSize = 255;
-    error = client.read(bytes, cSize, 5s);
-    if (error != utils::network::Error::eTimeout)
-        fmt::print("Received: {}\n", bytes.data());
+        error = client.connect();
+        REQUIRE(!error);
 
-    client.disconnect();
+        error = client.connect();
+        REQUIRE(error == utils::network::Error::eClientRunning);
+    }
+
+    SECTION("3.3. Bad endpoint address")
+    {
+        auto error = client.connect("badAddress", cPort);
+        REQUIRE(error == utils::network::Error::eInvalidArgument);
+    }
+
+    SECTION("3.4. Getting local/remote endpoints when client is not connected")
+    {
+        auto localEndpoint = client.localEndpoint();
+        REQUIRE(localEndpoint.ip.empty());
+        REQUIRE(localEndpoint.port == 0);
+        REQUIRE(!localEndpoint.name);
+
+        auto remoteEndpoint = client.remoteEndpoint();
+        REQUIRE(remoteEndpoint.ip.empty());
+        REQUIRE(remoteEndpoint.port == 0);
+        REQUIRE(!remoteEndpoint.name);
+    }
+
+    SECTION("3.5. Reading when client is not connected")
+    {
+        constexpr std::size_t cSize = 15;
+        std::vector<std::uint8_t> bytes;
+        auto error = client.read(bytes, cSize);
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+
+        bytes.reserve(cSize);
+        std::size_t actualReadSize{};
+        error = client.read(bytes.data(), cSize, actualReadSize);
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+    }
+
+    SECTION("3.6. Writing when client is not connected")
+    {
+        std::vector<std::uint8_t> bytes{1, 2, 3};
+        auto error = client.write({1, 2, 3});
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+
+        error = client.write(bytes.data(), bytes.size());
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+
+        error = client.write("Hello world");
+        REQUIRE(error == utils::network::Error::eClientDisconnected);
+    }
 }

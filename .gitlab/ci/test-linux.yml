@@ -89,22 +89,12 @@ StateMachine_Linux_UT:
 TcpConnection_Linux_ARM_UT:
   extends: .Run_Test_Linux_ARM
   variables:
-    TestTags: "[TcpConnection]"
+    TestTags: "[TcpClient],[TcpServer],[TcpConnection]"
 
 TcpConnection_Linux_UT:
   extends: .Run_Test_Linux
   variables:
-    TestTags: "[TcpConnection]"
-
-TcpServer_Linux_ARM_UT:
-  extends: .Run_Test_Linux_ARM
-  variables:
-    TestTags: "[TcpServer]"
-
-TcpServer_Linux_UT:
-  extends: .Run_Test_Linux
-  variables:
-    TestTags: "[TcpServer]"
+    TestTags: "[TcpClient],[TcpServer],[TcpConnection]"
 
 Watchdog_Linux_ARM_UT:
   extends: .Run_Test_Linux_ARM
