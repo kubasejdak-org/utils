@@ -654,7 +654,7 @@ TEST_CASE("6. Server is stopped while connection is active, check client", "[uni
     }
 }
 
-TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpConnection]")
+TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpConnection][SkipAsan]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 256;
