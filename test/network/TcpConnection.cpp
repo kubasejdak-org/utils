@@ -698,10 +698,9 @@ TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection][aaa]")
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 255;
 
-    constexpr unsigned int cClientsCount = 2;
-    utils::network::TcpServer server(cPort, 2);
+    constexpr unsigned int cClientsCount = 10;
+    utils::network::TcpServer server(cPort, cClientsCount);
     server.setConnectionHandler([&](utils::network::TcpConnection connection) {
-        std::printf("started\n");
         std::vector<std::uint8_t> bytes;
         while (connection.isParentRunning() && connection.isActive()) {
             if (auto error = connection.read(bytes, cMaxSize, 100ms)) {
@@ -714,8 +713,6 @@ TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection][aaa]")
             if (connection.write(bytes))
                 break;
         }
-
-        std::printf("finished: %d, %d\n", connection.isParentRunning(), connection.isActive());
     });
 
     auto error = server.start();
@@ -724,22 +721,18 @@ TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection][aaa]")
     osal::sleep(10ms);
 
     auto clientThread = [&](const std::vector<std::uint8_t>& writeBytes) {
-        osal::sleep(1000ms);
-
         utils::network::TcpClient client("localhost", cPort);
         auto error = client.connect();
         if (error)
             REQUIRE(!error);
 
-        constexpr int cIterationsCount = 10;
+        constexpr int cIterationsCount = 1000;
         for (int i = 0; i < cIterationsCount; ++i) {
-            std::printf("W%d\n", i);
             error = client.write(writeBytes);
             if (error)
                 REQUIRE(!error);
 
             std::vector<std::uint8_t> readBytes;
-            std::printf("R%d\n", i);
             error = client.read(readBytes, writeBytes.size());
             if (error)
                 REQUIRE(!error);
@@ -752,10 +745,14 @@ TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection][aaa]")
     for (auto& data : bytes)
         generateRandomData(cMaxSize, data);
 
-    std::array<osal::Thread<>, cClientsCount> clientThreads{
-        osal::Thread<>{clientThread, bytes[0]},
-        osal::Thread<>{clientThread, bytes[1]},
-    };
-    // osal::Thread<>{clientThread, bytes[2]},
-    // osal::Thread<>{clientThread, bytes[3]}};
+    std::array<osal::Thread<>, cClientsCount> clientThreads{osal::Thread<>{clientThread, bytes[0]},
+                                                            osal::Thread<>{clientThread, bytes[1]},
+                                                            osal::Thread<>{clientThread, bytes[2]},
+                                                            osal::Thread<>{clientThread, bytes[3]},
+                                                            osal::Thread<>{clientThread, bytes[4]},
+                                                            osal::Thread<>{clientThread, bytes[5]},  // NOLINT
+                                                            osal::Thread<>{clientThread, bytes[6]},  // NOLINT
+                                                            osal::Thread<>{clientThread, bytes[7]},  // NOLINT
+                                                            osal::Thread<>{clientThread, bytes[8]},  // NOLINT
+                                                            osal::Thread<>{clientThread, bytes[9]}}; // NOLINT
 }
