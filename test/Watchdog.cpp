@@ -130,10 +130,10 @@ TEST_CASE("3. Timeouts without resetting", "[unit][Watchdog]")
         iterationsCount = cIterationsCount;
     }
 
-    SECTION("3.2. Timeout 10 ms")
+    SECTION("3.2. Timeout 100 ms")
     {
-        timeout = 10ms;
-        constexpr int cIterationsCount = 1000;
+        timeout = 100ms;
+        constexpr int cIterationsCount = 100;
         iterationsCount = cIterationsCount;
     }
 
@@ -179,7 +179,7 @@ TEST_CASE("4. Multiple identical timeouts without resetting", "[unit][Watchdog]"
 
     SECTION("4.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("4.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("4.2. Timeout 100 ms") { timeout = 100ms; }
 
     SECTION("4.3. Timeout 3 s") { timeout = 3s; }
 
@@ -216,7 +216,7 @@ TEST_CASE("5. Resetting single watchdog before timeout", "[unit][Watchdog]")
 
     SECTION("5.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("5.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("5.2. Timeout 100 ms") { timeout = 100ms; }
 
     SECTION("5.3. Timeout 3 s") { timeout = 3s; }
 
@@ -249,7 +249,7 @@ TEST_CASE("6. Resetting multiple identical watchdogs before timeout", "[unit][Wa
 
     SECTION("6.1. Timeout 300 ms") { timeout = 300ms; }
 
-    SECTION("6.2. Timeout 10 ms") { timeout = 10ms; }
+    SECTION("6.2. Timeout 100 ms") { timeout = 100ms; }
 
     SECTION("6.3. Timeout 3 s") { timeout = 3s; }
 
