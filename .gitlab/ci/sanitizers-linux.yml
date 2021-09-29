@@ -16,12 +16,13 @@
     # Build application.
     - cmake .. -DPLATFORM=linux -DTOOLCHAIN=gcc-11 -D${Sanitizer}=ON
     - make
-    - bin/utils-tests
+    - bin/utils-tests ${TestTags}
 
 Address_Sanitizer_Linux:
   extends: .Linux_Sanitizer
   variables:
     Sanitizer: "USE_ASAN"
+    TestTags: "~[SkipAsan]"
 
 Leak_Sanitizer_Linux:
   extends: .Linux_Sanitizer

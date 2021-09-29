@@ -160,7 +160,7 @@ TEST_CASE("3. Timeouts without resetting", "[unit][Watchdog]")
         clientData = Client();
         auto start = osal::timestamp();
         REQUIRE(watchdog.start());
-        osal::sleep(timeout + 2ms);
+        osal::sleep(timeout + 10ms);
         REQUIRE(watchdog.stop());
 
         auto elapsed = clientData.end - start;
@@ -168,7 +168,7 @@ TEST_CASE("3. Timeouts without resetting", "[unit][Watchdog]")
 
         REQUIRE(clientData.timeoutCounter == 1);
         REQUIRE(elapsed >= timeout);
-        REQUIRE(elapsed <= (timeout + 2ms));
+        REQUIRE(elapsed <= (timeout + 10ms));
         REQUIRE(timedOutClient == client);
     }
 }
@@ -197,7 +197,7 @@ TEST_CASE("4. Multiple identical timeouts without resetting", "[unit][Watchdog]"
 
     auto start = osal::timestamp();
     REQUIRE(watchdog.start());
-    osal::sleep(timeout + 2ms);
+    osal::sleep(timeout + 10ms);
     REQUIRE(watchdog.stop());
 
     for (const auto& [name, data] : clientData) {
@@ -206,7 +206,7 @@ TEST_CASE("4. Multiple identical timeouts without resetting", "[unit][Watchdog]"
 
         REQUIRE(data.timeoutCounter == 1);
         REQUIRE(elapsed >= timeout);
-        REQUIRE(elapsed <= (timeout + 2ms));
+        REQUIRE(elapsed <= (timeout + 10ms));
     }
 }
 
@@ -397,7 +397,7 @@ TEST_CASE("8. Resetting multiple identical watchdogs in separate threads, fixed 
         const auto* name = "test1";
 
         for (int i = 0; i < cIterationCount; ++i) {
-            osal::sleep(timeout - 2ms);
+            osal::sleep(timeout - 10ms);
             watchdog.reset(name);
         }
     });
@@ -406,7 +406,7 @@ TEST_CASE("8. Resetting multiple identical watchdogs in separate threads, fixed 
         const auto* name = "test2";
 
         for (int i = 0; i < cIterationCount; ++i) {
-            osal::sleep(timeout - 2ms);
+            osal::sleep(timeout - 10ms);
             watchdog.reset(name);
         }
     });
@@ -415,7 +415,7 @@ TEST_CASE("8. Resetting multiple identical watchdogs in separate threads, fixed 
         const auto* name = "test3";
 
         for (int i = 0; i < cIterationCount; ++i) {
-            osal::sleep(timeout - 2ms);
+            osal::sleep(timeout - 10ms);
             watchdog.reset(name);
         }
     });
@@ -451,7 +451,7 @@ TEST_CASE("9. Multiple watchdogs, resetting only half of them", "[unit][Watchdog
 
     constexpr int cIterationCount = 100;
     for (int i = 0; i < cIterationCount; ++i) {
-        osal::sleep(timeout - 2ms);
+        osal::sleep(timeout - 10ms);
         REQUIRE(watchdog.reset("test1"));
         REQUIRE(watchdog.reset("test3"));
     }
