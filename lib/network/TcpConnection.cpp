@@ -114,7 +114,7 @@ TcpConnection::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualRe
         fd_set dataReadFds{};
         FD_ZERO(&dataReadFds);          // NOLINT
         FD_SET(m_socket, &dataReadFds); // NOLINT
-        constexpr int cTimeoutMs = 250;
+        const auto cTimeoutMs = std::min(osal::Duration::rep{250}, timeout.timeLeft().count());
         timeval dataTimeout{0, int(osalMsToUs(cTimeoutMs))};
 
         TcpConnectionLogger::trace("Waiting for remote endpoint data");
