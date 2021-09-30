@@ -22,7 +22,6 @@ Address_Sanitizer_Linux:
   extends: .Linux_Sanitizer
   variables:
     Sanitizer: "USE_ASAN"
-    TestTags: "~[SkipAsan]"
 
 Leak_Sanitizer_Linux:
   extends: .Linux_Sanitizer
