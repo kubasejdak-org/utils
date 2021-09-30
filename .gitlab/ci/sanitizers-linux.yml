@@ -1,6 +1,6 @@
 .Linux_Sanitizer:
   stage: sanitizers
-  image: kubasejdak/gcc:11
+  image: kubasejdak/clang:12
   tags:
     - cet_build
   needs: []
@@ -14,7 +14,7 @@
     - cd ${CI_JOB_NAME}
 
     # Build application.
-    - cmake .. -DPLATFORM=linux -DTOOLCHAIN=gcc-11 -D${Sanitizer}=ON
+    - cmake .. -DPLATFORM=linux -DTOOLCHAIN=clang-12 -D${Sanitizer}=ON
     - make
     - bin/utils-tests ${TestTags}
 
