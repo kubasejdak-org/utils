@@ -84,7 +84,7 @@ bool Watchdog::start()
     for (auto& clientData : m_clients)
         clientData.second.timeout.reset();
 
-    m_thread = std::make_unique<osal::Thread<>>();
+    m_thread = std::make_unique<osal::NormalPrioThread<m_cWatchdogThreadStackSize>>();
     if (auto error = m_thread->start([this] { threadFunc(); })) {
         WatchdogLogger::error("Failed to start watchdog thread: err={}", error.message());
         return false;

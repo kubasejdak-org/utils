@@ -297,13 +297,13 @@ TEST_CASE("7. Resetting multiple watchdogs in separate threads before timeout, f
     osal::Thread<> thread1([&] {
         const auto* name = "test1";
 
-        osal::sleep(398ms);
+        osal::sleep(380ms);
         watchdog.reset(name);
 
-        osal::sleep(398ms);
+        osal::sleep(380ms);
         watchdog.reset(name);
 
-        osal::sleep(398ms);
+        osal::sleep(380ms);
         watchdog.reset(name);
 
         osal::sleep(100ms);
@@ -319,7 +319,7 @@ TEST_CASE("7. Resetting multiple watchdogs in separate threads before timeout, f
         osal::sleep(200ms);
         watchdog.reset(name);
 
-        osal::sleep(398ms);
+        osal::sleep(380ms);
         watchdog.reset(name);
 
         osal::sleep(200ms);
@@ -347,7 +347,7 @@ TEST_CASE("7. Resetting multiple watchdogs in separate threads before timeout, f
         osal::sleep(200ms);
         watchdog.reset(name);
 
-        osal::sleep(298ms);
+        osal::sleep(280ms);
         watchdog.reset(name);
 
         osal::sleep(100ms);
@@ -356,7 +356,7 @@ TEST_CASE("7. Resetting multiple watchdogs in separate threads before timeout, f
         osal::sleep(100ms);
         watchdog.reset(name);
 
-        osal::sleep(298ms);
+        osal::sleep(280ms);
         watchdog.reset(name);
 
         osal::sleep(200ms);
