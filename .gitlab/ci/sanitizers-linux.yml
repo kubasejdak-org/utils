@@ -16,7 +16,7 @@
     # Build application.
     - cmake .. -DPLATFORM=linux -DTOOLCHAIN=clang-12 -D${Sanitizer}=ON
     - make
-    - bin/utils-tests ${TestTags}
+    - bin/utils-tests
 
 Address_Sanitizer_Linux:
   extends: .Linux_Sanitizer
