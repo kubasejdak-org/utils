@@ -195,7 +195,7 @@ void TcpServer::listenThread()
 
                 // NOLINTNEXTLINE
                 auto clientSocket = accept4(m_socket, reinterpret_cast<sockaddr*>(&clientAddr), &size, SOCK_CLOEXEC);
-                m_connectionThreads.emplace_back([&] {
+                m_connectionThreads.emplace_back([this, clientSocket, clientAddr] {
                     auto localEndpoint = getLocalEndpoint(clientSocket);
                     auto remoteEndpoint = getRemoteEndpoint(clientAddr);
 

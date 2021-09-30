@@ -39,6 +39,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <array>
 #include <cstdint>
 #include <limits>
 #include <random>
@@ -375,20 +376,49 @@ TEST_CASE("4. Server disconnects from client", "[unit][TcpConnection]")
     auto error = server.start();
     REQUIRE(!error);
 
-    utils::network::TcpClient client("localhost", cPort);
-    error = client.connect();
-    REQUIRE(!error);
+    for (int i = 0; i < 3; ++i) {
+        utils::network::TcpClient client("localhost", cPort);
+        error = client.connect();
+        REQUIRE(!error);
 
-    synchro.waitForManagerApproval();
+        synchro.waitForManagerApproval();
 
-    error = client.write("Hello world");
-    REQUIRE(!error);
+        // Use different versions of TcpClient::write() and TcpClient::read().
+        std::vector<std::uint8_t> writeBytes{1, 2, 3};
+        std::vector<std::uint8_t> readBytes;
+        readBytes.reserve(cMaxSize);
+        std::size_t actualReadSize{};
 
-    synchro.waitForManagerApproval();
+        switch (i) {
+            case 0:
+                error = client.write(writeBytes);
+                REQUIRE(!error);
 
-    std::vector<std::uint8_t> bytes;
-    error = client.read(bytes, cMaxSize, 100ms);
-    REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
+                synchro.waitForManagerApproval();
+
+                error = client.read(readBytes, cMaxSize, 100ms);
+                break;
+            case 1:
+                error = client.write(writeBytes.data(), writeBytes.size());
+                REQUIRE(!error);
+
+                synchro.waitForManagerApproval();
+
+                error = client.read(readBytes.data(), cMaxSize, actualReadSize, 100ms);
+                break;
+            case 2:
+                error = client.write("Hello world");
+                REQUIRE(!error);
+
+                synchro.waitForManagerApproval();
+
+                error = client.read(readBytes, cMaxSize, 100ms);
+                break;
+            default: break;
+        }
+
+        REQUIRE(error == utils::network::Error::eRemoteEndpointDisconnected);
+    }
 }
 
 TEST_CASE("5. Server is stopped while connection is active, check server", "[unit][TcpConnection]")
@@ -661,4 +691,70 @@ TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpC
     REQUIRE(!error);
 
     osal::sleep(500ms);
+}
+
+TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+
+    constexpr unsigned int cClientsCount = 10;
+    utils::network::TcpServer server(cPort, cClientsCount);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            if (auto error = connection.read(bytes, cMaxSize, 100ms)) {
+                if (error == utils::network::Error::eTimeout)
+                    continue;
+
+                break;
+            }
+
+            if (connection.write(bytes))
+                break;
+        }
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    osal::sleep(10ms);
+
+    auto clientThread = [&](const std::vector<std::uint8_t>& writeBytes) {
+        utils::network::TcpClient client("localhost", cPort);
+        auto error = client.connect();
+        if (error)
+            REQUIRE(!error);
+
+        constexpr int cIterationsCount = 1000;
+        for (int i = 0; i < cIterationsCount; ++i) {
+            error = client.write(writeBytes);
+            if (error)
+                REQUIRE(!error);
+
+            std::vector<std::uint8_t> readBytes;
+            error = client.read(readBytes, writeBytes.size());
+            if (error)
+                REQUIRE(!error);
+            if (readBytes != writeBytes)
+                REQUIRE(readBytes == writeBytes);
+        }
+    };
+
+    std::array<std::vector<std::uint8_t>, cClientsCount> bytes{};
+    for (auto& data : bytes)
+        generateRandomData(cMaxSize, data);
+
+    constexpr unsigned int cClientThreadStackSize = 128 * 1024;
+    using ClientThread = osal::NormalPrioThread<cClientThreadStackSize>;
+    std::array<ClientThread, cClientsCount> clientThreads{ClientThread{clientThread, bytes[0]},
+                                                          ClientThread{clientThread, bytes[1]},
+                                                          ClientThread{clientThread, bytes[2]},
+                                                          ClientThread{clientThread, bytes[3]},
+                                                          ClientThread{clientThread, bytes[4]},
+                                                          ClientThread{clientThread, bytes[5]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[6]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[7]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[8]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[9]}}; // NOLINT
 }
