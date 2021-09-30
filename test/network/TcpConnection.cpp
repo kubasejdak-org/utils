@@ -745,14 +745,16 @@ TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection][aaa]")
     for (auto& data : bytes)
         generateRandomData(cMaxSize, data);
 
-    std::array<osal::Thread<>, cClientsCount> clientThreads{osal::Thread<>{clientThread, bytes[0]},
-                                                            osal::Thread<>{clientThread, bytes[1]},
-                                                            osal::Thread<>{clientThread, bytes[2]},
-                                                            osal::Thread<>{clientThread, bytes[3]},
-                                                            osal::Thread<>{clientThread, bytes[4]},
-                                                            osal::Thread<>{clientThread, bytes[5]},  // NOLINT
-                                                            osal::Thread<>{clientThread, bytes[6]},  // NOLINT
-                                                            osal::Thread<>{clientThread, bytes[7]},  // NOLINT
-                                                            osal::Thread<>{clientThread, bytes[8]},  // NOLINT
-                                                            osal::Thread<>{clientThread, bytes[9]}}; // NOLINT
+    constexpr unsigned int cClientThreadStackSize = 128 * 1024;
+    using ClientThread = osal::NormalPrioThread<cClientThreadStackSize>;
+    std::array<ClientThread, cClientsCount> clientThreads{ClientThread{clientThread, bytes[0]},
+                                                          ClientThread{clientThread, bytes[1]},
+                                                          ClientThread{clientThread, bytes[2]},
+                                                          ClientThread{clientThread, bytes[3]},
+                                                          ClientThread{clientThread, bytes[4]},
+                                                          ClientThread{clientThread, bytes[5]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[6]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[7]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[8]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[9]}}; // NOLINT
 }

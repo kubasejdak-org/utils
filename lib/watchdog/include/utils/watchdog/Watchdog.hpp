@@ -93,12 +93,14 @@ private:
         osal::Timeout timeout;
     };
 
+    static constexpr unsigned int m_cWatchdogThreadStackSize = 128 * 1024;
+
     std::string m_name;
     std::map<std::string, ClientData> m_clients;
     bool m_running{};
     osal::Mutex m_mutex;
     osal::Semaphore m_startSemaphore{0};
-    std::unique_ptr<osal::Thread<>> m_thread;
+    std::unique_ptr<osal::NormalPrioThread<m_cWatchdogThreadStackSize>> m_thread;
     osal::Semaphore m_semaphore{0};
 };
 
