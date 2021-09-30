@@ -39,6 +39,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <array>
 #include <cstdint>
 #include <limits>
 #include <random>
@@ -654,7 +655,7 @@ TEST_CASE("6. Server is stopped while connection is active, check client", "[uni
     }
 }
 
-TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpConnection][SkipAsan]")
+TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpConnection]")
 {
     constexpr int cPort = 10101;
     constexpr std::size_t cMaxSize = 256;
@@ -690,4 +691,70 @@ TEST_CASE("7. Performing operations in incorrect connection state", "[unit][TcpC
     REQUIRE(!error);
 
     osal::sleep(500ms);
+}
+
+TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection]")
+{
+    constexpr int cPort = 10101;
+    constexpr std::size_t cMaxSize = 255;
+
+    constexpr unsigned int cClientsCount = 10;
+    utils::network::TcpServer server(cPort, cClientsCount);
+    server.setConnectionHandler([&](utils::network::TcpConnection connection) {
+        std::vector<std::uint8_t> bytes;
+        while (connection.isParentRunning() && connection.isActive()) {
+            if (auto error = connection.read(bytes, cMaxSize, 100ms)) {
+                if (error == utils::network::Error::eTimeout)
+                    continue;
+
+                break;
+            }
+
+            if (connection.write(bytes))
+                break;
+        }
+    });
+
+    auto error = server.start();
+    REQUIRE(!error);
+
+    osal::sleep(10ms);
+
+    auto clientThread = [&](const std::vector<std::uint8_t>& writeBytes) {
+        utils::network::TcpClient client("localhost", cPort);
+        auto error = client.connect();
+        if (error)
+            REQUIRE(!error);
+
+        constexpr int cIterationsCount = 1000;
+        for (int i = 0; i < cIterationsCount; ++i) {
+            error = client.write(writeBytes);
+            if (error)
+                REQUIRE(!error);
+
+            std::vector<std::uint8_t> readBytes;
+            error = client.read(readBytes, writeBytes.size());
+            if (error)
+                REQUIRE(!error);
+            if (readBytes != writeBytes)
+                REQUIRE(readBytes == writeBytes);
+        }
+    };
+
+    std::array<std::vector<std::uint8_t>, cClientsCount> bytes{};
+    for (auto& data : bytes)
+        generateRandomData(cMaxSize, data);
+
+    constexpr unsigned int cClientThreadStackSize = 128 * 1024;
+    using ClientThread = osal::NormalPrioThread<cClientThreadStackSize>;
+    std::array<ClientThread, cClientsCount> clientThreads{ClientThread{clientThread, bytes[0]},
+                                                          ClientThread{clientThread, bytes[1]},
+                                                          ClientThread{clientThread, bytes[2]},
+                                                          ClientThread{clientThread, bytes[3]},
+                                                          ClientThread{clientThread, bytes[4]},
+                                                          ClientThread{clientThread, bytes[5]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[6]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[7]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[8]},  // NOLINT
+                                                          ClientThread{clientThread, bytes[9]}}; // NOLINT
 }
