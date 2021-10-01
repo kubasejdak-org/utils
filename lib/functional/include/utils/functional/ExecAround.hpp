@@ -59,6 +59,8 @@ public:
     Action postAction;
     UnderlyingType underlyingObject;
 
+    ExecAround() = default;
+
     /// Constructor.
     /// @param preAction                Callback to be called before executing UnderlyingType's method.
     /// @param postAction               Callback to be called after executing UnderlyingType's method.
@@ -72,9 +74,9 @@ public:
     /// Copy constructor.
     /// @param other                    ExecAround instance to be copied from.
     ExecAround(const ExecAround<UnderlyingType>& other) noexcept
-        : preAction(std::move(other.preAction))
-        , postAction(std::move(other.postAction))
-        , underlyingObject(std::move(other.underlyingObject))
+        : preAction(other.preAction)
+        , postAction(other.postAction)
+        , underlyingObject(other.underlyingObject)
     {}
 
     /// Move constructor.
@@ -92,11 +94,11 @@ public:
     /// @param other                    ExecAround instance to be copied from.
     ExecAround& operator=(const ExecAround<UnderlyingType>& other) // NOLINT
     {
-        if (other != *this) {
+        //if (other != *this) {
             preAction = other.preAction;
             postAction = other.postAction;
             underlyingObject = other.underlyingObject;
-        }
+        //}
 
         return *this;
     }
@@ -105,11 +107,11 @@ public:
     /// @param other                    ExecAround instance to be moved from.
     ExecAround& operator=(ExecAround<UnderlyingType>&& other) // NOLINT
     {
-        if (other != *this) {
+        //if (other != *this) {
             preAction = std::move(other.preAction);
             postAction = std::move(other.postAction);
             underlyingObject = std::move(other.underlyingObject);
-        }
+        //}
 
         return *this;
     }
