@@ -92,9 +92,10 @@ public:
     [[nodiscard]] auto currentState()
     {
         using UserStateRef = std::reference_wrapper<std::shared_ptr<UserState>>;
-        return functional::ExecAround<UserStateRef>([this] { preStateCall(); },
-                                                    [this] { postStateCall(); },
-                                                    std::ref(m_currentState));
+        return functional::ExecAround<UserStateRef>(
+            std::ref(m_currentState),
+            [this] { preStateCall(); },
+            [this] { postStateCall(); });
     }
 
 private:

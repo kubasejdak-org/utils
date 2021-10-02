@@ -65,16 +65,14 @@ struct TestType {
     void func2() { ++d; }
 };
 
-bool operator==(const TestType& a, const TestType& b)
-{
-    return (a.i == b.i) && (a.d == b.d);
-}
-
 TEST_CASE("1. Simple wrapper around custom type", "[unit][ExecAround]")
 {
     bool preCall{};
     bool postCall{};
-    utils::functional::ExecAround wrapper([&] { preCall = true; }, [&] { postCall = true; }, TestType{});
+    auto preAction = [&] { preCall = true; };
+    auto postAction = [&] { postCall = true; };
+
+    utils::functional::ExecAround<TestType> wrapper(TestType{}, preAction, postAction);
     REQUIRE(wrapper->i == 0);
     REQUIRE(wrapper->d == 0.0);
 
@@ -98,7 +96,10 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
 {
     bool preCall{};
     bool postCall{};
-    utils::functional::ExecAround<TestType> wrapper([&] { preCall = true; }, [&] { postCall = true; }, TestType{});
+    auto preAction = [&] { preCall = true; };
+    auto postAction = [&] { postCall = true; };
+
+    utils::functional::ExecAround<TestType> wrapper(TestType{}, preAction, postAction);
 
     SECTION("2.1. Copy construction")
     {
@@ -107,7 +108,6 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
 
         copiedWrapper->func1();
         REQUIRE(copiedWrapper->i == 1);
-        REQUIRE(copiedWrapper->d == 0.0);
     }
 
     SECTION("2.2. Move construction")
@@ -117,7 +117,6 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
 
         movedWrapper->func1();
         REQUIRE(movedWrapper->i == 1);
-        REQUIRE(movedWrapper->d == 0.0);
     }
 
     SECTION("2.3. Copy assignment")
@@ -128,24 +127,53 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
 
         copyAssignedWrapper->func1();
         REQUIRE(copyAssignedWrapper->i == 1);
-        REQUIRE(copyAssignedWrapper->d == 0.0);
     }
 
-    SECTION("2.4. Move assignment") {}
+    SECTION("2.4. Move assignment")
+    {
+        utils::functional::ExecAround<TestType> moveAssignedWrapper;
+        moveAssignedWrapper = std::move(wrapper);
+        REQUIRE(moveAssignedWrapper->moveAssigned);
 
-    REQUIRE(wrapper->i == 0);
-    REQUIRE(wrapper->d == 0.0);
+        moveAssignedWrapper->func1();
+        REQUIRE(moveAssignedWrapper->i == 1);
+    }
+
+    REQUIRE(wrapper->i == 0); // NOLINT
     REQUIRE(preCall);
     REQUIRE(postCall);
 }
 
 TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
 {
-    SECTION("3.1. Copy") {}
+    bool preCall{};
+    bool postCall{};
+    auto preAction = [&] { preCall = true; };
+    auto postAction = [&] { postCall = true; };
 
-    SECTION("3.2. Move") {}
+    SECTION("3.1. Copy from object")
+    {
+        TestType test;
+        utils::functional::ExecAround<TestType> wrapper(test, preAction, postAction);
 
-    SECTION("3.3. Reference") {}
+        wrapper->func1();
+        REQUIRE(wrapper->i == 1);
+        REQUIRE(test.i == 0);
+    }
 
-    SECTION("3.4. Reference wrapper") {}
+    SECTION("3.2. Copy from temporary")
+    {
+        utils::functional::ExecAround<TestType> wrapper(TestType{}, preAction, postAction);
+
+        wrapper->func1();
+    }
+
+    //    SECTION("3.2. Move") {}
+    //
+    //    SECTION("3.3. Reference") {}
+    //
+    //    SECTION("3.4. Reference wrapper") {}
+
+    REQUIRE(preCall);
+    REQUIRE(postCall);
 }
