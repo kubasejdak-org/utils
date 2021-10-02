@@ -27,6 +27,11 @@ Bits_Coverage:
   variables:
     Tags: "[bits]"
 
+ExecAround_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[ExecAround]"
+
 GlobalRegistry_Coverage:
   extends: .Linux_Coverage
   variables:

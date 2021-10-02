@@ -4,6 +4,7 @@ add_subdirectory(init)
 add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
     bits.cpp
+    ExecAround.cpp
     GlobalRegistry.cpp
     Logger.cpp
     property.cpp
