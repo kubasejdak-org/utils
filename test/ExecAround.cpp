@@ -34,6 +34,9 @@
 
 #include <catch2/catch.hpp>
 
+#include <functional>
+#include <memory>
+
 struct TestType {
     TestType() = default;
     TestType(const TestType& /*unused*/)
@@ -168,11 +171,54 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
         wrapper->func1();
     }
 
-    //    SECTION("3.2. Move") {}
-    //
-    //    SECTION("3.3. Reference") {}
-    //
-    //    SECTION("3.4. Reference wrapper") {}
+    SECTION("3.3. Move")
+    {
+        TestType test;
+        utils::functional::ExecAround<TestType> wrapper(std::move(test), preAction, postAction);
+        REQUIRE(wrapper->moveConstructed);
+
+        wrapper->func1();
+        REQUIRE(wrapper->i == 1);
+        REQUIRE(test.i == 0); // NOLINT
+    }
+
+    SECTION("3.4. Reference wrapper")
+    {
+        using TestTypeRef = std::reference_wrapper<TestType>;
+
+        TestType test;
+        utils::functional::ExecAround<TestTypeRef> wrapper(std::ref(test), preAction, postAction);
+        REQUIRE(!wrapper->copyConstructed);
+        REQUIRE(!wrapper->moveConstructed);
+
+        wrapper->func1();
+        REQUIRE(wrapper->i == 1);
+        REQUIRE(test.i == 1);
+    }
+
+    SECTION("3.5. Pointer")
+    {
+        auto test = std::make_unique<TestType>();
+        utils::functional::ExecAround<TestType*> wrapper(test.get(), preAction, postAction);
+        REQUIRE(!wrapper->copyConstructed);
+        REQUIRE(!wrapper->moveConstructed);
+
+        wrapper->func1();
+        REQUIRE(wrapper->i == 1);
+        REQUIRE(test->i == 1);
+    }
+
+    SECTION("3.6. Shared pointer")
+    {
+        auto test = std::make_shared<TestType>();
+        utils::functional::ExecAround<std::shared_ptr<TestType>> wrapper(test, preAction, postAction);
+        REQUIRE(!wrapper->copyConstructed);
+        REQUIRE(!wrapper->moveConstructed);
+
+        wrapper->func1();
+        REQUIRE(wrapper->i == 1);
+        REQUIRE(test->i == 1);
+    }
 
     REQUIRE(preCall);
     REQUIRE(postCall);

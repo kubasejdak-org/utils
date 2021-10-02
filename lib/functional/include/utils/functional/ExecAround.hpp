@@ -179,7 +179,12 @@ private:
         auto operator->() const noexcept
         {
             if constexpr (types::IsReferenceWrapper<UnderlyingType>::value) { // NOLINT
-                return wrapper->underlyingObject.get();
+                using T = typename UnderlyingType::type;
+                if constexpr (std::is_pointer_v<T> || types::IsSharedPointer<T>::value) {
+                    return wrapper->underlyingObject.get();
+                }
+                else
+                    return &wrapper->underlyingObject.get();
             }
             else if constexpr (types::IsSharedPointer<UnderlyingType>::value) {
                 return wrapper->underlyingObject.get();
