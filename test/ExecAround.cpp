@@ -158,6 +158,7 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
     {
         TestType test;
         utils::functional::ExecAround<TestType> wrapper(test, preAction, postAction);
+        REQUIRE(wrapper->copyConstructed);
 
         wrapper->func1();
         REQUIRE(wrapper->i == 1);
@@ -167,6 +168,7 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
     SECTION("3.2. Copy from temporary")
     {
         utils::functional::ExecAround<TestType> wrapper(TestType{}, preAction, postAction);
+        REQUIRE(wrapper->moveConstructed);
 
         wrapper->func1();
     }
@@ -212,6 +214,20 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
     {
         auto test = std::make_shared<TestType>();
         utils::functional::ExecAround<std::shared_ptr<TestType>> wrapper(test, preAction, postAction);
+        REQUIRE(!wrapper->copyConstructed);
+        REQUIRE(!wrapper->moveConstructed);
+
+        wrapper->func1();
+        REQUIRE(wrapper->i == 1);
+        REQUIRE(test->i == 1);
+    }
+
+    SECTION("3.7. Reference to shared pointer")
+    {
+        using TestTypeSharedPtrRef = std::reference_wrapper<std::shared_ptr<TestType>>;
+
+        auto test = std::make_shared<TestType>();
+        utils::functional::ExecAround<TestTypeSharedPtrRef> wrapper(std::ref(test), preAction, postAction);
         REQUIRE(!wrapper->copyConstructed);
         REQUIRE(!wrapper->moveConstructed);
 
