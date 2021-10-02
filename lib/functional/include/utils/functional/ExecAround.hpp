@@ -51,38 +51,47 @@ class ExecAround {
     template <typename>
     struct ActionExecutor;
 
+    /// Helper type to perform SFINAE to make sure that given type T is same as UnderlyingType.
+    template <typename T>
+    using IsUnderlyingType = std::enable_if_t<std::is_same_v<std::decay_t<T>, UnderlyingType>, bool>;
+
 public:
     /// Alias for function that implements preAction and postAction callbacks.
     using Action = std::function<void()>;
 
+    UnderlyingType underlyingObject;
     Action preAction;
     Action postAction;
-    UnderlyingType underlyingObject;
+
+    /// Default constructor.
+    ExecAround() = default;
 
     /// Constructor.
+    /// @tparam T                       Type to be wrapped with preAction call and postAction call.
+    /// @param underlyingObject         Object to be wrapped with ExecAround mechanism.
     /// @param preAction                Callback to be called before executing UnderlyingType's method.
     /// @param postAction               Callback to be called after executing UnderlyingType's method.
-    /// @param underlyingObject         Object to be wrapped with ExecAround mechanism.
-    ExecAround(Action preAction, Action postAction, UnderlyingType underlyingObject)
-        : preAction(std::move(preAction))
+    template <typename T, typename = IsUnderlyingType<T>>
+    explicit ExecAround(T&& underlyingObject, Action preAction, Action postAction)
+        : underlyingObject(std::forward<T>(underlyingObject))
+        , preAction(std::move(preAction))
         , postAction(std::move(postAction))
-        , underlyingObject(std::move(underlyingObject))
     {}
 
     /// Copy constructor.
     /// @param other                    ExecAround instance to be copied from.
     ExecAround(const ExecAround<UnderlyingType>& other) noexcept
-        : preAction(std::move(other.preAction))
-        , postAction(std::move(other.postAction))
-        , underlyingObject(std::move(other.underlyingObject))
+        : underlyingObject(other.underlyingObject)
+        , preAction(other.preAction)
+        , postAction(other.postAction)
     {}
 
     /// Move constructor.
     /// @param other                    ExecAround instance to be moved from.
     ExecAround(ExecAround<UnderlyingType>&& other) noexcept
-        : preAction(std::move(other.preAction))
+        : underlyingObject(std::move(other.underlyingObject))
+        , preAction(std::move(other.preAction))
         , postAction(std::move(other.postAction))
-        , underlyingObject(std::move(other.underlyingObject))
     {}
 
     /// Default destructor.
@@ -92,10 +101,10 @@ public:
     /// @param other                    ExecAround instance to be copied from.
     ExecAround& operator=(const ExecAround<UnderlyingType>& other) // NOLINT
     {
-        if (other != *this) {
+        if (&other != this) {
+            underlyingObject = other.underlyingObject;
             preAction = other.preAction;
             postAction = other.postAction;
-            underlyingObject = other.underlyingObject;
         }
 
         return *this;
@@ -105,10 +114,10 @@ public:
     /// @param other                    ExecAround instance to be moved from.
     ExecAround& operator=(ExecAround<UnderlyingType>&& other) // NOLINT
     {
-        if (other != *this) {
+        if (&other != this) {
+            underlyingObject = std::move(other.underlyingObject);
             preAction = std::move(other.preAction);
             postAction = std::move(other.postAction);
-            underlyingObject = std::move(other.underlyingObject);
         }
 
         return *this;
@@ -170,7 +179,12 @@ private:
         auto operator->() const noexcept
         {
             if constexpr (types::IsReferenceWrapper<UnderlyingType>::value) { // NOLINT
-                return wrapper->underlyingObject.get();
+                using T = typename UnderlyingType::type;
+                if constexpr (std::is_pointer_v<T> || types::IsSharedPointer<T>::value) {
+                    return wrapper->underlyingObject.get();
+                }
+                else
+                    return &wrapper->underlyingObject.get();
             }
             else if constexpr (types::IsSharedPointer<UnderlyingType>::value) {
                 return wrapper->underlyingObject.get();
