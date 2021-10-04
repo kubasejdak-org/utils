@@ -54,6 +54,7 @@ Coverage_Total:
     - cet_build
   needs:
     - Bits_Coverage
+    - EventStats_Coverage
     - ExecAround_Coverage
     - GlobalRegistry_Coverage
     - Logger_Coverage
@@ -73,6 +74,7 @@ Coverage_Total:
 
     - |
       lcov -a ../Bits_Coverage/coverage/coverage.info \
+           -a ../EventStats_Coverage/coverage/coverage.info \
            -a ../ExecAround_Coverage/coverage/coverage.info \
            -a ../GlobalRegistry_Coverage/coverage/coverage.info \
            -a ../Logger_Coverage/coverage/coverage.info \

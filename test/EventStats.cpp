@@ -30,57 +30,11 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include <utils/debug/EventStats.hpp>
 
-#include <osal/Mutex.hpp>
-#include <osal/timestamp.hpp>
+#include <catch2/catch.hpp>
 
-#include <chrono>
-#include <deque>
-#include <optional>
-#include <string>
-
-namespace utils::debug {
-
-using TimestampQueue = std::deque<osal::Timestamp>;
-using Period = std::chrono::milliseconds;
-using PeriodQueue = std::deque<Period>;
-
-class EventStats {
-public:
-    explicit EventStats(std::optional<std::size_t> capacity = 1000,
-                        bool start = false,
-                        std::string_view name = "unnamed");
-
-    void startTimer();
-    void stopTimer();
-
-    [[nodiscard]] auto elapsed() const;
-
-    void event();
-    std::size_t eventsCount();
-    Period eventsPeriodAvg();
-    Period eventsPeriodMin();
-    Period eventsPeriodMax();
-    Period eventsPeriodOverallMin();
-    Period eventsPeriodOverallMax();
-
-    void clear();
-
-    TimestampQueue getEvents();
-    PeriodQueue getPeriods();
-
-private:
-    std::optional<std::size_t> m_capacity;
-    std::size_t m_count{};
-    std::string m_name;
-    bool m_started{};
-    osal::Timestamp m_timerStart;
-    osal::Timestamp m_timerEnd;
-    Period m_periodOverallMin{};
-    Period m_periodOverallMax{};
-    osal::Mutex m_mutex{OsalMutexType::eRecursive};
-    TimestampQueue m_events;
-};
-
-} // namespace utils::debug
+TEST_CASE("1. Basic test", "[unit][EventStats]")
+{
+    REQUIRE(true);
+}

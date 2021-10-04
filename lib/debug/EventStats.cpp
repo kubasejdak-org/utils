@@ -53,37 +53,22 @@ EventStats::EventStats(std::optional<std::size_t> capacity, bool start, std::str
 void EventStats::startTimer()
 {
     EventStatsLogger::info("<{}> Timer started\n", m_name);
-    m_start = osal::timestamp();
-    m_end = {};
+    m_timerStart = osal::timestamp();
+    m_timerEnd = {};
     m_started = true;
 }
 
 void EventStats::stopTimer()
 {
     assert(m_started);
-    m_end = osal::timestamp();
+    m_timerEnd = osal::timestamp();
     m_started = false;
     EventStatsLogger::info("<{}> Timer stopped\n", m_name);
 }
 
 auto EventStats::elapsed() const
 {
-    return m_end - m_start;
-}
-
-auto EventStats::elapsedSec() const
-{
-    return std::chrono::duration_cast<std::chrono::seconds>(elapsed());
-}
-
-auto EventStats::elapsedMs() const
-{
-    return std::chrono::duration_cast<std::chrono::milliseconds>(elapsed());
-}
-
-auto EventStats::elapsedNs() const
-{
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed());
+    return m_timerEnd - m_timerStart;
 }
 
 void EventStats::event()
@@ -95,6 +80,15 @@ void EventStats::event()
         m_events.pop_front();
 
     m_events.emplace_back(osal::timestamp());
+    ++m_count;
+
+    if (m_events.size() > 1) {
+        auto penultimateTimestamp = m_events[m_events.size() - 2];
+        auto lastTimestamp = m_events[m_events.size() - 1];
+        auto lastPeriod = std::chrono::duration_cast<Period>(lastTimestamp - penultimateTimestamp);
+        m_periodOverallMin = std::min(m_periodOverallMin, lastPeriod);
+        m_periodOverallMax = std::max(m_periodOverallMax, lastPeriod);
+    }
 }
 
 std::size_t EventStats::eventsCount()
@@ -135,12 +129,44 @@ Period EventStats::eventsPeriodMax()
     return *it;
 }
 
-PeriodList EventStats::getPeriods()
+Period EventStats::eventsPeriodOverallMin()
 {
     osal::ScopedLock lock(m_mutex);
-    PeriodList periods;
-    std::adjacent_difference(m_events.begin(), m_events.end(), std::back_inserter(periods));
-    periods.pop_front();
+    return m_periodOverallMin;
+}
+
+Period EventStats::eventsPeriodOverallMax()
+{
+    osal::ScopedLock lock(m_mutex);
+    return m_periodOverallMax;
+}
+
+void EventStats::clear()
+{
+    osal::ScopedLock lock(m_mutex);
+    m_events.clear();
+    m_count = 0;
+    m_periodOverallMin = {};
+    m_periodOverallMax = {};
+}
+
+TimestampQueue EventStats::getEvents()
+{
+    osal::ScopedLock lock(m_mutex);
+    return m_events;
+}
+
+PeriodQueue EventStats::getPeriods()
+{
+    osal::ScopedLock lock(m_mutex);
+    TimestampQueue periodsTmp;
+    std::adjacent_difference(m_events.begin(), m_events.end(), std::back_inserter(periodsTmp));
+    periodsTmp.pop_front();
+
+    PeriodQueue periods;
+    std::transform(periodsTmp.begin(), periodsTmp.end(), std::back_inserter(periods), [](const auto& period) {
+        return std::chrono::duration_cast<Period>(period);
+    });
     return periods;
 }
 
