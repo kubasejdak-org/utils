@@ -42,15 +42,15 @@ namespace utils::network {
 enum class Error {
     eOk,
     eInvalidArgument,
-    eNoMemory,
     eSocketError,
     eBindError,
     eConnectError,
+    eTimeout,
     eClientRunning,
     eClientDisconnected,
-    eTimeout,
     eServerRunning,
     eConnectionNotActive,
+    eRemoteEndpointDisconnected,
     eWriteError
 };
 // clang-format on

@@ -51,15 +51,15 @@ std::string ErrorCategory::message(int value) const
     switch (static_cast<Error>(value)) {
         case Error::eOk: return "no error";
         case Error::eInvalidArgument: return "invalid argument";
-        case Error::eNoMemory: return "no memory";
         case Error::eSocketError: return "socket error";
         case Error::eBindError: return "bind error";
         case Error::eConnectError: return "connect error";
+        case Error::eTimeout: return "timeout";
         case Error::eClientRunning: return "client running";
         case Error::eClientDisconnected: return "client disconnected";
-        case Error::eTimeout: return "timeout";
         case Error::eServerRunning: return "server running";
         case Error::eConnectionNotActive: return "connection not active";
+        case Error::eRemoteEndpointDisconnected: return "remote endpoint disconnected";
         case Error::eWriteError: return "write error";
         default: return "(unrecognized error)";
     }

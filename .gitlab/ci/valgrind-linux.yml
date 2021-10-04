@@ -17,6 +17,11 @@ Bits_Linux_Valgrind:
   variables:
     TestTags: "[bits]"
 
+ExecAround_Linux_Valgrind:
+  extends: .Run_Valgrind_Linux
+  variables:
+    TestTags: "[ExecAround]"
+
 GlobalRegistry_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
@@ -45,9 +50,4 @@ StateMachine_Linux_Valgrind:
 TcpConnection_Linux_Valgrind:
   extends: .Run_Valgrind_Linux
   variables:
-    TestTags: "[TcpConnection]"
-
-TcpServer_Linux_Valgrind:
-  extends: .Run_Valgrind_Linux
-  variables:
-    TestTags: "[TcpServer]"
+    TestTags: "[TcpClient],[TcpServer],[TcpConnection]"

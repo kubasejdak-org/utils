@@ -57,8 +57,8 @@ public:
     /// @param maxConnections           Maximal number of concurrent connections (number of spawned threads).
     /// @param maxPendingConnections    Maximal number of pending connections in the kernels queue.
     explicit TcpServer(int port = m_cUninitialized,
-                       int maxConnections = m_cDefaultMaxConnections,
-                       int maxPendingConnections = m_cDefaultMaxPendingConnections);
+                       unsigned int maxConnections = m_cDefaultMaxConnections,
+                       unsigned int maxPendingConnections = m_cDefaultMaxPendingConnections);
 
     /// Copy constructor.
     /// @note This constructor is deleted, because TcpServer is not meant to be copy-constructed.
@@ -127,19 +127,20 @@ private:
 
 private:
     static constexpr int m_cUninitialized = -1;
-    static constexpr int m_cDefaultMaxConnections = 1;
-    static constexpr int m_cDefaultMaxPendingConnections = 10;
+    static constexpr unsigned int m_cDefaultMaxConnections = 1;
+    static constexpr unsigned int m_cDefaultMaxPendingConnections = 10;
+    static constexpr unsigned int m_cListenThreadStackSize = 128 * 1024;
+    static constexpr unsigned int m_cConnectionThreadStackSize = 128 * 1024;
 
     bool m_running{};
     int m_port;
-    int m_maxConnections;
-    int m_maxPendingConnections;
+    unsigned int m_maxPendingConnections;
     int m_socket{m_cUninitialized};
     TcpConnectionHandler m_connectionHandler;
     osal::Semaphore m_startSemaphore{0};
     osal::Semaphore m_connectionsSemaphore;
-    osal::Thread<> m_listenThread;
-    std::vector<osal::Thread<>> m_connectionThreads;
+    osal::NormalPrioThread<m_cListenThreadStackSize> m_listenThread;
+    std::vector<osal::NormalPrioThread<m_cConnectionThreadStackSize>> m_connectionThreads;
 };
 
 } // namespace utils::network

@@ -27,6 +27,11 @@ Bits_Coverage:
   variables:
     Tags: "[bits]"
 
+ExecAround_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[ExecAround]"
+
 GlobalRegistry_Coverage:
   extends: .Linux_Coverage
   variables:
@@ -55,12 +60,7 @@ StateMachine_Coverage:
 TcpConnection_Coverage:
   extends: .Linux_Coverage
   variables:
-    Tags: "[TcpConnection]"
-
-TcpServer_Coverage:
-  extends: .Linux_Coverage
-  variables:
-    Tags: "[TcpServer]"
+    Tags: "[TcpClient],[TcpServer],[TcpConnection]"
 
 Watchdog_Coverage:
   extends: .Linux_Coverage

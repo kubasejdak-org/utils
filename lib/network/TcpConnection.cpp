@@ -78,10 +78,7 @@ TcpConnection::~TcpConnection()
 std::error_code TcpConnection::read(BytesVector& bytes, std::size_t size, osal::Timeout timeout)
 {
     bytes.resize(size);
-    if (bytes.size() != size) {
-        TcpConnectionLogger::error("read: Failed to resize vector");
-        return Error::eNoMemory;
-    }
+    assert(bytes.size() == size);
 
     std::size_t actualReadSize{};
     auto error = read(bytes.data(), size, actualReadSize, timeout);
@@ -117,16 +114,16 @@ TcpConnection::read(std::uint8_t* bytes, std::size_t size, std::size_t& actualRe
         fd_set dataReadFds{};
         FD_ZERO(&dataReadFds);          // NOLINT
         FD_SET(m_socket, &dataReadFds); // NOLINT
-        constexpr int cTimeoutMs = 250;
+        const auto cTimeoutMs = std::min(osal::Duration::rep{250}, timeout.timeLeft().count());
         timeval dataTimeout{0, int(osalMsToUs(cTimeoutMs))};
 
-        TcpConnectionLogger::trace("Waiting for endpoint data");
+        TcpConnectionLogger::trace("Waiting for remote endpoint data");
         if (select(m_socket + 1, &dataReadFds, nullptr, nullptr, &dataTimeout) > 0) {
             auto bytesCount = ::read(m_socket, bytes, size);
             if (bytesCount == 0) {
-                TcpConnectionLogger::info("Endpoint disconnected, closing connection");
+                TcpConnectionLogger::info("Remote endpoint disconnected, closing connection");
                 close();
-                return Error::eClientDisconnected;
+                return Error::eRemoteEndpointDisconnected;
             }
             if (bytesCount == -1) {
                 TcpConnectionLogger::warn("read() returned error: {}", strerror(errno));
@@ -185,7 +182,8 @@ std::error_code TcpConnection::write(const std::uint8_t* bytes, std::size_t size
             TcpConnectionLogger::warn("write() returned error: {}", strerror(errno));
             if (errno != EAGAIN) {
                 TcpConnectionLogger::error("Closing connection on error");
-                break;
+                close();
+                return Error::eWriteError;
             }
 
             continue;
