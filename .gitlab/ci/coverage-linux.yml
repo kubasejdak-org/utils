@@ -47,6 +47,11 @@ Property_Coverage:
   variables:
     Tags: "[property]"
 
+Result_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[Result]"
+
 ScopedExit_Coverage:
   extends: .Linux_Coverage
   variables:
