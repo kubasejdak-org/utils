@@ -116,6 +116,8 @@ public:
 
     operator T() const { return value(); } // NOLINT
 
+    operator std::optional<T>() const { return optionalValue(); } // NOLINT
+
     operator std::error_code() const { return error(); } // NOLINT
 
     explicit operator bool() const { return m_value.has_value(); }
