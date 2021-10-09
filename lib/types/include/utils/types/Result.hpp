@@ -91,11 +91,24 @@ public:
         return *this;
     }
 
+    void setValue(const T& value) { m_value = value; }
+
+    template <typename ErrorEnum>
+    void setError(ErrorEnum error)
+    {
+        static_assert(std::is_error_code_enum_v<ErrorEnum>, "ErrorEnum is not an error code enum");
+        m_error = error;
+    }
+
     [[nodiscard]] T value() const
     {
         assert(m_value.has_value());
         return *m_value;
     }
+
+    [[nodiscard]] T valueOr(const T& fallbackValue) const { return m_value.value_or(fallbackValue); }
+
+    [[nodiscard]] std::optional<T> optionalValue() const { return m_value; }
 
     [[nodiscard]] std::error_code error() const { return m_error; }
 
@@ -107,23 +120,14 @@ public:
 
     explicit operator bool() const { return m_value.has_value(); }
 
-    template <typename ErrorEnum>
-    void setError(ErrorEnum error)
-    {
-        static_assert(std::is_error_code_enum_v<ErrorEnum>, "ErrorEnum is not an error code enum");
-        m_error = error;
-    }
-
-    void setValue(const T& value) { m_value = value; }
-
     template <std::size_t cIndex>
     std::tuple_element_t<cIndex, Result> get() const
     {
         if constexpr (cIndex == 0)
-            return m_value;
+            return optionalValue();
 
         if constexpr (cIndex == 1)
-            return m_error;
+            return error();
     }
 
 private:
