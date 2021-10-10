@@ -50,17 +50,17 @@ public:
         , m_error(error)
     {}
 
-    Result(T&& value, std::error_code error = {}) // NOLINT
-        : m_value(std::move(value))
-        , m_error(error)
-    {}
-
     template <typename ErrorEnum>
     Result(ErrorEnum error) // NOLINT
         : Result(std::error_code{error})
     {
         static_assert(std::is_error_code_enum_v<ErrorEnum>, "ErrorEnum is not an error code enum");
     }
+
+    Result(T&& value, std::error_code error = {}) // NOLINT
+        : m_value(std::move(value))
+        , m_error(error)
+    {}
 
     Result(std::error_code error) // NOLINT
         : m_error(error)
@@ -97,6 +97,11 @@ public:
     void setError(ErrorEnum error)
     {
         static_assert(std::is_error_code_enum_v<ErrorEnum>, "ErrorEnum is not an error code enum");
+        m_error = error;
+    }
+
+    void setError(std::error_code error)
+    {
         m_error = error;
     }
 
