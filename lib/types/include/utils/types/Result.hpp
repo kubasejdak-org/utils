@@ -100,10 +100,7 @@ public:
         m_error = error;
     }
 
-    void setError(std::error_code error)
-    {
-        m_error = error;
-    }
+    void setError(std::error_code error) { m_error = error; }
 
     [[nodiscard]] T value() const
     {
