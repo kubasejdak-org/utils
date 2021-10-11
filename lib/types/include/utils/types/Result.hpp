@@ -43,6 +43,8 @@ namespace utils::types {
 template <typename T>
 class Result {
 public:
+    /// Default constructor. Creates a result.
+    /// Such result has empty value and error code indicating success.
     Result() = default;
 
     Result(const T& value, std::error_code error = {}) // NOLINT
@@ -141,21 +143,23 @@ private:
 
 } // namespace utils::types
 
+#ifndef UTILS_NO_INLINE_RESULT
 template <typename T>
 using Result = utils::types::Result<T>;
+#endif
 
 namespace std {
 
 template <typename T>
-struct tuple_size<Result<T>> : integral_constant<size_t, 2> {};
+struct tuple_size<utils::types::Result<T>> : integral_constant<size_t, 2> {};
 
 template <typename T>
-struct tuple_element<0, Result<T>> {
+struct tuple_element<0, utils::types::Result<T>> {
     using type = std::optional<T>; // NOLINT(readability-identifier-naming)
 };
 
 template <typename T>
-struct tuple_element<1, Result<T>> {
+struct tuple_element<1, utils::types::Result<T>> {
     using type = std::error_code; // NOLINT(readability-identifier-naming)
 };
 

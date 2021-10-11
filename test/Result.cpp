@@ -98,7 +98,41 @@ Result<std::string> func3(Result<int> value)
     return value.error();
 }
 
-TEST_CASE("1. Basic tests", "[unit][Result]")
+TEST_CASE("1. Manually constructing result object", "[unit][Result]")
+{
+    constexpr int cValue = 132;
+
+    SECTION("1.1. Empty result")
+    {
+        Result<int> result;
+        REQUIRE(!result.optionalValue());
+        REQUIRE(!result.error());
+    }
+
+    SECTION("1.2. Setting value and default error code via constructor")
+    {
+        Result<int> result(cValue);
+        REQUIRE(result.value() == cValue);
+        REQUIRE(!result.error());
+    }
+
+    SECTION("1.3. Setting value and error enum via constructor")
+    {
+        Result<int> result(cValue, Error::eOk);
+        REQUIRE(result.value() == cValue);
+        REQUIRE(!result.error());
+    }
+
+    SECTION("1.4. Setting value and error code")
+    {
+        std::error_code error = Error::eOk;
+        Result<int> result(cValue, error);
+        REQUIRE(result.value() == cValue);
+        REQUIRE(!result.error());
+    }
+}
+
+TEST_CASE("4. Basic tests", "[unit][Result]")
 {
     constexpr int cValue = 5;
     auto result1 = func(cValue);
