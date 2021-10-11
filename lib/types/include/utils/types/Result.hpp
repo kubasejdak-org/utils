@@ -68,8 +68,8 @@ public:
         : m_error(error)
     {}
 
-    template <typename OtherT>
-    Result(const Result<OtherT>& other) // NOLINT
+    template <typename OtherValue>
+    Result(const Result<OtherValue>& other) // NOLINT
         : m_error(other.error())
     {
         assert(!other);
