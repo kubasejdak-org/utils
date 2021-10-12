@@ -240,7 +240,29 @@ TEST_CASE("2. Copy constructing result", "[unit][Result]")
 }
 
 TEST_CASE("3. Moving result around", "[unit][Result]")
-{}
+{
+    constexpr int cValue = 132;
+
+    SECTION("3.1. Moving empty result")
+    {
+        Result<int> result;
+        auto newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(!newResult.optionalValue());
+        REQUIRE(!newResult.error());
+    }
+
+    SECTION("3.2. Moving result initialized with value")
+    {
+        Result<int> result = cValue;
+        auto newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(newResult.value() == cValue);
+        REQUIRE(!newResult.error());
+    }
+}
 
 TEST_CASE("4. Basic tests", "[unit][Result]")
 {

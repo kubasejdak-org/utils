@@ -86,7 +86,7 @@ public:
     Result& operator=(Result&& other) noexcept
     {
         if (&other != this) {
-            m_value = std::move(other.m_value);
+            m_value = std::exchange(other.m_value, {});
             m_error = std::exchange(other.m_error, {});
         }
 
