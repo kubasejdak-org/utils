@@ -37,6 +37,7 @@
 
 namespace utils::network {
 
+// clang-format off
 /// Represents possible error codes returned from utils::network module.
 enum class Error {
     eOk,
@@ -52,6 +53,7 @@ enum class Error {
     eRemoteEndpointDisconnected,
     eWriteError
 };
+// clang-format on
 
 /// Creates error code value for Error enum.
 /// @return std::error_code value created from Error enum.
