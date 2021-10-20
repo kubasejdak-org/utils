@@ -747,14 +747,16 @@ TEST_CASE("8. Multiple simple server echo test", "[unit][TcpConnection]")
 
     constexpr unsigned int cClientThreadStackSize = 128 * 1024;
     using ClientThread = osal::NormalPrioThread<cClientThreadStackSize>;
-    std::array<ClientThread, cClientsCount> clientThreads{ClientThread{clientThread, bytes[0]},
-                                                          ClientThread{clientThread, bytes[1]},
-                                                          ClientThread{clientThread, bytes[2]},
-                                                          ClientThread{clientThread, bytes[3]},
-                                                          ClientThread{clientThread, bytes[4]},
-                                                          ClientThread{clientThread, bytes[5]},  // NOLINT
-                                                          ClientThread{clientThread, bytes[6]},  // NOLINT
-                                                          ClientThread{clientThread, bytes[7]},  // NOLINT
-                                                          ClientThread{clientThread, bytes[8]},  // NOLINT
-                                                          ClientThread{clientThread, bytes[9]}}; // NOLINT
+    std::array<ClientThread, cClientsCount> clientThreads = {
+        ClientThread{clientThread, bytes[0]},
+        ClientThread{clientThread, bytes[1]},
+        ClientThread{clientThread, bytes[2]},
+        ClientThread{clientThread, bytes[3]},
+        ClientThread{clientThread, bytes[4]},
+        ClientThread{clientThread, bytes[5]}, // NOLINT
+        ClientThread{clientThread, bytes[6]}, // NOLINT
+        ClientThread{clientThread, bytes[7]}, // NOLINT
+        ClientThread{clientThread, bytes[8]}, // NOLINT
+        ClientThread{clientThread, bytes[9]}  // NOLINT
+    };
 }
