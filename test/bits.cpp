@@ -87,12 +87,10 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
     {
         constexpr std::uint32_t cIterationsCount = 1'000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i) {
-            // clang-format off
             std::uint32_t expected = ((i & 0x000000ff) << 24)  // NOLINT
                                    | ((i & 0x0000ff00) << 8)   // NOLINT
                                    | ((i & 0x00ff0000) >> 8)   // NOLINT
                                    | ((i & 0xff000000) >> 24); // NOLINT
-            // clang-format on
             REQUIRE(utils::bits::toBigEndian(i) == expected);
         }
     }
@@ -101,7 +99,6 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
     {
         constexpr std::uint64_t cIterationsCount = 1'000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i) {
-            // clang-format off
             std::uint64_t expected = ((i & 0x00000000000000ffUL) << 56)  // NOLINT
                                    | ((i & 0x000000000000ff00UL) << 40)  // NOLINT
                                    | ((i & 0x0000000000ff0000UL) << 24)  // NOLINT
@@ -110,7 +107,6 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
                                    | ((i & 0x0000ff0000000000UL) >> 24)  // NOLINT
                                    | ((i & 0x00ff000000000000UL) >> 40)  // NOLINT
                                    | ((i & 0xff00000000000000UL) >> 56); // NOLINT
-            // clang-format on
             REQUIRE(utils::bits::toBigEndian(i) == expected);
         }
     }
