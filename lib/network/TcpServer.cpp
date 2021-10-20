@@ -48,6 +48,7 @@
 
 namespace utils::network {
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 TcpServer::TcpServer(int port, unsigned int maxConnections, unsigned int maxPendingConnections)
     : m_port(port)
     , m_maxPendingConnections(maxPendingConnections)
