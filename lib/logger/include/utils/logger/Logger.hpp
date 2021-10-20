@@ -172,7 +172,7 @@ private:
     {
         LoggerCreator creator;
         creator(Tag::name, cLevel);
-        m_logger = spdlog::get(Tag::name);
+        m_logger = spdlog::get(Tag::name); // NOLINT(cppcoreguidelines-prefer-member-initializer)
     }
 
     /// Returns the only instance of the ModuleLoggerImpl.
