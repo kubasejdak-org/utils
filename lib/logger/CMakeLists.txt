@@ -1,14 +1,11 @@
-add_subdirectory(spdlog-1.9.2)
+conan_get(REQUIRES spdlog/1.9.2 OPTIONS spdlog:no_exceptions=True spdlog:header_only=True)
+find_package(spdlog REQUIRED)
 
 add_library(utils-logger INTERFACE)
 add_library(utils::logger ALIAS utils-logger)
 
 target_include_directories(utils-logger
     INTERFACE include
-)
-
-target_compile_definitions(utils-logger
-    INTERFACE -DSPDLOG_NO_EXCEPTIONS
 )
 
 if (NOT UNIX)
