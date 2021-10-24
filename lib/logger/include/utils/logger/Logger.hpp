@@ -38,15 +38,16 @@
 #include <memory>
 #include <utility>
 
-// clang-format off
 /// Registers custom user-defined logger with the given properties.
 /// @tparam LoggerType      Type used to access given logger.
 /// @param loggerName       Name of the logger (displayed as [<NAME>] in log message).
 /// @param logLevel         Default logging level for this logger.
 /// @param loggerCreator    Callable object which will create the logger.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, loggerCreator) \
-    struct LoggerType##Tag { static constexpr auto* name = loggerName; };   \
+#define REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, loggerCreator)                                            \
+    struct LoggerType##Tag {                                                                                           \
+        static constexpr auto* name = loggerName;                                                                      \
+    };                                                                                                                 \
     using LoggerType = utils::logger::ModuleLogger<LoggerType##Tag, logLevel, loggerCreator> // NOLINT
 
 #ifdef APPLICATION_LOGGER
@@ -66,9 +67,8 @@
 /// @param loggerName       Name of the logger (displayed as [<NAME>] in log message).
 /// @param logLevel         Default logging level for this logger.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define REGISTER_LOGGER(LoggerType, loggerName, logLevel) \
+#define REGISTER_LOGGER(LoggerType, loggerName, logLevel)                                                              \
     REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, LOGGER_CREATOR)
-// clang-format on
 
 namespace utils::logger {
 namespace detail {
@@ -172,7 +172,7 @@ private:
     {
         LoggerCreator creator;
         creator(Tag::name, cLevel);
-        m_logger = spdlog::get(Tag::name);
+        m_logger = spdlog::get(Tag::name); // NOLINT(cppcoreguidelines-prefer-member-initializer)
     }
 
     /// Returns the only instance of the ModuleLoggerImpl.

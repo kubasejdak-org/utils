@@ -36,4 +36,4 @@
 #define CONCAT(a, b)       CONCAT_INNER(a, b)
 
 /// Creates unique symbol name of a form: name<NUMBER>, where NUMBER is incremented every time UNIQUE_NAME is called.
-#define UNIQUE_NAME(name) CONCAT(name, __COUNTER__)
+#define UNIQUE_NAME(name)  CONCAT(name, __COUNTER__)
