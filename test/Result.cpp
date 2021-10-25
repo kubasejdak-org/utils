@@ -39,7 +39,11 @@
 #include <system_error>
 #include <type_traits>
 
-enum class Error { eOk, eInvalidArgument };
+enum class Error
+{
+    eOk,
+    eInvalidArgument
+};
 
 struct ErrorCategory : std::error_category {
     [[nodiscard]] const char* name() const noexcept override;
@@ -261,6 +265,16 @@ TEST_CASE("3. Moving result around", "[unit][Result]")
         REQUIRE(!result.error());
         REQUIRE(newResult.value() == cValue);
         REQUIRE(!newResult.error());
+    }
+
+    SECTION("3.3. Moving result initialized with value and error")
+    {
+        Result<int> result = {cValue, Error::eInvalidArgument};
+        auto newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(newResult.value() == cValue);
+        REQUIRE(newResult.error() == Error::eInvalidArgument);
     }
 }
 

@@ -77,7 +77,10 @@ public:
 
     Result(const Result& other) = default;
 
-    Result(Result&& other) noexcept = default;
+    Result(Result&& other) noexcept
+        : m_value(std::exchange(other.m_value, {}))
+        , m_error(std::exchange(other.m_error, {}))
+    {}
 
     ~Result() = default;
 
