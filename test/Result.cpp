@@ -416,10 +416,7 @@ TEST_CASE("7. Conversion operators", "[unit][Result]")
     Result<int> result = {cValue, Error::eInvalidArgument};
     Result<int> result2 = Error::eInvalidArgument;
 
-    SECTION("7.1. Dereferencing result")
-    {
-        REQUIRE(*result == cValue);
-    }
+    SECTION("7.1. Dereferencing result") { REQUIRE(*result == cValue); }
 
     SECTION("7.2. Casting to value")
     {
@@ -479,42 +476,42 @@ TEST_CASE("8. Structured binding", "[unit][Result]")
     }
 }
 
-//TEST_CASE("4. Basic tests", "[unit][Result]")
+// TEST_CASE("4. Basic tests", "[unit][Result]")
 //{
-//    constexpr int cValue = 5;
-//    auto result1 = func(cValue);
-//    REQUIRE(result1);
-//    REQUIRE(*result1 == (2 * cValue));
-//    REQUIRE(result1.error().message() == "Success");
+//     constexpr int cValue = 5;
+//     auto result1 = func(cValue);
+//     REQUIRE(result1);
+//     REQUIRE(*result1 == (2 * cValue));
+//     REQUIRE(result1.error().message() == "Success");
 //
-//    int extractedValue1 = result1;
-//    std::error_code extractedError1 = result1;
-//    REQUIRE(extractedValue1 == (2 * cValue));
-//    REQUIRE(extractedError1.message() == "Success");
+//     int extractedValue1 = result1;
+//     std::error_code extractedError1 = result1;
+//     REQUIRE(extractedValue1 == (2 * cValue));
+//     REQUIRE(extractedError1.message() == "Success");
 //
-//    auto [extractedValue2, extractedError2] = result1;
-//    REQUIRE(*extractedValue2 == (2 * cValue));
-//    REQUIRE(extractedError2.message() == "Success");
+//     auto [extractedValue2, extractedError2] = result1;
+//     REQUIRE(*extractedValue2 == (2 * cValue));
+//     REQUIRE(extractedError2.message() == "Success");
 //
-//    auto result2 = func(-1);
-//    REQUIRE(!result2);
-//    REQUIRE(result2.error().message() == "eInvalidArgument");
+//     auto result2 = func(-1);
+//     REQUIRE(!result2);
+//     REQUIRE(result2.error().message() == "eInvalidArgument");
 //
-//    auto result3 = func2(func(cValue));
-//    REQUIRE(result3);
-//    REQUIRE(*result3 == (4 * cValue));
-//    REQUIRE(result3.error().message() == "Success");
+//     auto result3 = func2(func(cValue));
+//     REQUIRE(result3);
+//     REQUIRE(*result3 == (4 * cValue));
+//     REQUIRE(result3.error().message() == "Success");
 //
-//    auto result4 = func2(func(-1));
-//    REQUIRE(!result4);
-//    REQUIRE(result4.error().message() == "eInvalidArgument");
+//     auto result4 = func2(func(-1));
+//     REQUIRE(!result4);
+//     REQUIRE(result4.error().message() == "eInvalidArgument");
 //
-//    auto result5 = func3(func2(func(2)));
-//    REQUIRE(result5);
-//    REQUIRE(*result5 == "<8>");
-//    REQUIRE(result5.error().message() == "Success");
+//     auto result5 = func3(func2(func(2)));
+//     REQUIRE(result5);
+//     REQUIRE(*result5 == "<8>");
+//     REQUIRE(result5.error().message() == "Success");
 //
-//    auto result6 = func3(func2(func(-1)));
-//    REQUIRE(!result6);
-//    REQUIRE(result6.error().message() == "eInvalidArgument");
-//}
+//     auto result6 = func3(func2(func(-1)));
+//     REQUIRE(!result6);
+//     REQUIRE(result6.error().message() == "eInvalidArgument");
+// }
