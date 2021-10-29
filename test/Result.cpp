@@ -102,10 +102,10 @@ Result<std::string> func3(Result<int> value)
     return value.error();
 }
 
+constexpr int cValue = 132;
+
 TEST_CASE("1. Manually constructing result object", "[unit][Result]")
 {
-    constexpr int cValue = 132;
-
     SECTION("1.1. Empty result")
     {
         Result<int> result;
@@ -172,8 +172,6 @@ TEST_CASE("1. Manually constructing result object", "[unit][Result]")
 
 TEST_CASE("2. Copy constructing result", "[unit][Result]")
 {
-    constexpr int cValue = 132;
-
     SECTION("2.1. Copy construct from empty result")
     {
         Result<int> result1 = {};
@@ -245,8 +243,6 @@ TEST_CASE("2. Copy constructing result", "[unit][Result]")
 
 TEST_CASE("3. Moving result around via move constructor", "[unit][Result]")
 {
-    constexpr int cValue = 132;
-
     SECTION("3.1. Moving empty result")
     {
         Result<int> result;
@@ -290,8 +286,6 @@ TEST_CASE("3. Moving result around via move constructor", "[unit][Result]")
 
 TEST_CASE("4. Copying result via copy assignment", "[unit][Result]")
 {
-    constexpr int cValue = 132;
-
     SECTION("4.1. Copying empty result")
     {
         Result<int> result;
@@ -339,8 +333,6 @@ TEST_CASE("4. Copying result via copy assignment", "[unit][Result]")
 
 TEST_CASE("5. Moving result around via move assignment", "[unit][Result]")
 {
-    constexpr int cValue = 132;
-
     SECTION("5.1. Moving empty result")
     {
         Result<int> result;
@@ -386,42 +378,143 @@ TEST_CASE("5. Moving result around via move assignment", "[unit][Result]")
     }
 }
 
-TEST_CASE("4. Basic tests", "[unit][Result]")
+TEST_CASE("6. Manually setting ang getting values and errors", "[unit][Result]")
 {
-    constexpr int cValue = 5;
-    auto result1 = func(cValue);
-    REQUIRE(result1);
-    REQUIRE(*result1 == (2 * cValue));
-    REQUIRE(result1.error().message() == "Success");
+    SECTION("6.1. Setting and getting value")
+    {
+        Result<int> result;
+        result.setValue(cValue);
+        REQUIRE(result.value() == cValue);
+        REQUIRE(result.valueOr(2 * cValue) == cValue);
+        REQUIRE(result.optionalValue().has_value());
+        REQUIRE(result.optionalValue().value() == cValue);
+        REQUIRE(!result.error());
+    }
 
-    int extractedValue1 = result1;
-    std::error_code extractedError1 = result1;
-    REQUIRE(extractedValue1 == (2 * cValue));
-    REQUIRE(extractedError1.message() == "Success");
+    SECTION("6.2. Setting and getting error enum")
+    {
+        Result<int> result;
+        result.setError(Error::eInvalidArgument);
+        REQUIRE(result.valueOr(2 * cValue) == (2 * cValue));
+        REQUIRE(!result.optionalValue().has_value());
+        REQUIRE(result.error() == Error::eInvalidArgument);
+    }
 
-    auto [extractedValue2, extractedError2] = result1;
-    REQUIRE(*extractedValue2 == (2 * cValue));
-    REQUIRE(extractedError2.message() == "Success");
-
-    auto result2 = func(-1);
-    REQUIRE(!result2);
-    REQUIRE(result2.error().message() == "eInvalidArgument");
-
-    auto result3 = func2(func(cValue));
-    REQUIRE(result3);
-    REQUIRE(*result3 == (4 * cValue));
-    REQUIRE(result3.error().message() == "Success");
-
-    auto result4 = func2(func(-1));
-    REQUIRE(!result4);
-    REQUIRE(result4.error().message() == "eInvalidArgument");
-
-    auto result5 = func3(func2(func(2)));
-    REQUIRE(result5);
-    REQUIRE(*result5 == "<8>");
-    REQUIRE(result5.error().message() == "Success");
-
-    auto result6 = func3(func2(func(-1)));
-    REQUIRE(!result6);
-    REQUIRE(result6.error().message() == "eInvalidArgument");
+    SECTION("6.3. Setting and getting error code")
+    {
+        Result<int> result;
+        std::error_code error = Error::eInvalidArgument;
+        result.setError(error);
+        REQUIRE(result.valueOr(2 * cValue) == (2 * cValue));
+        REQUIRE(!result.optionalValue().has_value());
+        REQUIRE(result.error() == error);
+    }
 }
+
+TEST_CASE("7. Conversion operators", "[unit][Result]")
+{
+    Result<int> result = {cValue, Error::eInvalidArgument};
+    Result<int> result2 = Error::eInvalidArgument;
+
+    SECTION("7.1. Dereferencing result")
+    {
+        REQUIRE(*result == cValue);
+    }
+
+    SECTION("7.2. Casting to value")
+    {
+        int value = int(result);
+        REQUIRE(value == cValue);
+    }
+
+    SECTION("7.3. Casting to optional value")
+    {
+        std::optional<int> value = result;
+        REQUIRE(*value == cValue);
+
+        std::optional<int> value2 = result2;
+        REQUIRE(!value2);
+    }
+
+    SECTION("7.4. Casting to error code")
+    {
+        std::error_code error = result;
+        REQUIRE(error == Error::eInvalidArgument);
+
+        std::error_code error2 = result2;
+        REQUIRE(error2 == Error::eInvalidArgument);
+    }
+
+    SECTION("7.2. Casting to bool")
+    {
+        REQUIRE(result);
+        REQUIRE(!result2);
+    }
+}
+
+TEST_CASE("8. Structured binding", "[unit][Result]")
+{
+    SECTION("8.1. Result initialized with value")
+    {
+        Result<int> result = cValue;
+        auto [value, error] = result;
+        REQUIRE(*value == cValue);
+        REQUIRE(!error);
+    }
+
+    SECTION("8.2. Result initialized with error")
+    {
+        Result<int> result = Error::eInvalidArgument;
+        auto [value, error] = result;
+        REQUIRE(!value);
+        REQUIRE(error == Error::eInvalidArgument);
+    }
+
+    SECTION("8.3. Result initialized with value and error")
+    {
+        Result<int> result = {cValue, Error::eInvalidArgument};
+        auto [value, error] = result;
+        REQUIRE(*value == cValue);
+        REQUIRE(error == Error::eInvalidArgument);
+    }
+}
+
+//TEST_CASE("4. Basic tests", "[unit][Result]")
+//{
+//    constexpr int cValue = 5;
+//    auto result1 = func(cValue);
+//    REQUIRE(result1);
+//    REQUIRE(*result1 == (2 * cValue));
+//    REQUIRE(result1.error().message() == "Success");
+//
+//    int extractedValue1 = result1;
+//    std::error_code extractedError1 = result1;
+//    REQUIRE(extractedValue1 == (2 * cValue));
+//    REQUIRE(extractedError1.message() == "Success");
+//
+//    auto [extractedValue2, extractedError2] = result1;
+//    REQUIRE(*extractedValue2 == (2 * cValue));
+//    REQUIRE(extractedError2.message() == "Success");
+//
+//    auto result2 = func(-1);
+//    REQUIRE(!result2);
+//    REQUIRE(result2.error().message() == "eInvalidArgument");
+//
+//    auto result3 = func2(func(cValue));
+//    REQUIRE(result3);
+//    REQUIRE(*result3 == (4 * cValue));
+//    REQUIRE(result3.error().message() == "Success");
+//
+//    auto result4 = func2(func(-1));
+//    REQUIRE(!result4);
+//    REQUIRE(result4.error().message() == "eInvalidArgument");
+//
+//    auto result5 = func3(func2(func(2)));
+//    REQUIRE(result5);
+//    REQUIRE(*result5 == "<8>");
+//    REQUIRE(result5.error().message() == "Success");
+//
+//    auto result6 = func3(func2(func(-1)));
+//    REQUIRE(!result6);
+//    REQUIRE(result6.error().message() == "eInvalidArgument");
+//}

@@ -121,7 +121,7 @@ public:
 
     T operator*() const { return value(); }
 
-    operator T() const { return value(); } // NOLINT
+    explicit operator T() const { return value(); } // NOLINT
 
     operator std::optional<T>() const { return optionalValue(); } // NOLINT
 
