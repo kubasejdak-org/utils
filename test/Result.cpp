@@ -243,7 +243,7 @@ TEST_CASE("2. Copy constructing result", "[unit][Result]")
     }
 }
 
-TEST_CASE("3. Moving result around", "[unit][Result]")
+TEST_CASE("3. Moving result around via move constructor", "[unit][Result]")
 {
     constexpr int cValue = 132;
 
@@ -274,6 +274,114 @@ TEST_CASE("3. Moving result around", "[unit][Result]")
         REQUIRE(!result.optionalValue()); // NOLINT
         REQUIRE(!result.error());
         REQUIRE(newResult.value() == cValue);
+        REQUIRE(newResult.error() == Error::eInvalidArgument);
+    }
+
+    SECTION("3.4. Moving result initialized with error")
+    {
+        Result<int> result = Error::eInvalidArgument;
+        auto newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(!newResult.optionalValue());
+        REQUIRE(newResult.error() == Error::eInvalidArgument);
+    }
+}
+
+TEST_CASE("4. Copying result via copy assignment", "[unit][Result]")
+{
+    constexpr int cValue = 132;
+
+    SECTION("4.1. Copying empty result")
+    {
+        Result<int> result;
+        Result<int> newResult;
+        newResult = result;
+        REQUIRE(!result.optionalValue());
+        REQUIRE(!result.error());
+        REQUIRE(!newResult.optionalValue());
+        REQUIRE(!newResult.error());
+    }
+
+    SECTION("4.2. Copying result initialized with value")
+    {
+        Result<int> result = cValue;
+        Result<int> newResult;
+        newResult = result;
+        REQUIRE(result.optionalValue());
+        REQUIRE(!result.error());
+        REQUIRE(newResult.value() == cValue);
+        REQUIRE(!newResult.error());
+    }
+
+    SECTION("4.3. Copying result initialized with value and error")
+    {
+        Result<int> result = {cValue, Error::eInvalidArgument};
+        Result<int> newResult;
+        newResult = result;
+        REQUIRE(result.value() == cValue);
+        REQUIRE(result.error() == Error::eInvalidArgument);
+        REQUIRE(newResult.value() == cValue);
+        REQUIRE(newResult.error() == Error::eInvalidArgument);
+    }
+
+    SECTION("4.4. Copying result initialized with error")
+    {
+        Result<int> result = Error::eInvalidArgument;
+        Result<int> newResult;
+        newResult = result;
+        REQUIRE(!result.optionalValue());
+        REQUIRE(result.error() == Error::eInvalidArgument);
+        REQUIRE(!newResult.optionalValue());
+        REQUIRE(newResult.error() == Error::eInvalidArgument);
+    }
+}
+
+TEST_CASE("5. Moving result around via move assignment", "[unit][Result]")
+{
+    constexpr int cValue = 132;
+
+    SECTION("5.1. Moving empty result")
+    {
+        Result<int> result;
+        Result<int> newResult;
+        newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(!newResult.optionalValue());
+        REQUIRE(!newResult.error());
+    }
+
+    SECTION("5.2. Moving result initialized with value")
+    {
+        Result<int> result = cValue;
+        Result<int> newResult;
+        newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(newResult.value() == cValue);
+        REQUIRE(!newResult.error());
+    }
+
+    SECTION("5.3. Moving result initialized with value and error")
+    {
+        Result<int> result = {cValue, Error::eInvalidArgument};
+        Result<int> newResult;
+        newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(newResult.value() == cValue);
+        REQUIRE(newResult.error() == Error::eInvalidArgument);
+    }
+
+    SECTION("5.4. Moving result initialized with error")
+    {
+        Result<int> result = Error::eInvalidArgument;
+        Result<int> newResult;
+        newResult = std::move(result);
+        REQUIRE(!result.optionalValue()); // NOLINT
+        REQUIRE(!result.error());
+        REQUIRE(!newResult.optionalValue());
         REQUIRE(newResult.error() == Error::eInvalidArgument);
     }
 }
