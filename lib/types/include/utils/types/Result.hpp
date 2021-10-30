@@ -40,6 +40,10 @@
 
 namespace utils::types {
 
+/// Helper type, that acts as a holder of either value or error code. The main use case for such dual nature of this
+/// type is to be a result of an operation (e.g. function). Thanks to multiple convenience accessors, constructors and
+/// conversion operators it is easy to return both value and error from function using `return` keyword.
+/// @tparam T                   Type of the value, that is returned if there was no error.
 template <typename T>
 class Result {
 public:
@@ -47,11 +51,29 @@ public:
     /// Such result has empty value and error code indicating success.
     Result() = default;
 
+    /// Constructor that creates Result initialized with given value and error code. By default, error code is set to
+    /// "0", so Result will represent a successful operation result.
+    /// @param value            Value to be stored.
+    /// @param error            Error code to be stored (defaults to 0, which is success).
+    /// @note This overload takes value by lvalue reference (values is copied into the Result).
     Result(const T& value, std::error_code error = {}) // NOLINT
         : m_value(value)
         , m_error(error)
     {}
 
+    /// Constructor that creates Result initialized with given value and error code. By default, error code is set to
+    /// "0", so Result will represent a successful operation result.
+    /// @param value            Value to be stored.
+    /// @param error            Error code to be stored (defaults to 0, which is success).
+    /// @note This overload takes value by rvalue reference (value is moved into the Result).
+    Result(T&& value, std::error_code error = {}) // NOLINT
+        : m_value(std::move(value))
+        , m_error(error)
+    {}
+
+    /// Constructor that creates Result initialized with given error enum.
+    /// @tparam ErrorEnum       Type representing error enum to be stored in given Result.
+    /// @param error            Error value to be stored.
     template <typename ErrorEnum>
     Result(ErrorEnum error) // NOLINT
         : Result(std::error_code{error})
@@ -59,15 +81,17 @@ public:
         static_assert(std::is_error_code_enum_v<ErrorEnum>, "ErrorEnum is not an error code enum");
     }
 
-    Result(T&& value, std::error_code error = {}) // NOLINT
-        : m_value(std::move(value))
-        , m_error(error)
-    {}
-
+    /// Constructor that creates Result initialized with given error code.
+    /// @param error            Error code to be stored.
     Result(std::error_code error) // NOLINT
         : m_error(error)
     {}
 
+    /// Constructor that creates Result out of Result with different value type. Value in other object is ignored,
+    /// only the error is copied into given Result. This way, Result with error can be propagated through chain of
+    /// function calls even if they return different value types.
+    /// @tparam OtherValue      Type of value from other Result to be initialized from.
+    /// @param other            Object to be initialized from.
     template <typename OtherValue>
     Result(const Result<OtherValue>& other) // NOLINT
         : m_error(other.error())
@@ -75,17 +99,26 @@ public:
         assert(!other);
     }
 
+    /// Copy constructor.
     Result(const Result&) = default;
 
+    /// Move constructor.
+    /// @param other            Result object to be moved into current instance.
     Result(Result&& other) noexcept
         : m_value(std::exchange(other.m_value, {}))
         , m_error(std::exchange(other.m_error, {}))
     {}
 
+    /// Default destructor.
     ~Result() = default;
 
+    /// Copy assignment operator.
+    /// @return Reference to self.
     Result& operator=(const Result&) = default;
 
+    /// Move assignment operator.
+    /// @param other            Result object to be moved into current instance.
+    /// @return Reference to self.
     Result& operator=(Result&& other) noexcept
     {
         if (&other != this) {
@@ -96,8 +129,19 @@ public:
         return *this;
     }
 
+    /// Sets given value into current Result object.
+    /// @param value            Value to be stored.
+    /// @note This overload takes value by lvalue reference (values is copied into the Result).
     void setValue(const T& value) { m_value = value; }
 
+    /// Sets given value into current Result object.
+    /// @param value            Value to be stored.
+    /// @note This overload takes value by rvalue reference (values is moved into the Result).
+    void setValue(T&& value) { m_value = std::move(value); }
+
+    /// Sets given error enum into current Result object.
+    /// @tparam ErrorEnum       Type representing error enum to be stored in given Result.
+    /// @param error            Error value to be stored.
     template <typename ErrorEnum>
     void setError(ErrorEnum error)
     {
@@ -105,6 +149,8 @@ public:
         m_error = error;
     }
 
+    /// Sets given error code into current Result object.
+    /// @param error            Error code to be stored.
     void setError(std::error_code error) { m_error = error; }
 
     [[nodiscard]] T value() const
