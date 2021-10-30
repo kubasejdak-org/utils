@@ -75,7 +75,7 @@ public:
         assert(!other);
     }
 
-    Result(const Result& other) = default;
+    Result(const Result&) = default;
 
     Result(Result&& other) noexcept
         : m_value(std::exchange(other.m_value, {}))
@@ -84,7 +84,7 @@ public:
 
     ~Result() = default;
 
-    Result& operator=(const Result& other) = default;
+    Result& operator=(const Result&) = default;
 
     Result& operator=(Result&& other) noexcept
     {
