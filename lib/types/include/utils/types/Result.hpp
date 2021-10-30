@@ -153,18 +153,33 @@ public:
     /// @param error            Error code to be stored.
     void setError(std::error_code error) { m_error = error; }
 
+    /// Returns currently stored value.
+    /// @return Currently stored value.
+    /// @note If current object doesn't store any value (internal optional is empty), then an assert should happen as
+    ///       this is an invalid condition to call this method.
     [[nodiscard]] T value() const
     {
         assert(m_value.has_value());
         return *m_value;
     }
 
+    /// Returns currently stored value if exists or given fallback value if internal optional is empty.
+    /// @param fallbackValue    Fallback value to be returned when there is no internal value.
+    /// @return Currently stored value if exists or given fallback value if internal optional is empty.
     [[nodiscard]] T valueOr(const T& fallbackValue) const { return m_value.value_or(fallbackValue); }
 
+    /// Returns optional with currently stored value.
+    /// @return Optional with currently stored value.
     [[nodiscard]] std::optional<T> optionalValue() const { return m_value; }
 
+    /// Returns currently stored error code.
+    /// @return Currently stored error code.
     [[nodiscard]] std::error_code error() const { return m_error; }
 
+    /// Returns currently stored value.
+    /// @return Currently stored value.
+    /// @note If current object doesn't store any value (internal optional is empty), then an assert should happen as
+    ///       this is an invalid condition to call this operator.
     T operator*() const { return value(); }
 
     explicit operator T() const { return value(); } // NOLINT
