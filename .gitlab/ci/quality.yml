@@ -59,6 +59,7 @@ Coverage_Total:
     - GlobalRegistry_Coverage
     - Logger_Coverage
     - Property_Coverage
+    - Result_Coverage
     - ScopedExit_Coverage
     - StateMachine_Coverage
     - TcpConnection_Coverage
@@ -78,6 +79,7 @@ Coverage_Total:
            -a ../GlobalRegistry_Coverage/coverage/coverage.info \
            -a ../Logger_Coverage/coverage/coverage.info \
            -a ../Property_Coverage/coverage/coverage.info \
+           -a ../Result_Coverage/coverage/coverage.info \
            -a ../ScopedExit_Coverage/coverage/coverage.info \
            -a ../StateMachine_Coverage/coverage/coverage.info \
            -a ../TcpConnection_Coverage/coverage/coverage.info \
