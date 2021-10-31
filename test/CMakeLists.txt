@@ -8,6 +8,7 @@ add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     GlobalRegistry.cpp
     Logger.cpp
     property.cpp
+    Result.cpp
     ScopedExit.cpp
     StateMachine.cpp
     Watchdog.cpp
