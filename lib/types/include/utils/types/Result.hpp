@@ -182,14 +182,30 @@ public:
     ///       this is an invalid condition to call this operator.
     T operator*() const { return value(); }
 
+    /// Conversion operator to T (value type).
+    /// @return Currently stored value.
+    /// @note If current object doesn't store any value (internal optional is empty), then an assert should happen as
+    ///       this is an invalid condition to call this operator.
     explicit operator T() const { return value(); } // NOLINT
 
+    /// Conversion operator to std::optional<T> (value type).
+    /// @return Optional with currently stored value.
     operator std::optional<T>() const { return optionalValue(); } // NOLINT
 
+    /// Conversion operator to std::error_code.
+    /// @return Currently stored error code.
     operator std::error_code() const { return error(); } // NOLINT
 
+    /// Conversion operator to bool.
+    /// @return Flag indicating if underlying optional contains a valid value.
+    /// @retval true            Result contains a valid value.
+    /// @retval false           Result doesn't contain a valid value (optional is empty).
     explicit operator bool() const { return m_value.has_value(); }
 
+    /// Returns N-th element in the structured binding support.
+    /// @tparam cIndex          Index of the element to be returned.
+    /// @returnN-th element in the structured binding support.
+    /// @note This method is part of structured binding support for Result.
     template <std::size_t cIndex>
     std::tuple_element_t<cIndex, Result> get() const
     {
@@ -208,20 +224,31 @@ private:
 } // namespace utils::types
 
 #ifndef UTILS_NO_INLINE_RESULT
+/// Helper alias that brings Result into global namespace.
+/// @tparam T                   Type of the value, that is returned if there was no error.
 template <typename T>
 using Result = utils::types::Result<T>;
 #endif
 
 namespace std {
 
+/// Specialization of type returning number of elements used for structured binding.
+/// @tparam T                   Type of the value, that is returned if there was no error.
+/// @note This type is part of structured binding support for Result.
 template <typename T>
 struct tuple_size<utils::types::Result<T>> : integral_constant<size_t, 2> {};
 
+/// Specialization of type returning type of first element used for structured binding.
+/// @tparam T                   Type of the value, that is returned if there was no error.
+/// @note This type is part of structured binding support for Result.
 template <typename T>
 struct tuple_element<0, utils::types::Result<T>> {
     using type = std::optional<T>; // NOLINT(readability-identifier-naming)
 };
 
+/// Specialization of type returning type of second element used for structured binding.
+/// @tparam T                   Type of the value, that is returned if there was no error.
+/// @note This type is part of structured binding support for Result.
 template <typename T>
 struct tuple_element<1, utils::types::Result<T>> {
     using type = std::error_code; // NOLINT(readability-identifier-naming)
