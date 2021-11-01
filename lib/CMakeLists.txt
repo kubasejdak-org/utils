@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.19)
 add_compile_options(-Wall -Wextra -Wpedantic -Werror $<$<COMPILE_LANGUAGE:CXX>:-std=c++17> $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
 
 add_subdirectory(bits)
+add_subdirectory(debug)
 add_subdirectory(fsm)
 add_subdirectory(functional)
 add_subdirectory(logger)

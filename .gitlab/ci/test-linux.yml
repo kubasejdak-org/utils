@@ -36,6 +36,16 @@ Bits_Linux_UT:
   variables:
     TestTags: "[bits]"
 
+EventStats_Linux_ARM_UT:
+  extends: .Run_Test_Linux_ARM
+  variables:
+    TestTags: "[EventStats]"
+
+EventStats_Linux_UT:
+  extends: .Run_Test_Linux
+  variables:
+    TestTags: "[EventStats]"
+
 ExecAround_Linux_ARM_UT:
   extends: .Run_Test_Linux_ARM
   variables:

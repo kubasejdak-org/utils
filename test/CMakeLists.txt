@@ -4,6 +4,7 @@ add_subdirectory(init)
 add_library(apputils-tests OBJECT EXCLUDE_FROM_ALL
     appMain.cpp
     bits.cpp
+    EventStats.cpp
     ExecAround.cpp
     GlobalRegistry.cpp
     Logger.cpp
@@ -34,7 +35,7 @@ target_compile_definitions(Catch2::Catch2
 target_link_libraries(apputils-tests
     PUBLIC platform-init
     PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::types utils::bits utils::fsm utils::functional
-            utils::watchdog
+            utils::watchdog utils::debug
 )
 
 if (OSAL_PLATFORM STREQUAL linux)

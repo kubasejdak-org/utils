@@ -27,6 +27,11 @@ Bits_Coverage:
   variables:
     Tags: "[bits]"
 
+EventStats_Coverage:
+  extends: .Linux_Coverage
+  variables:
+    Tags: "[EventStats]"
+
 ExecAround_Coverage:
   extends: .Linux_Coverage
   variables:
