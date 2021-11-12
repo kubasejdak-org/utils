@@ -453,6 +453,36 @@ TEST_CASE("8. Structured binding", "[unit][Result]")
     }
 }
 
+TEST_CASE("9. std::tie() support", "[unit][Result]")
+{
+    std::optional<int> value;
+    std::error_code error;
+
+    SECTION("9.1. Result initialized with value")
+    {
+        Result<int> result = cValue;
+        std::tie(value, error) = result.toTuple();
+        REQUIRE(*value == cValue);
+        REQUIRE(!error);
+    }
+
+    SECTION("9.2. Result initialized with error")
+    {
+        Result<int> result = Error::eInvalidArgument;
+        std::tie(value, error) = result.toTuple();
+        REQUIRE(!value);
+        REQUIRE(error == Error::eInvalidArgument);
+    }
+
+    SECTION("9.3. Result initialized with value and error")
+    {
+        Result<int> result = {cValue, Error::eInvalidArgument};
+        std::tie(value, error) = result.toTuple();
+        REQUIRE(*value == cValue);
+        REQUIRE(error == Error::eInvalidArgument);
+    }
+}
+
 Result<int> func(int value)
 {
     if (value < 0)
@@ -477,9 +507,9 @@ Result<std::string> func3(Result<int> value) // NOLINT
     return value;
 }
 
-TEST_CASE("9. Checking result of a function", "[unit][Result]")
+TEST_CASE("10. Checking result of a function", "[unit][Result]")
 {
-    SECTION("9.1. Returning correct value")
+    SECTION("10.1. Returning correct value")
     {
         auto result = func(cValue);
         REQUIRE(result);
@@ -488,7 +518,7 @@ TEST_CASE("9. Checking result of a function", "[unit][Result]")
         REQUIRE(result.error().message() == "Success");
     }
 
-    SECTION("9.2. Returning error")
+    SECTION("10.2. Returning error")
     {
         auto result = func(-1);
         REQUIRE(!result);
@@ -496,7 +526,7 @@ TEST_CASE("9. Checking result of a function", "[unit][Result]")
         REQUIRE(result.error().message() == "eInvalidArgument");
     }
 
-    SECTION("9.3. Passing 'value' result from one function to another")
+    SECTION("10.3. Passing 'value' result from one function to another")
     {
         auto result = func2(func(cValue));
         REQUIRE(result);
@@ -505,7 +535,7 @@ TEST_CASE("9. Checking result of a function", "[unit][Result]")
         REQUIRE(result.error().message() == "Success");
     }
 
-    SECTION("9.4. Passing 'error' result from one function to another")
+    SECTION("10.4. Passing 'error' result from one function to another")
     {
         auto result = func2(func(-1));
         REQUIRE(!result);
@@ -513,7 +543,7 @@ TEST_CASE("9. Checking result of a function", "[unit][Result]")
         REQUIRE(result.error().message() == "eInvalidArgument");
     }
 
-    SECTION("9.5. Passing 'value' result from one function to another with value type change")
+    SECTION("10.5. Passing 'value' result from one function to another with value type change")
     {
         auto result = func3(func2(func(2)));
         REQUIRE(result);
@@ -522,7 +552,7 @@ TEST_CASE("9. Checking result of a function", "[unit][Result]")
         REQUIRE(result.error().message() == "Success");
     }
 
-    SECTION("9.6. Passing 'error' result from one function to another with value type change")
+    SECTION("10.6. Passing 'error' result from one function to another with value type change")
     {
         auto result = func3(func2(func(-1)));
         REQUIRE(!result);

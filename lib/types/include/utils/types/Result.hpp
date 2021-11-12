@@ -35,6 +35,7 @@
 #include <cassert>
 #include <optional>
 #include <system_error>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -195,6 +196,17 @@ public:
     /// @retval true            Result contains a valid value.
     /// @retval false           Result doesn't contain a valid value (optional is empty).
     explicit operator bool() const { return m_value.has_value(); }
+
+    /// Conversion operator to std::tuple<T, std::error_code>.
+    /// @return std::tuple with optional value and currently stored error code.
+    operator std::tuple<std::optional<T>, std::error_code>() const // NOLINT
+    {
+        return std::make_tuple(optionalValue(), error());
+    }
+
+    /// Returns std::tuple with optional value and currently stored error code.
+    /// @return std::tuple with optional value and currently stored error code.
+    std::tuple<std::optional<T>, std::error_code> toTuple() const { return *this; }
 
     /// Returns N-th element in the structured binding support.
     /// @tparam cIndex          Index of the element to be returned.
