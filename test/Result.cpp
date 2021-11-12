@@ -401,13 +401,7 @@ TEST_CASE("7. Conversion operators", "[unit][Result]")
 
     SECTION("7.1. Dereferencing result") { REQUIRE(*result == cValue); }
 
-    SECTION("7.2. Casting to value")
-    {
-        int value = int(result);
-        REQUIRE(value == cValue);
-    }
-
-    SECTION("7.3. Casting to optional value")
+    SECTION("7.2. Casting to optional value")
     {
         std::optional<int> value = result;
         REQUIRE(*value == cValue);
@@ -416,7 +410,7 @@ TEST_CASE("7. Conversion operators", "[unit][Result]")
         REQUIRE(!value2);
     }
 
-    SECTION("7.4. Casting to error code")
+    SECTION("7.3. Casting to error code")
     {
         std::error_code error = result;
         REQUIRE(error == Error::eInvalidArgument);
@@ -425,7 +419,7 @@ TEST_CASE("7. Conversion operators", "[unit][Result]")
         REQUIRE(error2 == Error::eInvalidArgument);
     }
 
-    SECTION("7.2. Casting to bool")
+    SECTION("7.4. Casting to bool")
     {
         REQUIRE(result);
         REQUIRE(!result2);

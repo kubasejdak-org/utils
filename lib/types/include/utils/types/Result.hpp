@@ -182,12 +182,6 @@ public:
     ///       this is an invalid condition to call this operator.
     T operator*() const { return value(); }
 
-    /// Conversion operator to T (value type).
-    /// @return Currently stored value.
-    /// @note If current object doesn't store any value (internal optional is empty), then an assert should happen as
-    ///       this is an invalid condition to call this operator.
-    explicit operator T() const { return value(); } // NOLINT
-
     /// Conversion operator to std::optional<T> (value type).
     /// @return Optional with currently stored value.
     operator std::optional<T>() const { return optionalValue(); } // NOLINT
