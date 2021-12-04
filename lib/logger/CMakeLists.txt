@@ -1,6 +1,3 @@
-conan_get(REQUIRES spdlog/1.9.2 OPTIONS spdlog:no_exceptions=True spdlog:header_only=True)
-find_package(spdlog REQUIRED)
-
 add_library(utils-logger INTERFACE)
 add_library(utils::logger ALIAS utils-logger)
 
@@ -18,7 +15,3 @@ if (NOT UNIX)
         INTERFACE -include${COMPATIBILITY_PATH}/mutex -include${COMPATIBILITY_PATH}/thread -include${COMPATIBILITY_PATH}/condition_variable -include${COMPATIBILITY_PATH}/syscalls.hpp
     )
 endif ()
-
-target_link_libraries(utils-logger
-    INTERFACE spdlog::spdlog
-)

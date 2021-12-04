@@ -18,23 +18,14 @@ target_include_directories(apputils-tests
     PRIVATE .
 )
 
-conan_get(REQUIRES catch2/2.13.7 fmt/8.0.1 OPTIONS fmt:header_only=True)
-find_package(Catch2 REQUIRED)
-find_package(fmt REQUIRED)
-
 target_compile_definitions(apputils-tests
     # This is required to selectively run Catch2 tests using tags on platforms, where cmd line arguments are not available.
-    PRIVATE $<$<BOOL:${TEST_TAGS}>:TEST_TAGS="${TEST_TAGS}">
-)
-
-target_compile_definitions(Catch2::Catch2
-    INTERFACE CATCH_CONFIG_DISABLE_EXCEPTIONS $<$<STREQUAL:${PLATFORM},freertos-arm>:CATCH_CONFIG_NO_POSIX_SIGNALS>
+    PRIVATE $<$<BOOL:${TEST_TAGS}>:TEST_TAGS="${TEST_TAGS}"> CATCH_CONFIG_DISABLE_EXCEPTIONS $<$<STREQUAL:${PLATFORM},freertos-arm>:CATCH_CONFIG_NO_POSIX_SIGNALS>
 )
 
 target_link_libraries(apputils-tests
     PUBLIC platform-init
-    PRIVATE Catch2::Catch2 fmt::fmt osal::cpp utils::registry utils::logger utils::types utils::bits utils::fsm utils::functional
-            utils::watchdog
+    PRIVATE osal::cpp utils::registry utils::logger utils::types utils::bits utils::fsm utils::functional utils::watchdog
 )
 
 if (OSAL_PLATFORM STREQUAL linux)
