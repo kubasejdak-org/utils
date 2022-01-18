@@ -32,7 +32,7 @@ if (USE_ASAN OR USE_LSAN OR USE_UBSAN)
 endif ()
 
 if (COVERAGE)
-    add_lcov_coverage(IGNORE ${CMAKE_CURRENT_SOURCE_DIR}/test/* ${CMAKE_CURRENT_SOURCE_DIR}/lib/logger/spdlog-*/*)
+    add_lcov_coverage(IGNORE ${CMAKE_CURRENT_SOURCE_DIR}/test/*)
 endif ()
 
 add_subdirectory(${platform_SOURCE_DIR}/app ${platform_BINARY_DIR})
