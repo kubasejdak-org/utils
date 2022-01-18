@@ -38,8 +38,7 @@
 namespace utils::network {
 
 /// Represents possible error codes returned from utils::network module.
-enum class Error
-{
+enum class Error {
     eOk,
     eInvalidArgument,
     eSocketError,

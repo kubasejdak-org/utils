@@ -33,14 +33,12 @@
 #include <utils/types/Result.hpp>
 
 #include <catch2/catch.hpp>
-#include <fmt/printf.h>
 
 #include <string>
 #include <system_error>
 #include <type_traits>
 
-enum class Error
-{
+enum class Error {
     eOk,
     eInvalidArgument
 };
