@@ -36,6 +36,7 @@
 #include <spdlog/spdlog.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 /// Registers custom user-defined logger with the given properties.
@@ -110,56 +111,62 @@ class ModuleLoggerImpl {
 public:
     /// Outputs the TRACE logs.
     /// @tparam Args        Logger arguments' types.
+    /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void trace(Args&&... args)
+    static void trace(std::string_view fmt, Args&&... args)
     {
-        get()->trace(std::forward<Args>(args)...);
+        get()->trace(fmt::runtime(fmt), std::forward<Args>(args)...);
     }
 
     /// Outputs the DEBUG logs.
     /// @tparam Args        Logger arguments' types.
+    /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void debug(Args&&... args)
+    static void debug(std::string_view fmt, Args&&... args)
     {
-        get()->debug(std::forward<Args>(args)...);
+        get()->debug(fmt::runtime(fmt), std::forward<Args>(args)...);
     }
 
     /// Outputs the INFO logs.
     /// @tparam Args        Logger arguments' types.
+    /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void info(Args&&... args)
+    static void info(std::string_view fmt, Args&&... args)
     {
-        get()->info(std::forward<Args>(args)...);
+        get()->info(fmt::runtime(fmt), std::forward<Args>(args)...);
     }
 
     /// Outputs the WARN logs.
     /// @tparam Args        Logger arguments' types.
+    /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void warn(Args&&... args)
+    static void warn(std::string_view fmt, Args&&... args)
     {
-        get()->warn(std::forward<Args>(args)...);
+        get()->warn(fmt::runtime(fmt), std::forward<Args>(args)...);
     }
 
     /// Outputs the ERROR logs.
     /// @tparam Args        Logger arguments' types.
+    /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void error(Args&&... args)
+    static void error(std::string_view fmt, Args&&... args)
     {
-        get()->error(std::forward<Args>(args)...);
+        get()->error(fmt::runtime(fmt), std::forward<Args>(args)...);
     }
 
     /// Outputs the CRITICAL logs.
     /// @tparam Args        Logger arguments' types.
+    /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void critical(Args&&... args)
+    static void critical(std::string_view fmt, Args&&... args)
     {
-        get()->critical(std::forward<Args>(args)...);
+        get()->critical(fmt::runtime(fmt), std::forward<Args>(args)...);
     }
 
     /// Returns the underlying spdlog logger.
@@ -200,37 +207,37 @@ public:
     /// Outputs the TRACE logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void trace(Args&&... /*unused*/)
+    static void trace(std::string_view /*unused*/, Args&&... /*unused*/)
     {}
 
     /// Outputs the DEBUG logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void debug(Args&&... /*unused*/)
+    static void debug(std::string_view /*unused*/, Args&&... /*unused*/)
     {}
 
     /// Outputs the INFO logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void info(Args&&... /*unused*/)
+    static void info(std::string_view /*unused*/, Args&&... /*unused*/)
     {}
 
     /// Outputs the WARN logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void warn(Args&&... /*unused*/)
+    static void warn(std::string_view /*unused*/, Args&&... /*unused*/)
     {}
 
     /// Outputs the ERROR logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void error(Args&&... /*unused*/)
+    static void error(std::string_view /*unused*/, Args&&... /*unused*/)
     {}
 
     /// Outputs the CRITICAL logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void critical(Args&&... /*unused*/)
+    static void critical(std::string_view /*unused*/, Args&&... /*unused*/)
     {}
 
     /// Returns the underlying spdlog logger.
