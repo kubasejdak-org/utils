@@ -35,8 +35,8 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include <string>
 #include <memory>
+#include <string>
 #include <utility>
 
 /// Registers custom user-defined logger with the given properties.
