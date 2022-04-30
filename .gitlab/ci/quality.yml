@@ -31,7 +31,7 @@ Clang_Format:
     - cd ${CI_JOB_NAME}
 
     # Check build.
-    - cmake .. --preset ${Preset}-DTOOLCHAIN=${Toolchain} -DUSE_CONAN=ON
+    - cmake .. --preset ${Preset}
     - ../tools/check-clang-tidy.sh
 
 Clang_Tidy_Linux:
