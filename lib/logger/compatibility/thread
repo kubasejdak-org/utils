@@ -30,7 +30,10 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifndef _GLIBCXX_THREAD
+#define _GLIBCXX_THREAD 1
+#ifndef _GLIBCXX_THREAD_H
+#define _GLIBCXX_THREAD_H 1
 
 #include <osal/Thread.h>
 #include <osal/sleep.hpp>
@@ -72,7 +75,9 @@ public:
         if (m_userFunction != nullptr)
             osalThreadDestroy(&m_thread);
     }
+
     thread(const thread&) = delete;
+
     thread(thread&& other) noexcept
     {
         std::memcpy(&m_thread, &other.m_thread, sizeof(m_thread));
@@ -84,7 +89,9 @@ public:
         other.m_workerFunction = nullptr;
         std::memset(other.m_stack, 0, sizeof(other.m_stack));
     }
+
     thread& operator=(const thread&) = delete;
+
     thread& operator=(thread&& other) noexcept
     {
         std::memcpy(&m_thread, &other.m_thread, sizeof(m_thread));
@@ -99,8 +106,11 @@ public:
     }
 
     void swap(thread&) noexcept { assert(false); }
+
     bool joinable() const noexcept { return true; }
+
     void join() { osalThreadJoin(&m_thread); }
+
     void detach() { assert(false); }
 
     struct id {
@@ -108,7 +118,9 @@ public:
     };
 
     thread::id get_id() const noexcept { return {osalThreadId()}; }
+
     native_handle_type native_handle() { return m_thread; }
+
     static unsigned int hardware_concurrency() noexcept { return 1; }
 
 private:
@@ -126,7 +138,13 @@ struct hash<thread::id> {
     size_t operator()(const thread::id& id) const noexcept { return id.threadId; }
 };
 
+inline bool operator==(thread::id lhs, thread::id rhs) noexcept
+{
+    return lhs.threadId == rhs.threadId;
+}
+
 namespace this_thread {
+
 inline thread::id get_id() noexcept
 {
     return {osalThreadId()};
@@ -138,5 +156,13 @@ inline void sleep_for(const chrono::duration<Representation, Period>& time)
     osal::sleep(time);
 }
 
+inline void yield() noexcept
+{
+    osalThreadYield();
+}
+
 } // namespace this_thread
 } // namespace std
+
+#endif
+#endif

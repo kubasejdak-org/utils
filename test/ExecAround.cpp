@@ -39,18 +39,23 @@
 
 struct TestType {
     TestType() = default;
+
     TestType(const TestType& /*unused*/)
         : copyConstructed(true)
     {}
+
     TestType(TestType&& /*unused*/) noexcept
         : moveConstructed(true)
     {}
+
     ~TestType() = default;
+
     TestType& operator=(const TestType& /*unused*/) // NOLINT
     {
         copyAssigned = true;
         return *this;
     }
+
     TestType& operator=(TestType&& /*unused*/) noexcept
     {
         moveAssigned = true;
@@ -65,6 +70,7 @@ struct TestType {
     double d{};
 
     void func1() { ++i; }
+
     void func2() { ++d; }
 };
 

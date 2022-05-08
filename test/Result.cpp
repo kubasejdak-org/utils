@@ -397,7 +397,10 @@ TEST_CASE("7. Conversion operators", "[unit][Result]")
     Result<int> result = {cValue, Error::eInvalidArgument};
     Result<int> result2 = Error::eInvalidArgument;
 
-    SECTION("7.1. Dereferencing result") { REQUIRE(*result == cValue); }
+    SECTION("7.1. Dereferencing result")
+    {
+        REQUIRE(*result == cValue);
+    }
 
     SECTION("7.2. Casting to optional value")
     {

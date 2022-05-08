@@ -140,9 +140,15 @@ TEST_CASE("2. Simple server echo test", "[unit][TcpConnection]")
 
     std::size_t toSend{};
 
-    SECTION("2.1. Send 0 B.") { toSend = 0; }
+    SECTION("2.1. Send 0 B.")
+    {
+        toSend = 0;
+    }
 
-    SECTION("2.2. Send 1 B.") { toSend = 1; }
+    SECTION("2.2. Send 1 B.")
+    {
+        toSend = 1;
+    }
 
     SECTION("2.3. Send 4 KB.")
     {
