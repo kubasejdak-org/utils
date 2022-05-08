@@ -52,13 +52,20 @@ TEST_CASE("1. All instances are correctly stored in GlobalRegistry with custom i
 
     SECTION("1.1. 1 instance")
     {
-        TestRegistry::init({{0, Test(0)}});
+        TestRegistry::init({
+            {0, Test(0)}
+        });
         instancesCount = 1;
     }
 
     SECTION("1.2. 4 instances")
     {
-        TestRegistry::init({{0, Test(0)}, {1, Test(1)}, {2, Test(2)}, {3, Test(3)}});
+        TestRegistry::init({
+            {0, Test(0)},
+            {1, Test(1)},
+            {2, Test(2)},
+            {3, Test(3)}
+        });
         instancesCount = 4;
     }
 
@@ -87,12 +94,14 @@ TEST_CASE("2. Move only types can be stored in GlobalRegistry with default id ty
         {}
 
         [[maybe_unused]] Test(const Test&) = delete;
+
         Test(Test&& other) noexcept
             : value(other.value)
             , moved(true)
         {
             other.value = -1;
         }
+
         ~Test() = default;
         Test& operator=(const Test&) = delete;
         Test& operator=(Test&&) = delete;
@@ -106,13 +115,20 @@ TEST_CASE("2. Move only types can be stored in GlobalRegistry with default id ty
 
     SECTION("2.1. 1 instance")
     {
-        TestRegistry::init({{"0", Test(0)}});
+        TestRegistry::init({
+            {"0", Test(0)}
+        });
         instancesCount = 1;
     }
 
     SECTION("2.2. 4 instances")
     {
-        TestRegistry::init({{"0", Test(0)}, {"1", Test(1)}, {"2", Test(2)}, {"3", Test(3)}});
+        TestRegistry::init({
+            {"0", Test(0)},
+            {"1", Test(1)},
+            {"2", Test(2)},
+            {"3", Test(3)}
+        });
         instancesCount = 4;
     }
 
@@ -145,13 +161,18 @@ TEST_CASE("3. GlobalRegistry can hold derived types with abstract interface", "[
         IBase& operator=(IBase&&) = delete;
         [[maybe_unused]] virtual void func() = 0;
     };
+
     struct Derived : IBase {
         void func() override {}
     };
 
     using BaseRegistry = utils::registry::GlobalRegistry<IBase>;
 
-    BaseRegistry::init({{"instance0", Derived()}, {"instance1", Derived()}, {"instance2", Derived()}});
+    BaseRegistry::init({
+        {"instance0", Derived()},
+        {"instance1", Derived()},
+        {"instance2", Derived()}
+    });
     auto size = BaseRegistry::size();
     REQUIRE(size == 3);
 
