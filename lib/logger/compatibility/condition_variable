@@ -40,7 +40,10 @@
 
 namespace std {
 
-enum class cv_status { no_timeout, timeout };
+enum class cv_status {
+    no_timeout,
+    timeout
+};
 
 class condition_variable {
 public:
@@ -49,11 +52,13 @@ public:
     condition_variable() noexcept
         : m_semaphore(0)
     {}
+
     ~condition_variable() noexcept = default;
     condition_variable(const condition_variable&) = delete;
     condition_variable& operator=(const condition_variable&) = delete;
 
     void notify_one() noexcept { m_semaphore.signal(); }
+
     void notify_all() noexcept { assert(false); }
 
     void wait(unique_lock<mutex>& lock) noexcept
