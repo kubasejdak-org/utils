@@ -41,7 +41,10 @@
 
 TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")
 {
-    SECTION("1.1. Client is uninitialized") { utils::network::TcpClient client; }
+    SECTION("1.1. Client is uninitialized")
+    {
+        utils::network::TcpClient client;
+    }
 
     SECTION("1.2. Client is initialized")
     {

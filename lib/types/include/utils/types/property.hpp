@@ -48,7 +48,7 @@ using PropertyType = typename Property<Ts...>::type;
 /// Helper constant representing user-defined property value.
 /// @tparam Ts              Type tags used to specialize generic Property type.
 template <typename... Ts>
-inline constexpr auto cPropertyValue = Property<Ts...>::value;
+constexpr inline auto cPropertyValue = Property<Ts...>::value;
 
 } // namespace utils::types
 
