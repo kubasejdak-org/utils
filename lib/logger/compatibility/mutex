@@ -41,34 +41,41 @@ public:
     using native_handle_type = osal::Mutex&;
 
     mutex() noexcept {}
+
     ~mutex() = default;
     mutex(const mutex&) = delete;
     mutex& operator=(const mutex&) = delete;
 
     void lock() { m_mutex.lock(); }
+
     bool try_lock() noexcept { return (m_mutex.tryLock() == OsalError::eOk); }
+
     void unlock() { m_mutex.unlock(); }
+
     native_handle_type native_handle() noexcept { return m_mutex; }
 
 private:
     osal::Mutex m_mutex;
 };
 
-class recursive_mutex
-{
+class recursive_mutex {
 public:
     using native_handle_type = osal::Mutex&;
 
     recursive_mutex()
         : m_mutex(OsalMutexType::eRecursive)
     {}
+
     ~recursive_mutex() = default;
     recursive_mutex(const recursive_mutex&) = delete;
     recursive_mutex& operator=(const recursive_mutex&) = delete;
 
     void lock() { m_mutex.lock(); }
+
     bool try_lock() noexcept { return (m_mutex.tryLock() == OsalError::eOk); }
+
     void unlock() { m_mutex.unlock(); }
+
     native_handle_type native_handle() noexcept { return m_mutex; }
 
 private:
