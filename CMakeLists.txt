@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
-# Define application settings.
-set(APP utils-tests)
 include(test/settings.cmake)
 
 include(cmake/conan.cmake)
@@ -36,7 +34,7 @@ if (COVERAGE)
     add_lcov_coverage(IGNORE ${CMAKE_CURRENT_SOURCE_DIR}/test/*)
 endif ()
 
-add_subdirectory(${platform_SOURCE_DIR}/app ${platform_BINARY_DIR})
+add_subdirectory(${platform_SOURCE_DIR}/lib ${platform_BINARY_DIR})
 add_subdirectory(${osal_SOURCE_DIR}/lib ${osal_BINARY_DIR})
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
