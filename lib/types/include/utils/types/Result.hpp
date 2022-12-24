@@ -206,14 +206,14 @@ public:
 
     /// Returns std::tuple with optional value and currently stored error code.
     /// @return std::tuple with optional value and currently stored error code.
-    std::tuple<std::optional<T>, std::error_code> toTuple() const { return *this; }
+    [[nodiscard]] std::tuple<std::optional<T>, std::error_code> toTuple() const { return *this; }
 
     /// Returns N-th element in the structured binding support.
     /// @tparam cIndex          Index of the element to be returned.
     /// @returnN-th element in the structured binding support.
     /// @note This method is part of structured binding support for Result.
     template <std::size_t cIndex>
-    std::tuple_element_t<cIndex, Result> get() const
+    [[nodiscard]] std::tuple_element_t<cIndex, Result> get() const
     {
         if constexpr (cIndex == 0)
             return optionalValue();

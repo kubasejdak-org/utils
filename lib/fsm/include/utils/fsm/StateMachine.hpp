@@ -141,7 +141,7 @@ private:
     /// This method automatically calls onLeave() method of the old state and onEnter() method of the new state.
     /// @note This method is checking the value of the internal counter of recursive usage of changeState() method. In
     ///       case of recursive usage, it will report it with a proper log message.
-    void executeStateChange()
+    void executeStateChange() // NOLINT(misc-no-recursion)
     {
         if (m_currentState) {
             FsmLogger::info("<{}:{}> Leaving state", m_name, m_currentState->name());
