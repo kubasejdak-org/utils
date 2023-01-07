@@ -6,5 +6,5 @@ target_include_directories(utils-functional
 )
 
 target_link_libraries(utils-functional
-    INTERFACE utils::types utils::preprocessor
+    INTERFACE utils::preprocessor utils::types
 )
