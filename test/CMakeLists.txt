@@ -19,7 +19,8 @@ target_compile_definitions(utils-tests
 )
 
 target_link_libraries(utils-tests
-    PRIVATE osal::cpp platform::init platform::main utils::registry utils::logger utils::types utils::bits utils::fsm utils::functional utils::watchdog
+    PRIVATE osal::cpp platform::init platform::main utils::bits utils::fsm utils::functional utils::logger
+            utils::registry utils::types utils::watchdog
 )
 
 if (OSAL_PLATFORM STREQUAL linux)
