@@ -4,7 +4,7 @@
     GIT_STRATEGY: none
   script:
     - cd ${AppArtifact}/bin
-    - ./utils-tests ${TestTags}
+    - ./utils-tests -r verbose ${TestTags}
 
 .Run_Test_Linux:
   extends: .Run_Test

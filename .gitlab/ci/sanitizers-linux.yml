@@ -16,7 +16,7 @@
     # Build application.
     - cmake .. --preset linux-clang-debug D${Sanitizer}=ON
     - make
-    - bin/utils-tests
+    - bin/utils-tests -r verbose
 
 Address_Sanitizer_Linux:
   extends: .Linux_Sanitizer
