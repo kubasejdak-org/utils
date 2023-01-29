@@ -32,12 +32,10 @@
 
 #include <utils/types/property.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
-#include <string_view>
 #include <type_traits>
-
-using namespace std::string_view_literals;
 
 ADD_PROPERTY_TYPE(KeyA, Type1);
 ADD_PROPERTY_TYPE_2(KeyA, KeyB, Type2);
@@ -50,30 +48,30 @@ TEST_CASE("1. Type properties depending on multiple keys", "[unit][property]")
     REQUIRE(std::is_same_v<utils::types::PropertyType<KeyA, KeyB, KeyC>, Type2>);
 }
 
-ADD_PROPERTY(KeyD, "ValueA"sv);
-ADD_PROPERTY_2(KeyD, KeyE, "ValueB"sv);
-ADD_PROPERTY_3(KeyD, KeyE, KeyF, "ValueC"sv);
+ADD_PROPERTY(KeyD, "ValueA");
+ADD_PROPERTY_2(KeyD, KeyE, "ValueB");
+ADD_PROPERTY_3(KeyD, KeyE, KeyF, "ValueC");
 
 TEST_CASE("2. Value properties depending on multiple keys", "[unit][property]")
 {
-    REQUIRE(utils::types::cPropertyValue<KeyD> == "ValueA"sv);
-    REQUIRE(utils::types::cPropertyValue<KeyD, KeyE> == "ValueB"sv);
-    REQUIRE(utils::types::cPropertyValue<KeyD, KeyE, KeyF> == "ValueC"sv);
+    REQUIRE_THAT(utils::types::cPropertyValue<KeyD>, Catch::Matchers::Equals("ValueA"));
+    REQUIRE_THAT((utils::types::cPropertyValue<KeyD, KeyE>), Catch::Matchers::Equals("ValueB"));
+    REQUIRE_THAT((utils::types::cPropertyValue<KeyD, KeyE, KeyF>), Catch::Matchers::Equals("ValueC"));
 }
 
 ADD_PROPERTY_TYPE(BoardType, RaspberryPi);
 ADD_PROPERTY(BoardName, "RaspberryPi");
 
-ADD_PROPERTY_2(RaspberryPi, SpiA, "spi0"sv);
-ADD_PROPERTY_2(RaspberryPi, SpiB, "spi1"sv);
-ADD_PROPERTY_2(Cmpc30, SpiA, "spi2"sv);
-ADD_PROPERTY_2(Cmpc30, SpiB, "spi3"sv);
+ADD_PROPERTY_2(RaspberryPi, SpiA, "spi0");
+ADD_PROPERTY_2(RaspberryPi, SpiB, "spi1");
+ADD_PROPERTY_2(Cmpc30, SpiA, "spi2");
+ADD_PROPERTY_2(Cmpc30, SpiB, "spi3");
 
 TEST_CASE("3. Properties used in real use case with boards ans SPI configuration", "[unit][property]")
 {
     using Board = utils::types::PropertyType<BoardType>;
 
-    REQUIRE(utils::types::cPropertyValue<BoardName> == "RaspberryPi"sv);
-    REQUIRE(utils::types::cPropertyValue<Board, SpiA> == "spi0"sv);
-    REQUIRE(utils::types::cPropertyValue<Board, SpiB> == "spi1"sv);
+    REQUIRE_THAT(utils::types::cPropertyValue<BoardName>, Catch::Matchers::Equals("RaspberryPi"));
+    REQUIRE_THAT((utils::types::cPropertyValue<Board, SpiA>), Catch::Matchers::Equals("spi0"));
+    REQUIRE_THAT((utils::types::cPropertyValue<Board, SpiB>), Catch::Matchers::Equals("spi1"));
 }

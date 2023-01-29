@@ -35,7 +35,7 @@
 #include <osal/timestamp.hpp>
 #include <utils/watchdog/Watchdog.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fmt/printf.h>
 
 #include <chrono>
