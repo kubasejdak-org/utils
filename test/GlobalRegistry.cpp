@@ -34,6 +34,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <type_traits>
 
@@ -154,7 +155,7 @@ TEST_CASE("3. GlobalRegistry can hold derived types with abstract interface", "[
     struct IBase {
         IBase() = default;
         [[maybe_unused]] IBase(const IBase&) = delete;
-        [[maybe_unused]] IBase(IBase&& other) noexcept = default;
+        [[maybe_unused]] IBase(IBase&&) noexcept = default;
 
         virtual ~IBase() = default;
         IBase& operator=(const IBase&) = delete;

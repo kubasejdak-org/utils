@@ -35,7 +35,6 @@
 #include <utils/types/traits.hpp>
 
 #include <functional>
-#include <memory>
 #include <type_traits>
 #include <utility>
 

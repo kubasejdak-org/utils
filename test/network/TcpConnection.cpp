@@ -40,9 +40,11 @@
 #include <catch2/catch.hpp>
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <random>
+#include <system_error>
 #include <vector>
 
 template <typename T = std::size_t>

@@ -36,7 +36,9 @@
 
 #include <catch2/catch.hpp>
 
+#include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 TEST_CASE("1. Create TcpClient", "[unit][TcpClient]")

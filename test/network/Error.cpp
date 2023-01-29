@@ -34,12 +34,13 @@
 
 #include <catch2/catch.hpp>
 
+#include <string>
 #include <string_view>
 #include <system_error>
 
 TEST_CASE("4. Errors have proper human readable messages", "[unit][TcpConnection]")
 {
-    const std::string_view cUnrecognizedMsg = "(unrecognized error)";
+    const std::string cUnrecognizedMsg = "(unrecognized error)";
     constexpr int cErrorsCount = 12;
 
     for (int i = 0; i < cErrorsCount; ++i) {

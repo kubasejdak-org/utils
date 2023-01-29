@@ -37,6 +37,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 /// Registers custom user-defined logger with the given properties.
@@ -109,6 +110,17 @@ using LoggerCreator = std::function<void(const std::string& name, spdlog::level:
 template <typename Tag, spdlog::level::level_enum cLevel, typename LoggerCreator = detail::DefaultLoggerCreator>
 class ModuleLoggerImpl {
 public:
+    /// Outputs the TRACE logs.
+    /// @tparam Args        Logger arguments' types.
+    /// @param logLevel     Log level.
+    /// @param fmt          Format string.
+    /// @param args         Logger arguments.
+    template <typename... Args>
+    static void log(spdlog::level::level_enum logLevel, Args&&... args)
+    {
+        get()->log(logLevel, std::forward<Args>(args)...);
+    }
+
     /// Outputs the TRACE logs.
     /// @tparam Args        Logger arguments' types.
     /// @param fmt          Format string.
@@ -204,6 +216,12 @@ private:
 template <typename Tag, typename LoggerCreator>
 class ModuleLoggerImpl<Tag, spdlog::level::off, LoggerCreator> {
 public:
+    /// Outputs the TRACE logs.
+    /// @tparam Args        Logger arguments' types.
+    template <typename... Args>
+    static void log(spdlog::level::level_enum /*unused*/, Args&&... /*unused*/)
+    {}
+
     /// Outputs the TRACE logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
