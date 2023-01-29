@@ -32,7 +32,7 @@
 
 #include <utils/network/types.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("1. Invalid data given to getLocalEndpoint()", "[unit][TcpConnection]")
 {

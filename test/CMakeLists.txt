@@ -1,3 +1,5 @@
+find_library(Catch2 NAMES Catch2 Catch2d REQUIRED)
+
 add_subdirectory(init)
 
 add_executable(utils-tests
@@ -19,8 +21,8 @@ target_compile_definitions(utils-tests
 )
 
 target_link_libraries(utils-tests
-    PRIVATE osal::cpp platform::init platform::main utils::bits utils::fsm utils::functional utils::logger
-            utils::registry utils::types utils::watchdog
+    PRIVATE optimized Catch2 debug Catch2d osal::cpp platform::init platform::main utils::bits utils::fsm
+            utils::functional utils::logger utils::registry utils::types utils::watchdog
 )
 
 if (OSAL_PLATFORM STREQUAL linux)

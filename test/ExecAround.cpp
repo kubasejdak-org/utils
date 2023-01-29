@@ -32,7 +32,7 @@
 
 #include <utils/functional/ExecAround.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <functional>
 #include <memory>
@@ -142,7 +142,7 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
     SECTION("2.4. Move assignment")
     {
         utils::functional::ExecAround<TestType> moveAssignedWrapper;
-        moveAssignedWrapper = std::move(wrapper);
+        moveAssignedWrapper = std::move(wrapper); // NOLINT
         REQUIRE(moveAssignedWrapper->moveAssigned);
 
         moveAssignedWrapper->func1();

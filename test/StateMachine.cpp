@@ -35,10 +35,10 @@
 #include <utils/fsm/IState.hpp>
 #include <utils/fsm/StateMachine.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <array>
-#include <string_view>
+#include <string>
 #include <utility>
 
 struct IAppState : utils::fsm::IState<IAppState> {
@@ -163,8 +163,8 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
 {
     utils::fsm::StateMachine<IAppState> stateMachine("Test");
     constexpr int cIterations = 1'000;
-    std::string_view name;
-    std::string_view nextName;
+    std::string name;
+    std::string nextName;
 
     SECTION("2.1. Changing state from the outside")
     {

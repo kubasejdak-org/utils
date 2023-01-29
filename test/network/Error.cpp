@@ -32,10 +32,10 @@
 
 #include <utils/network/Error.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <string>
-#include <string_view>
 #include <system_error>
 
 TEST_CASE("4. Errors have proper human readable messages", "[unit][TcpConnection]")
@@ -45,14 +45,14 @@ TEST_CASE("4. Errors have proper human readable messages", "[unit][TcpConnection
 
     for (int i = 0; i < cErrorsCount; ++i) {
         std::error_code error = static_cast<utils::network::Error>(i);
-        REQUIRE(std::string_view(error.category().name()) == "utils::network");
+        REQUIRE_THAT(error.category().name(), Catch::Matchers::Equals("utils::network"));
         REQUIRE(!error.message().empty());
-        REQUIRE(error.message() != cUnrecognizedMsg);
+        REQUIRE_THAT(error.message(), !Catch::Matchers::Equals(cUnrecognizedMsg));
     }
 
     constexpr int cInvalidError = cErrorsCount;
     std::error_code error = static_cast<utils::network::Error>(cInvalidError);
-    REQUIRE(std::string_view(error.category().name()) == "utils::network");
+    REQUIRE_THAT(error.category().name(), Catch::Matchers::Equals("utils::network"));
     REQUIRE(!error.message().empty());
-    REQUIRE(error.message() == cUnrecognizedMsg);
+    REQUIRE_THAT(error.message(), Catch::Matchers::Equals(cUnrecognizedMsg));
 }
