@@ -38,6 +38,7 @@
 #include <osal/ScopedLock.hpp>
 
 #include <algorithm>
+#include <utility>
 
 namespace utils::watchdog {
 

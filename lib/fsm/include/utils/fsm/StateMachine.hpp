@@ -39,8 +39,12 @@
 #include <utils/functional/ExecAround.hpp>
 
 #include <cassert>
+#include <cstddef>
 #include <functional>
+#include <memory>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 namespace utils::fsm {
 

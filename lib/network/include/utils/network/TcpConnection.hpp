@@ -36,6 +36,7 @@
 
 #include <osal/Timeout.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <optional>

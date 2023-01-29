@@ -37,9 +37,7 @@
 #include <osal/Semaphore.hpp>
 #include <osal/Thread.hpp>
 
-#include <cstdint>
 #include <functional>
-#include <string>
 #include <system_error>
 #include <vector>
 

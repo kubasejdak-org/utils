@@ -33,6 +33,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <string>

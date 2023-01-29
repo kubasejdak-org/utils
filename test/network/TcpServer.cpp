@@ -35,6 +35,8 @@
 
 #include <catch2/catch.hpp>
 
+#include <utility>
+
 TEST_CASE("1. Creating TCP/IP server multiple times on the same port", "[unit][TcpServer]")
 {
     constexpr int cIterationsCount = 10;

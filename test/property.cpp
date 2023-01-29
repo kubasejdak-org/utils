@@ -34,7 +34,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <string>
+#include <string_view>
 #include <type_traits>
 
 using namespace std::string_view_literals;

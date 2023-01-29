@@ -35,9 +35,11 @@
 
 #include <osal/Timeout.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <system_error>
 
 namespace utils::network {

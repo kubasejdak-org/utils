@@ -36,6 +36,7 @@
 #include <catch2/catch.hpp>
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 TEST_CASE("1. Check power of 2 detection", "[unit][bits]")

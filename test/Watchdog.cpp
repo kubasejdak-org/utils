@@ -39,7 +39,9 @@
 #include <fmt/printf.h>
 
 #include <chrono>
+#include <map>
 #include <string>
+#include <string_view>
 
 struct Client {
     std::chrono::milliseconds timeout{};
