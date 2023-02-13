@@ -4,7 +4,7 @@
 /// @author Kuba Sejdak
 /// @copyright BSD 2-Clause License
 ///
-/// Copyright (c) 2020-2023, Kuba Sejdak <kuba.sejdak@gmail.com>
+/// Copyright (c) 2023-2023, Kuba Sejdak <kuba.sejdak@gmail.com>
 /// All rights reserved.
 ///
 /// Redistribution and use in source and binary forms, with or without
@@ -30,39 +30,30 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <osal/init.hpp>
-#include <platform/VerboseReporter.hpp>
-#include <platform/init.hpp>
-#include <utils/version.hpp>
-
-#include <catch2/catch_session.hpp>
-#include <fmt/printf.h>
-
-#include <cstdlib>
-
-// NOLINTNEXTLINE
-int appMain(int argc, char* argv[])
-{
-    if (!platform::init())
-        return EXIT_FAILURE;
-
-    if (!osal::init())
-        return EXIT_FAILURE;
-
-    fmt::print("Using utils:\n");
-    fmt::print("    git branch : {}\n", utils::gitBranch());
-    fmt::print("    git commit : {}\n", utils::gitCommit());
-    fmt::print("    git tag    : {}\n", utils::gitTag());
-
-#ifdef TEST_TAGS
-    (void) argc;
-
-    std::array<char*, 2> argvTags{};
-    argvTags[0] = argv[0];
-    argvTags[1] = const_cast<char*>(TEST_TAGS);
-
-    return Catch::Session().run(argvTags.size(), argvTags.data());
+#include "utils/version.hpp"
+#if __has_include("version.h")
+    #include "version.h"
 #else
-    return Catch::Session().run(argc, argv);
+    #define UTILS_GIT_BRANCH "N/A" // NOLINT
+    #define UTILS_GIT_COMMIT "N/A" // NOLINT
+    #define UTILS_GIT_TAG    "N/A" // NOLINT
 #endif
+
+namespace utils {
+
+std::string_view gitBranch()
+{
+    return UTILS_GIT_BRANCH;
 }
+
+std::string_view gitCommit()
+{
+    return UTILS_GIT_COMMIT;
+}
+
+std::string_view gitTag()
+{
+    return UTILS_GIT_TAG;
+}
+
+} // namespace utils
