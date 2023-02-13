@@ -22,7 +22,7 @@ target_compile_definitions(utils-tests
 
 target_link_libraries(utils-tests
     PRIVATE optimized Catch2 debug Catch2d osal::cpp platform::init platform::main utils::bits utils::fsm
-            utils::functional utils::logger utils::registry utils::types utils::watchdog
+            utils::functional utils::info utils::logger utils::registry utils::types utils::watchdog
 )
 
 if (OSAL_PLATFORM STREQUAL linux)
