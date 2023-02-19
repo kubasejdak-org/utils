@@ -30,16 +30,23 @@
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include "utils/version.hpp"
-#if __has_include("version.h")
-    #include "version.h"
+#include "utils/git.hpp"
+#if __has_include("git.h")
+    #include "git.h"
 #else
-    #define UTILS_GIT_BRANCH "N/A" // NOLINT
-    #define UTILS_GIT_COMMIT "N/A" // NOLINT
-    #define UTILS_GIT_TAG    "N/A" // NOLINT
+    #define UTILS_GIT_TAG        "N/A" // NOLINT
+    #define UTILS_GIT_BRANCH     "N/A" // NOLINT
+    #define UTILS_GIT_COMMIT     "N/A" // NOLINT
+    #define UTILS_GIT_USER_NAME  "N/A" // NOLINT
+    #define UTILS_GIT_USER_EMAIL "N/A" // NOLINT
 #endif
 
 namespace utils {
+
+std::string_view gitTag()
+{
+    return UTILS_GIT_TAG;
+}
 
 std::string_view gitBranch()
 {
@@ -51,9 +58,14 @@ std::string_view gitCommit()
     return UTILS_GIT_COMMIT;
 }
 
-std::string_view gitTag()
+std::string_view gitUserName()
 {
-    return UTILS_GIT_TAG;
+    return UTILS_GIT_USER_NAME;
+}
+
+std::string_view gitUserEmail()
+{
+    return UTILS_GIT_USER_EMAIL;
 }
 
 } // namespace utils

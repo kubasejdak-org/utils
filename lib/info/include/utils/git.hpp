@@ -36,8 +36,24 @@
 
 namespace utils {
 
-std::string_view gitBranch();
-std::string_view gitCommit();
+/// Returns name of the GIT tag from which binary was built.
+/// @return Name of the GIT tag or "N/A".
 std::string_view gitTag();
+
+/// Returns name of the GIT branch from which binary was built.
+/// @return Name of the GIT branch or "N/A".
+std::string_view gitBranch();
+
+/// Returns SHA of the GIT commit from which binary was built.
+/// @return SHA of the GIT commit or "N/A".
+std::string_view gitCommit();
+
+/// Returns user name who built the binary.
+/// @return User name who built the binary.
+std::string_view gitUserName();
+
+/// Returns user email who built the binary.
+/// @return User email who built the binary.
+std::string_view gitUserEmail();
 
 } // namespace utils

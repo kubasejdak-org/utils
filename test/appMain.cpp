@@ -33,7 +33,7 @@
 #include <osal/init.hpp>
 #include <platform/VerboseReporter.hpp>
 #include <platform/init.hpp>
-#include <utils/version.hpp>
+#include <utils/git.hpp>
 
 #include <catch2/catch_session.hpp>
 #include <fmt/printf.h>
@@ -50,9 +50,11 @@ int appMain(int argc, char* argv[])
         return EXIT_FAILURE;
 
     fmt::print("Using utils:\n");
-    fmt::print("    git branch : {}\n", utils::gitBranch());
-    fmt::print("    git commit : {}\n", utils::gitCommit());
-    fmt::print("    git tag    : {}\n", utils::gitTag());
+    fmt::print("    git tag        : {}\n", utils::gitTag());
+    fmt::print("    git branch     : {}\n", utils::gitBranch());
+    fmt::print("    git commit     : {}\n", utils::gitCommit());
+    fmt::print("    git user name  : {}\n", utils::gitUserName());
+    fmt::print("    git user email : {}\n", utils::gitUserEmail());
 
 #ifdef TEST_TAGS
     (void) argc;
