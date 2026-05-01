@@ -2,81 +2,18 @@
 
 ## Context
 
-Repository: `/home/kuba/projects/kubasejdak/libs/utils` (GitHub: `kubasejdak-org/utils`)
-Reference: `/home/kuba/projects/kubasejdak/libs/osal` (GitHub: `kubasejdak-org/osal`)
+Repository: `/home/kuba/projects/kubasejdak/libs/utils` (GitHub: `kubasejdak-org/utils`) Reference:
+`/home/kuba/projects/kubasejdak/libs/osal` (GitHub: `kubasejdak-org/osal`)
 
-`osal` is the gold-standard reference. Every task below brings `utils` in line with `osal`.
-Each phase is designed to be a self-contained PR. Tasks within a phase should be committed together.
-
----
-
-## Phase 1 — Development environment (devcontainers)
-
-**Goal**: Set up per-toolchain dev container configurations so the repo can be opened in VSCode devcontainers using the correct Docker image.
-
-### Task 1.1 — Create `.devcontainer/gcc-13/devcontainer.json`
-
-Create `.devcontainer/gcc-13/devcontainer.json` with exactly this content:
-
-```json
-{
-  "name": "kubasejdak gcc:13-24.04",
-  "image": "kubasejdak/gcc:13-24.04",
-  "mounts": [
-    "source=${localEnv:HOME}/.gitconfig,target=/home/ubuntu/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.gitconfig-private,target=/home/ubuntu/.gitconfig-private,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/home/ubuntu/.ssh,type=bind,consistency=cached"
-  ],
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "bierner.markdown-mermaid",
-        "davidanson.vscode-markdownlint",
-        "esbenp.prettier-vscode",
-        "hediet.vscode-drawio",
-        "mads-hartmann.bash-ide-vscode",
-        "matepek.vscode-catch2-test-adapter",
-        "ms-python.python",
-        "ms-vscode.cpptools-extension-pack",
-        "ms-vsliveshare.vsliveshare",
-        "waderyan.gitblame",
-        "xaver.clang-format",
-        "yzhang.markdown-all-in-one"
-      ]
-    }
-  },
-  "runArgs": ["--network=host"]
-}
-```
-
-### Task 1.2 — Create `.devcontainer/clang-18/devcontainer.json`
-
-Same structure as 1.1 but:
-
-- `"name": "kubasejdak clang:18-24.04"`
-- `"image": "kubasejdak/clang:18-24.04"`
-
-### Task 1.3 — Create `.devcontainer/arm-none-eabi-gcc-13/devcontainer.json`
-
-Same structure as 1.1 but:
-
-- `"name": "kubasejdak arm-none-eabi-gcc:13-24.04"`
-- `"image": "kubasejdak/arm-none-eabi-gcc:13-24.04"`
-
-### Task 1.4 — Create `.devcontainer/aarch64-none-linux-gnu-gcc-13/devcontainer.json`
-
-Same structure as 1.1 but:
-
-- `"name": "kubasejdak aarch64-none-linux-gnu-gcc:13-24.04"`
-- `"image": "kubasejdak/aarch64-none-linux-gnu-gcc:13-24.04"`
-
-**Verification**: After this phase, `.devcontainer/` must contain exactly 4 subdirectories, each with a `devcontainer.json` file.
+`osal` is the gold-standard reference. Every task below brings `utils` in line with `osal`. Each phase is designed to be
+a self-contained PR. Tasks within a phase should be committed together.
 
 ---
 
 ## Phase 2 — Code style tooling
 
-**Goal**: Bring all static analysis and formatting configs to the current standard used in `osal`. Each tool config is a separate task.
+**Goal**: Bring all static analysis and formatting configs to the current standard used in `osal`. Each tool config is a
+separate task.
 
 ### Task 2.1 — Add `.prettierrc`
 
@@ -84,149 +21,18 @@ Create `.prettierrc` at the repo root:
 
 ```json
 {
-  "printWidth": 120,
-  "proseWrap": "always",
-  "overrides": [
-    {
-      "files": "*.md",
-      "options": {
-        "tabWidth": 4
-      }
-    }
-  ]
+    "printWidth": 120,
+    "proseWrap": "always",
+    "overrides": [
+        {
+            "files": "*.md",
+            "options": {
+                "tabWidth": 4
+            }
+        }
+    ]
 }
 ```
-
-### Task 2.2 — Add `.clang-format-ignore`
-
-Create `.clang-format-ignore` at the repo root:
-
-```
-./cmake-build-*
-./out
-./build
-./lib/main/freertos-arm/freertos-*
-```
-
-### Task 2.3 — Replace `.clang-format`
-
-Replace the entire `.clang-format` with the version from `osal`. The key differences from the current utils version are:
-
-**Remove these deprecated/old options** (not present in osal):
-
-- `AlwaysBreakAfterDefinitionReturnType: None`
-- `CommentPragmas: '^ IWYU pragma:'`
-- `ForEachMacros: [...]`
-- `IndentRequires: false` → replaced by `IndentRequiresClause: false`
-- `SpaceBeforeParens: ControlStatements` → replaced by the `SpaceBeforeParensOptions` block
-- `SpaceInEmptyParentheses: false`
-- `SpacesInAngles: false` → becomes `SpacesInAngles: Never`
-- `SpacesInCStyleCastParentheses: false`
-- `SpacesInConditionalStatement: false`
-- `SpacesInParentheses: false`
-- `UseCRLF: false`
-
-**Add these new options** (present in osal, missing in utils):
-
-- `AlignConsecutiveShortCaseStatements:` block (Enabled/AcrossEmptyLines/AcrossComments/AlignCaseColons)
-- `AllowBreakBeforeNoexceptSpecifier: OnlyWithParen`
-- `AllowShortCompoundRequirementOnASingleLine: true`
-- `BracedInitializerIndentWidth: 4`
-- `BreakAdjacentStringLiterals: true`
-- `BreakAfterAttributes: Never`
-- `BreakArrays: false`
-- `BreakBeforeInlineASMColon: OnlyMultiline`
-- `InsertBraces: false`
-- `InsertNewlineAtEOF: true`
-- `IntegerLiteralSeparator:` block (Binary: 4, Decimal: -1, Hex: -1)
-- `KeepEmptyLinesAtEOF: false`
-- `RemoveBracesLLVM: true`
-- `RemoveParentheses: ReturnStatement`
-- `RemoveSemicolon: true`
-- `RequiresClausePosition: OwnLine`
-- `RequiresExpressionIndentation: OuterScope`
-- `SkipMacroDefinitionBody: false`
-- `SpaceBeforeParensOptions:` block (AfterControlStatements, AfterForeachMacros, AfterFunctionDeclarationName, etc.)
-- `SpacesInParens: Never`
-
-**Change these values**:
-
-- `Standard: Latest` → `Standard: c++20`
-- `IncludeCategories` regex for priority 3 (external libs): update from `<(boost|catch2|CLI|fmt|hash|nlohmann|range|spdlog)\/` to `<(boost|catch2|cxxopts|fakeit|fmt|glaze|magic_enum|range|spdlog|toml\+\+)([A-Za-z0-9.\/_-])+>`
-
-The simplest correct approach is to copy the `.clang-format` file verbatim from `osal`.
-
-### Task 2.4 — Replace `.clang-tidy`
-
-Replace the entire `.clang-tidy` with the version from `osal`. The key differences from the current utils version are:
-
-**Remove these fields** entirely:
-
-- `User: kuba`
-- `HeaderFilterRegex: ''`
-- `AnalyzeTemporaryDtors: false`
-
-**Update `Checks` list**: The following checks are disabled in utils but should NOT be disabled (not in osal):
-
-- `-*-vararg` — remove
-- `-bugprone-implicit-widening-of-multiplication-result` — remove
-- `-clang-analyzer-optin.cplusplus.UninitializedObject` — remove
-- `-concurrency-mt-unsafe` — remove
-- `-cppcoreguidelines-pro-bounds-array-to-pointer-decay` — remove
-- `-google-readability-casting` — remove
-- `-google-runtime-references` — remove
-- `-hicpp-no-array-decay` — remove
-- `-readability-function-cognitive-complexity` — remove
-
-The following checks are disabled in osal but NOT in utils (add these):
-
-- `-cppcoreguidelines-avoid-do-while`
-- `-google-default-arguments`
-- `-llvm-include-order`
-- `-misc-const-correctness`
-- `-performance-enum-size`
-
-**Convert `CheckOptions` format**: Current utils uses old YAML list-of-dicts:
-
-```yaml
-CheckOptions:
-  - key: foo
-    value: bar
-```
-
-osal uses modern flat map:
-
-```yaml
-CheckOptions:
-  foo: bar
-```
-
-Convert all CheckOptions to the flat map format.
-
-**Remove these CheckOptions entries** (not in osal):
-
-- `ClassConstantCase`, `ClassConstantPrefix: m_c`
-- `ClassMemberCase`, `ClassMemberPrefix: m_`
-- `ConstantCase`, `ConstantPrefix: c`
-- `ConstantMemberCase`, `ConstantMemberPrefix: m_c`
-- `ConstantParameterCase`, `ConstantParameterPrefix: c`
-- `EnumConstantPrefix: e`
-- `ValueTemplateParameterCase: CamelCase`
-- `ValueTemplateParameterPrefix: c`
-
-**Add these CheckOptions entries** (in osal, missing from utils):
-
-- `abseil-string-find-str-contains.StringLikeClasses: '::absl::string_view'`
-- `cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: 'true'`
-- `hicpp-special-member-functions.AllowSoleDefaultDtor: 'true'`
-- `misc-include-cleaner.IgnoreHeaders: '/usr/include/.*;/opt/toolchains/.*;VerboseReporter.hpp'`
-- `readability-identifier-naming.TemplateParameterCase: 'CamelCase'`
-
-The simplest correct approach is to copy the `.clang-tidy` file verbatim from `osal`.
-
-**Verification**: Both `.clang-format` and `.clang-tidy` files should be byte-for-byte identical to their counterparts in `osal` (content-wise — the library-specific include regex in `.clang-format` can differ).
-
----
 
 ## Phase 3 — Repository hygiene
 
@@ -258,7 +64,8 @@ Changes from current:
 
 ### Task 3.2 — Replace root `LICENSE`
 
-Replace the BSD 2-Clause `LICENSE` file with MIT License. Use single creation year `2020` (no year range — this is a deliberate convention: only the year of creation, not a range). Match `osal`'s exact format:
+Replace the BSD 2-Clause `LICENSE` file with MIT License. Use single creation year `2020` (no year range — this is a
+deliberate convention: only the year of creation, not a range). Match `osal`'s exact format:
 
 ```
 MIT License
@@ -286,17 +93,19 @@ SOFTWARE.
 
 ### Task 3.3 — Update license headers in all source files
 
-All `.hpp` and `.cpp` files in `lib/` (30 files) and `test/` (19 files, will become `tests/` in Phase 6) currently have BSD 2-Clause headers with year ranges. They must be updated to MIT with a single creation year.
+All `.hpp` and `.cpp` files in `lib/` (30 files) and `test/` (19 files, will become `tests/` in Phase 6) currently have
+BSD 2-Clause headers with year ranges. They must be updated to MIT with a single creation year.
 
 **Pattern to change** in each file header:
 
 - `@copyright BSD 2-Clause License` → `@copyright MIT License`
-- `Copyright (c) YYYY-2023, Kuba Sejdak <kuba.sejdak@gmail.com>` → `Copyright (c) YYYY Kuba Sejdak (kuba.sejdak@gmail.com)`
-  - Keep `YYYY` as the first year (creation year of that file)
-  - Remove the year range end (`, 2023`)
-  - Remove the comma after the year
-  - Change `<email>` angle-bracket format to `(email)` parenthesis format
-  - Remove the `All rights reserved.` line
+- `Copyright (c) YYYY-2023, Kuba Sejdak <kuba.sejdak@gmail.com>` →
+  `Copyright (c) YYYY Kuba Sejdak (kuba.sejdak@gmail.com)`
+    - Keep `YYYY` as the first year (creation year of that file)
+    - Remove the year range end (`, 2023`)
+    - Remove the comma after the year
+    - Change `<email>` angle-bracket format to `(email)` parenthesis format
+    - Remove the `All rights reserved.` line
 - Replace the entire BSD 2-Clause license body text with the MIT license body text (see Phase 3.2 for the MIT text)
 
 **Files by creation year** (use the first year from the existing header):
@@ -338,7 +147,8 @@ Exact osal header format for reference:
 
 ### Task 3.4 — Fill in `CONTRIBUTING.md`
 
-Replace the empty `CONTRIBUTING.md` with the content from `osal/CONTRIBUTING.md` verbatim. The content is generic enough to apply to any `kubasejdak-org` repo without modification.
+Replace the empty `CONTRIBUTING.md` with the content from `osal/CONTRIBUTING.md` verbatim. The content is generic enough
+to apply to any `kubasejdak-org` repo without modification.
 
 ### Task 3.5 — Write `README.md`
 
@@ -347,19 +157,24 @@ Write a full `README.md` following the structure of `osal/README.md`. Adapt cont
 **Required sections and their content**:
 
 1. **Title** (`# utils`) + one-sentence description of what utils provides
-2. **Main features** — bullet list of the components: bits, fsm, functional, info, logger, network, preprocessor, registry, types, watchdog
+2. **Main features** — bullet list of the components: bits, fsm, functional, info, logger, network, preprocessor,
+   registry, types, watchdog
 3. **Architecture**
-   - **Components** — one paragraph per component with its purpose
-   - **Technologies** — table: Language C++23/C17, Build System CMake 3.28, Package Manager Conan (test deps only), Static Analysis clang-format/clang-tidy, CI/CD GitHub Actions
-   - **Repository Structure** — `bash` code block tree showing the directory layout
+    - **Components** — one paragraph per component with its purpose
+    - **Technologies** — table: Language C++23/C17, Build System CMake 3.28, Package Manager Conan (test deps only),
+      Static Analysis clang-format/clang-tidy, CI/CD GitHub Actions
+    - **Repository Structure** — `bash` code block tree showing the directory layout
 4. **Usage**
-   - **CMake Integration** — `find_package(utils COMPONENTS ...)` pattern with `FetchContent_Declare` in `Findutils.cmake`, `list(APPEND CMAKE_MODULE_PATH ...)` usage
-   - **Linking** — example `target_link_libraries` for one or two components
+    - **CMake Integration** — `find_package(utils COMPONENTS ...)` pattern with `FetchContent_Declare` in
+      `Findutils.cmake`, `list(APPEND CMAKE_MODULE_PATH ...)` usage
+    - **Linking** — example `target_link_libraries` for one or two components
 5. **Development**
-   - **Commands** — configure, build, run tests, reformat code, run linter (same commands as osal but with `utils-tests`)
-   - **Available CMake Presets** — Native Linux (system/conan × gcc/clang × debug/release), Cross-compilation (arm64, yocto, FreeRTOS baremetal), Sanitizers
-   - **Code Quality** — Zero Warning Policy, No Exceptions, Code Formatting, Static Analysis, Sanitizers
-   - **Important Notes** — component structure, testing approach, dependencies, error handling conventions
+    - **Commands** — configure, build, run tests, reformat code, run linter (same commands as osal but with
+      `utils-tests`)
+    - **Available CMake Presets** — Native Linux (system/conan × gcc/clang × debug/release), Cross-compilation (arm64,
+      yocto, FreeRTOS baremetal), Sanitizers
+    - **Code Quality** — Zero Warning Policy, No Exceptions, Code Formatting, Static Analysis, Sanitizers
+    - **Important Notes** — component structure, testing approach, dependencies, error handling conventions
 
 Use GitHub markdown callouts (`> [!NOTE]`, `> [!IMPORTANT]`) for important notices, same as osal.
 
@@ -367,7 +182,8 @@ Use GitHub markdown callouts (`> [!NOTE]`, `> [!IMPORTANT]`) for important notic
 
 ## Phase 4 — CMake structure
 
-**Goal**: Align the CMake structure with `osal`: modern minimum version, clean root, `compilation-flags.cmake`, component loader.
+**Goal**: Align the CMake structure with `osal`: modern minimum version, clean root, `compilation-flags.cmake`,
+component loader.
 
 ### Task 4.1 — Bump `cmake_minimum_required` to 3.28
 
@@ -389,8 +205,11 @@ set(CMAKE_CXX_STANDARD 23)
 Notes:
 
 - C++ standard upgrades from 20 to 23 to match `osal`.
-- The `-fno-exceptions` flag is NOT C-standard-gated (same as osal — applies to both C and CXX via the CXX generator expression is removed intentionally; `-fno-exceptions` is only meaningful for C++ but using `-fno-exceptions` without gating is still fine).
-- This replaces: the `add_compile_options` line in `lib/CMakeLists.txt`, the `-fno-exceptions` handling in `test/settings.cmake`, and any equivalent lines in root `CMakeLists.txt`.
+- The `-fno-exceptions` flag is NOT C-standard-gated (same as osal — applies to both C and CXX via the CXX generator
+  expression is removed intentionally; `-fno-exceptions` is only meaningful for C++ but using `-fno-exceptions` without
+  gating is still fine).
+- This replaces: the `add_compile_options` line in `lib/CMakeLists.txt`, the `-fno-exceptions` handling in
+  `test/settings.cmake`, and any equivalent lines in root `CMakeLists.txt`.
 
 ### Task 4.3 — Create `cmake/components.cmake`
 
@@ -449,17 +268,20 @@ add_subdirectory(tests)
 This removes:
 
 - `include(test/settings.cmake)` — toolchain paths move to preset files (Phase 5)
-- All `include(cmake/conan.cmake)`, `include(cmake/coverage.cmake)`, etc. — these are replaced by the conan provider preset approach (Phase 6) and external actions (Phase 8)
-- `project(utils VERSION 1.0.0 LANGUAGES ...)` → `project(utils ASM C CXX)` (no version, no LANGUAGES keyword, same as osal)
-- Manual `add_subdirectory(${platform_SOURCE_DIR}/lib ...)` and `add_subdirectory(${osal_SOURCE_DIR}/lib ...)` — dependencies are handled by `find_package` inside `lib/` CMakeLists
+- All `include(cmake/conan.cmake)`, `include(cmake/coverage.cmake)`, etc. — these are replaced by the conan provider
+  preset approach (Phase 6) and external actions (Phase 8)
+- `project(utils VERSION 1.0.0 LANGUAGES ...)` → `project(utils ASM C CXX)` (no version, no LANGUAGES keyword, same as
+  osal)
+- Manual `add_subdirectory(${platform_SOURCE_DIR}/lib ...)` and `add_subdirectory(${osal_SOURCE_DIR}/lib ...)` —
+  dependencies are handled by `find_package` inside `lib/` CMakeLists
 - Inline `add_compile_options` — now in `cmake/compilation-flags.cmake`
 - Sanitizer and coverage conditional blocks — handled by platform/CI externally
 - `add_subdirectory(test)` → `add_subdirectory(tests)` (Phase 6 renames the directory)
 
 ### Task 4.6 — Update `lib/CMakeLists.txt`
 
-Remove the `cmake_minimum_required` line (now covered by root).
-Remove the `add_compile_options` line (now in `cmake/compilation-flags.cmake`).
+Remove the `cmake_minimum_required` line (now covered by root). Remove the `add_compile_options` line (now in
+`cmake/compilation-flags.cmake`).
 
 The resulting `lib/CMakeLists.txt` should contain only `add_subdirectory(...)` calls for each component:
 
@@ -494,34 +316,35 @@ Delete these files that are replaced by the new structure:
 
 ## Phase 5 — CMake presets
 
-**Goal**: Upgrade `CMakePresets.json` from version 3 to version 8, split into modular preset files, rename presets to match `osal` naming convention, and add sanitizer variants.
+**Goal**: Upgrade `CMakePresets.json` from version 3 to version 8, split into modular preset files, rename presets to
+match `osal` naming convention, and add sanitizer variants.
 
 ### Task 5.1 — Create `cmake/presets/type.json`
 
 ```json
 {
-  "version": 8,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 28,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "debug",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
     },
-    {
-      "name": "release",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    }
-  ]
+    "configurePresets": [
+        {
+            "name": "debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
 }
 ```
 
@@ -529,21 +352,21 @@ Delete these files that are replaced by the new structure:
 
 ```json
 {
-  "version": 8,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 28,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "conan",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan_provider.cmake"
-      }
-    }
-  ]
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conan",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan_provider.cmake"
+            }
+        }
+    ]
 }
 ```
 
@@ -551,279 +374,283 @@ Delete these files that are replaced by the new structure:
 
 ```json
 {
-  "version": 8,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 28,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "linux",
-      "hidden": true,
-      "cacheVariables": {
-        "PLATFORM": "linux"
-      }
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
     },
-    {
-      "name": "linux-native-gcc",
-      "hidden": true,
-      "inherits": "linux",
-      "cacheVariables": {
-        "TOOLCHAIN": "gcc"
-      }
-    },
-    {
-      "name": "linux-native-clang",
-      "hidden": true,
-      "inherits": "linux",
-      "cacheVariables": {
-        "TOOLCHAIN": "clang"
-      }
-    },
-    {
-      "name": "linux-arm64",
-      "hidden": true,
-      "inherits": "linux",
-      "cacheVariables": {
-        "LINUX_ARM_TOOLCHAIN_PATH": "/opt/toolchains/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu"
-      }
-    },
-    {
-      "name": "linux-arm64-gcc",
-      "hidden": true,
-      "inherits": "linux-arm64",
-      "cacheVariables": {
-        "TOOLCHAIN": "aarch64-none-linux-gnu-gcc"
-      }
-    },
-    {
-      "name": "linux-arm64-clang",
-      "hidden": true,
-      "inherits": "linux-arm64",
-      "cacheVariables": {
-        "TOOLCHAIN": "aarch64-none-linux-gnu-clang"
-      }
-    },
-    {
-      "name": "yocto-sdk-gcc",
-      "hidden": true,
-      "inherits": "linux"
-    },
-    {
-      "name": "yocto-sdk-clang",
-      "hidden": true,
-      "inherits": "linux",
-      "environment": {
-        "CC": "$env{CLANGCC}",
-        "CPP": "$env{CLANGCPP}",
-        "CXX": "$env{CLANGCXX}"
-      }
-    }
-  ]
+    "configurePresets": [
+        {
+            "name": "linux",
+            "hidden": true,
+            "cacheVariables": {
+                "PLATFORM": "linux"
+            }
+        },
+        {
+            "name": "linux-native-gcc",
+            "hidden": true,
+            "inherits": "linux",
+            "cacheVariables": {
+                "TOOLCHAIN": "gcc"
+            }
+        },
+        {
+            "name": "linux-native-clang",
+            "hidden": true,
+            "inherits": "linux",
+            "cacheVariables": {
+                "TOOLCHAIN": "clang"
+            }
+        },
+        {
+            "name": "linux-arm64",
+            "hidden": true,
+            "inherits": "linux",
+            "cacheVariables": {
+                "LINUX_ARM_TOOLCHAIN_PATH": "/opt/toolchains/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu"
+            }
+        },
+        {
+            "name": "linux-arm64-gcc",
+            "hidden": true,
+            "inherits": "linux-arm64",
+            "cacheVariables": {
+                "TOOLCHAIN": "aarch64-none-linux-gnu-gcc"
+            }
+        },
+        {
+            "name": "linux-arm64-clang",
+            "hidden": true,
+            "inherits": "linux-arm64",
+            "cacheVariables": {
+                "TOOLCHAIN": "aarch64-none-linux-gnu-clang"
+            }
+        },
+        {
+            "name": "yocto-sdk-gcc",
+            "hidden": true,
+            "inherits": "linux"
+        },
+        {
+            "name": "yocto-sdk-clang",
+            "hidden": true,
+            "inherits": "linux",
+            "environment": {
+                "CC": "$env{CLANGCC}",
+                "CPP": "$env{CLANGCPP}",
+                "CXX": "$env{CLANGCXX}"
+            }
+        }
+    ]
 }
 ```
 
-Note: The old `linux-arm-gcc`/`linux-arm-clang` presets used `arm-none-linux-gnueabihf` (32-bit ARM). Replace with `linux-arm64` variants using `aarch64-none-linux-gnu` (64-bit ARM) to match the `osal` toolchain.
+Note: The old `linux-arm-gcc`/`linux-arm-clang` presets used `arm-none-linux-gnueabihf` (32-bit ARM). Replace with
+`linux-arm64` variants using `aarch64-none-linux-gnu` (64-bit ARM) to match the `osal` toolchain.
 
 ### Task 5.4 — Create `cmake/presets/baremetal.json`
 
 ```json
 {
-  "version": 8,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 28,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "freertos-armv7-m4",
-      "hidden": true,
-      "cacheVariables": {
-        "PLATFORM": "freertos-arm",
-        "BAREMETAL_ARM_TOOLCHAIN_PATH": "/opt/toolchains/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi",
-        "APP_C_FLAGS": "-mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb --specs=nano.specs",
-        "APP_CXX_FLAGS": "-mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb --specs=nano.specs",
-        "FREERTOS_VERSION": "freertos-10.2.1",
-        "FREERTOS_PORTABLE": "ARM_CM4F"
-      }
-    }
-  ]
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "freertos-armv7-m4",
+            "hidden": true,
+            "cacheVariables": {
+                "PLATFORM": "freertos-arm",
+                "BAREMETAL_ARM_TOOLCHAIN_PATH": "/opt/toolchains/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi",
+                "APP_C_FLAGS": "-mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb --specs=nano.specs",
+                "APP_CXX_FLAGS": "-mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb --specs=nano.specs",
+                "FREERTOS_VERSION": "freertos-10.2.1",
+                "FREERTOS_PORTABLE": "ARM_CM4F"
+            }
+        }
+    ]
 }
 ```
 
-Note: Toolchain path updated from the old `gcc-arm-11.2-2022.02` path to the `arm-gnu-toolchain-13.3.rel1` path (matching `osal`).
+Note: Toolchain path updated from the old `gcc-arm-11.2-2022.02` path to the `arm-gnu-toolchain-13.3.rel1` path
+(matching `osal`).
 
 ### Task 5.5 — Create `cmake/presets/sanitizers.json`
 
 ```json
 {
-  "version": 8,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 28,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "asan",
-      "hidden": true,
-      "cacheVariables": {
-        "USE_ASAN": "ON"
-      }
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
     },
-    {
-      "name": "lsan",
-      "hidden": true,
-      "cacheVariables": {
-        "USE_LSAN": "ON"
-      }
-    },
-    {
-      "name": "tsan",
-      "hidden": true,
-      "cacheVariables": {
-        "USE_TSAN": "ON"
-      }
-    },
-    {
-      "name": "ubsan",
-      "hidden": true,
-      "cacheVariables": {
-        "USE_UBSAN": "ON"
-      }
-    }
-  ]
+    "configurePresets": [
+        {
+            "name": "asan",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_ASAN": "ON"
+            }
+        },
+        {
+            "name": "lsan",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_LSAN": "ON"
+            }
+        },
+        {
+            "name": "tsan",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_TSAN": "ON"
+            }
+        },
+        {
+            "name": "ubsan",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_UBSAN": "ON"
+            }
+        }
+    ]
 }
 ```
 
 ### Task 5.6 — Rewrite root `CMakePresets.json`
 
-Replace `CMakePresets.json` with version 8 that includes the split files and defines only the concrete non-hidden presets:
+Replace `CMakePresets.json` with version 8 that includes the split files and defines only the concrete non-hidden
+presets:
 
 ```json
 {
-  "version": 8,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 28,
-    "patch": 0
-  },
-  "include": [
-    "cmake/presets/baremetal.json",
-    "cmake/presets/dependencies.json",
-    "cmake/presets/linux.json",
-    "cmake/presets/sanitizers.json",
-    "cmake/presets/type.json"
-  ],
-  "configurePresets": [
-    {
-      "name": "linux-native-gcc-debug",
-      "inherits": ["linux-native-gcc", "debug"]
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
     },
-    {
-      "name": "linux-native-gcc-release",
-      "inherits": ["linux-native-gcc", "release"]
-    },
-    {
-      "name": "linux-native-clang-debug",
-      "inherits": ["linux-native-clang", "debug"]
-    },
-    {
-      "name": "linux-native-clang-release",
-      "inherits": ["linux-native-clang", "release"]
-    },
-    {
-      "name": "linux-native-gcc-debug-asan",
-      "inherits": ["linux-native-gcc-debug", "asan"]
-    },
-    {
-      "name": "linux-native-gcc-debug-lsan",
-      "inherits": ["linux-native-gcc-debug", "lsan"]
-    },
-    {
-      "name": "linux-native-gcc-debug-tsan",
-      "inherits": ["linux-native-gcc-debug", "tsan"]
-    },
-    {
-      "name": "linux-native-gcc-debug-ubsan",
-      "inherits": ["linux-native-gcc-debug", "ubsan"]
-    },
-    {
-      "name": "linux-native-conan-gcc-debug",
-      "inherits": ["linux-native-gcc-debug", "conan"]
-    },
-    {
-      "name": "linux-native-conan-gcc-release",
-      "inherits": ["linux-native-gcc-release", "conan"]
-    },
-    {
-      "name": "linux-native-conan-clang-debug",
-      "inherits": ["linux-native-clang-debug", "conan"]
-    },
-    {
-      "name": "linux-native-conan-clang-release",
-      "inherits": ["linux-native-clang-release", "conan"]
-    },
-    {
-      "name": "linux-native-conan-gcc-debug-asan",
-      "inherits": ["linux-native-conan-gcc-debug", "asan"]
-    },
-    {
-      "name": "linux-native-conan-gcc-debug-lsan",
-      "inherits": ["linux-native-conan-gcc-debug", "lsan"]
-    },
-    {
-      "name": "linux-native-conan-gcc-debug-tsan",
-      "inherits": ["linux-native-conan-gcc-debug", "tsan"]
-    },
-    {
-      "name": "linux-native-conan-gcc-debug-ubsan",
-      "inherits": ["linux-native-conan-gcc-debug", "ubsan"]
-    },
-    {
-      "name": "linux-arm64-conan-gcc-debug",
-      "inherits": ["linux-arm64-gcc", "debug", "conan"]
-    },
-    {
-      "name": "linux-arm64-conan-gcc-release",
-      "inherits": ["linux-arm64-gcc", "release", "conan"]
-    },
-    {
-      "name": "linux-arm64-conan-clang-debug",
-      "inherits": ["linux-arm64-clang", "debug", "conan"]
-    },
-    {
-      "name": "linux-arm64-conan-clang-release",
-      "inherits": ["linux-arm64-clang", "release", "conan"]
-    },
-    { "name": "yocto-sdk-gcc-debug", "inherits": ["yocto-sdk-gcc", "debug"] },
-    {
-      "name": "yocto-sdk-gcc-release",
-      "inherits": ["yocto-sdk-gcc", "release"]
-    },
-    {
-      "name": "yocto-sdk-clang-debug",
-      "inherits": ["yocto-sdk-clang", "debug"]
-    },
-    {
-      "name": "yocto-sdk-clang-release",
-      "inherits": ["yocto-sdk-clang", "release"]
-    },
-    {
-      "name": "freertos-armv7-m4-conan-gcc-debug",
-      "inherits": ["freertos-armv7-m4", "debug", "conan"]
-    },
-    {
-      "name": "freertos-armv7-m4-conan-gcc-release",
-      "inherits": ["freertos-armv7-m4", "release", "conan"]
-    }
-  ]
+    "include": [
+        "cmake/presets/baremetal.json",
+        "cmake/presets/dependencies.json",
+        "cmake/presets/linux.json",
+        "cmake/presets/sanitizers.json",
+        "cmake/presets/type.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "linux-native-gcc-debug",
+            "inherits": ["linux-native-gcc", "debug"]
+        },
+        {
+            "name": "linux-native-gcc-release",
+            "inherits": ["linux-native-gcc", "release"]
+        },
+        {
+            "name": "linux-native-clang-debug",
+            "inherits": ["linux-native-clang", "debug"]
+        },
+        {
+            "name": "linux-native-clang-release",
+            "inherits": ["linux-native-clang", "release"]
+        },
+        {
+            "name": "linux-native-gcc-debug-asan",
+            "inherits": ["linux-native-gcc-debug", "asan"]
+        },
+        {
+            "name": "linux-native-gcc-debug-lsan",
+            "inherits": ["linux-native-gcc-debug", "lsan"]
+        },
+        {
+            "name": "linux-native-gcc-debug-tsan",
+            "inherits": ["linux-native-gcc-debug", "tsan"]
+        },
+        {
+            "name": "linux-native-gcc-debug-ubsan",
+            "inherits": ["linux-native-gcc-debug", "ubsan"]
+        },
+        {
+            "name": "linux-native-conan-gcc-debug",
+            "inherits": ["linux-native-gcc-debug", "conan"]
+        },
+        {
+            "name": "linux-native-conan-gcc-release",
+            "inherits": ["linux-native-gcc-release", "conan"]
+        },
+        {
+            "name": "linux-native-conan-clang-debug",
+            "inherits": ["linux-native-clang-debug", "conan"]
+        },
+        {
+            "name": "linux-native-conan-clang-release",
+            "inherits": ["linux-native-clang-release", "conan"]
+        },
+        {
+            "name": "linux-native-conan-gcc-debug-asan",
+            "inherits": ["linux-native-conan-gcc-debug", "asan"]
+        },
+        {
+            "name": "linux-native-conan-gcc-debug-lsan",
+            "inherits": ["linux-native-conan-gcc-debug", "lsan"]
+        },
+        {
+            "name": "linux-native-conan-gcc-debug-tsan",
+            "inherits": ["linux-native-conan-gcc-debug", "tsan"]
+        },
+        {
+            "name": "linux-native-conan-gcc-debug-ubsan",
+            "inherits": ["linux-native-conan-gcc-debug", "ubsan"]
+        },
+        {
+            "name": "linux-arm64-conan-gcc-debug",
+            "inherits": ["linux-arm64-gcc", "debug", "conan"]
+        },
+        {
+            "name": "linux-arm64-conan-gcc-release",
+            "inherits": ["linux-arm64-gcc", "release", "conan"]
+        },
+        {
+            "name": "linux-arm64-conan-clang-debug",
+            "inherits": ["linux-arm64-clang", "debug", "conan"]
+        },
+        {
+            "name": "linux-arm64-conan-clang-release",
+            "inherits": ["linux-arm64-clang", "release", "conan"]
+        },
+        { "name": "yocto-sdk-gcc-debug", "inherits": ["yocto-sdk-gcc", "debug"] },
+        {
+            "name": "yocto-sdk-gcc-release",
+            "inherits": ["yocto-sdk-gcc", "release"]
+        },
+        {
+            "name": "yocto-sdk-clang-debug",
+            "inherits": ["yocto-sdk-clang", "debug"]
+        },
+        {
+            "name": "yocto-sdk-clang-release",
+            "inherits": ["yocto-sdk-clang", "release"]
+        },
+        {
+            "name": "freertos-armv7-m4-conan-gcc-debug",
+            "inherits": ["freertos-armv7-m4", "debug", "conan"]
+        },
+        {
+            "name": "freertos-armv7-m4-conan-gcc-release",
+            "inherits": ["freertos-armv7-m4", "release", "conan"]
+        }
+    ]
 }
 ```
 
-**Verification**: `cmake --list-presets` should show the concrete presets. All old preset names (`linux-gcc-debug`, etc.) are removed and replaced with the new naming.
+**Verification**: `cmake --list-presets` should show the concrete presets. All old preset names (`linux-gcc-debug`,
+etc.) are removed and replaced with the new naming.
 
 ---
 
@@ -833,7 +660,8 @@ Replace `CMakePresets.json` with version 8 that includes the split files and def
 
 ### Task 6.1 — Add `cmake/conan_provider.cmake`
 
-Copy `cmake/conan_provider.cmake` verbatim from `osal/cmake/conan_provider.cmake`. This is the JFrog-maintained MIT-licensed Conan V2 CMake provider (689 lines). Do not modify its content.
+Copy `cmake/conan_provider.cmake` verbatim from `osal/cmake/conan_provider.cmake`. This is the JFrog-maintained
+MIT-licensed Conan V2 CMake provider (689 lines). Do not modify its content.
 
 ### Task 6.2 — Update `conanfile.txt`
 
@@ -866,7 +694,9 @@ Changes from current:
 - Generator: `cmake` → `CMakeDeps`
 - Add Catch2 options: `default_reporter=verbose`, `no_posix_signals=True`
 
-**Note on `USE_CONAN` removal**: The old `USE_CONAN` CMake cache variable and `if (USE_CONAN)` blocks in `CMakeLists.txt` are deleted in Phase 4. Conan is now activated by choosing a `conan` preset, which sets `CMAKE_PROJECT_TOP_LEVEL_INCLUDES` to the provider path — no CMake-level `if/else` needed.
+**Note on `USE_CONAN` removal**: The old `USE_CONAN` CMake cache variable and `if (USE_CONAN)` blocks in
+`CMakeLists.txt` are deleted in Phase 4. Conan is now activated by choosing a `conan` preset, which sets
+`CMAKE_PROJECT_TOP_LEVEL_INCLUDES` to the provider path — no CMake-level `if/else` needed.
 
 ---
 
@@ -887,14 +717,17 @@ Replace the test `CMakeLists.txt` with a modernized version:
 
 **Changes required**:
 
-1. Replace `find_library(Catch2 NAMES Catch2 Catch2d REQUIRED)` with `find_package(Catch2)` (CMakeDeps-based, same as osal)
+1. Replace `find_library(Catch2 NAMES Catch2 Catch2d REQUIRED)` with `find_package(Catch2)` (CMakeDeps-based, same as
+   osal)
 2. Replace `find_package(utils COMPONENTS ...)` — use the new component find mechanism from Phase 4
 3. In `target_link_libraries`, replace `optimized Catch2 debug Catch2d` with `Catch2::Catch2`
 4. Add `find_package(osal)` and `find_package(platform COMPONENTS init main)` (needed for test dependencies)
 5. Remove `TEST_TAGS` compile definition block
 6. Remove `include(settings.cmake)` (file deleted in Phase 4)
-7. Remove the `if (PLATFORM STREQUAL freertos-arm)` / `objcopy_generate_bin` conditional — check if this is still needed or handled by platform externally
-8. The `if (OSAL_PLATFORM STREQUAL linux) add_subdirectory(network) endif()` conditional may stay if network tests are Linux-only
+7. Remove the `if (PLATFORM STREQUAL freertos-arm)` / `objcopy_generate_bin` conditional — check if this is still needed
+   or handled by platform externally
+8. The `if (OSAL_PLATFORM STREQUAL linux) add_subdirectory(network) endif()` conditional may stay if network tests are
+   Linux-only
 
 The modernized version should follow the pattern of `osal/tests/CMakeLists.txt`:
 
@@ -904,9 +737,13 @@ The modernized version should follow the pattern of `osal/tests/CMakeLists.txt`:
 
 ### Task 7.3 — Update `tests/init/freertos-arm/CMakeLists.txt`
 
-The file currently references `${CMAKE_SOURCE_DIR}/external/stm32f4xx`. This dependency must be removed since `external/` is deleted in Phase 9. The STM32 board support should come from the `platform` dependency via `find_package(platform)`. Update this file to use the platform-provided stm32f4xx target instead of the external directory.
+The file currently references `${CMAKE_SOURCE_DIR}/external/stm32f4xx`. This dependency must be removed since
+`external/` is deleted in Phase 9. The STM32 board support should come from the `platform` dependency via
+`find_package(platform)`. Update this file to use the platform-provided stm32f4xx target instead of the external
+directory.
 
-If platform does not yet provide this, the `freertos-arm` init can be left as a stub or removed until platform supports it.
+If platform does not yet provide this, the `freertos-arm` init can be left as a stub or removed until platform supports
+it.
 
 ### Task 7.4 — Create `tests/.clang-tidy`
 
@@ -932,7 +769,8 @@ This mirrors `osal/tests/.clang-tidy` exactly.
 - Use `REQUIRE_FALSE(expr)` instead of `REQUIRE(!expr)`
 - Never use the negation operator `!` inside a Catch2 assertion macro
 
-**Scope**: Replace all 191 occurrences of `REQUIRE(!...)` across all test `.cpp` files. Also check for `CHECK(!...)` (currently 0 but verify).
+**Scope**: Replace all 191 occurrences of `REQUIRE(!...)` across all test `.cpp` files. Also check for `CHECK(!...)`
+(currently 0 but verify).
 
 Files to update (search for `REQUIRE(!` in `tests/`):
 
@@ -954,7 +792,9 @@ For each occurrence, the transformation is mechanical:
 - `REQUIRE` — for preconditions where failure means the rest of the test would crash or produce meaningless results
 - `CHECK` — for independent assertions where failure is reported but execution continues
 
-In the network tests, most `REQUIRE(!error)` after connection setup are genuine preconditions (the test can't proceed if the connection failed) → keep as `REQUIRE_FALSE`. But assertions checking individual data values (e.g., checking IP strings, port numbers) should use `CHECK`/`CHECK_FALSE` not `REQUIRE`/`REQUIRE_FALSE`.
+In the network tests, most `REQUIRE(!error)` after connection setup are genuine preconditions (the test can't proceed if
+the connection failed) → keep as `REQUIRE_FALSE`. But assertions checking individual data values (e.g., checking IP
+strings, port numbers) should use `CHECK`/`CHECK_FALSE` not `REQUIRE`/`REQUIRE_FALSE`.
 
 ---
 
@@ -967,7 +807,9 @@ In the network tests, most `REQUIRE(!error)` after connection setup are genuine 
 Delete:
 
 - `.gitlab-ci.yml` (root file)
-- `.gitlab/` directory (entire directory with all files inside: `ci/build-freertos.yml`, `ci/build-linux.yml`, `ci/coverage-linux.yml`, `ci/deploy.yml`, `ci/quality.yml`, `ci/sanitizers-linux.yml`, `ci/test-linux.yml`, `ci/valgrind-linux.yml`, and `issue_templates/`)
+- `.gitlab/` directory (entire directory with all files inside: `ci/build-freertos.yml`, `ci/build-linux.yml`,
+  `ci/coverage-linux.yml`, `ci/deploy.yml`, `ci/quality.yml`, `ci/sanitizers-linux.yml`, `ci/test-linux.yml`,
+  `ci/valgrind-linux.yml`, and `issue_templates/`)
 
 ### Task 8.2 — Create `.github/workflows/build-test-linux.yml`
 
@@ -975,11 +817,16 @@ Create `.github/workflows/build-test-linux.yml` modeled after `osal/.github/work
 
 **Jobs**:
 
-1. `build-x64` — matrix of: `linux-native-conan-gcc-{debug,release}`, `linux-native-conan-clang-{debug,release}`, `linux-native-conan-gcc-debug-{asan,lsan,tsan,ubsan}`. Uses `kubasejdak-org/cmake-build-preset-action@main`.
-2. `build-arm64` — matrix of: `linux-arm64-conan-{gcc,clang}-{debug,release}` (corresponding Docker images: `kubasejdak/aarch64-none-linux-gnu-gcc:13-24.04`, `kubasejdak/aarch64-none-linux-gnu-clang:18-24.04`)
-3. `tests-x64` — needs `build-x64`, runs `utils-tests` binary from `linux-native-conan-gcc-debug` artifact. Uses `kubasejdak-org/binary-run-action@main`.
-4. `valgrind-x64` — needs `build-x64`, runs `utils-tests` under valgrind from `linux-native-conan-gcc-debug` artifact. Uses `kubasejdak-org/valgrind-run-action@main`.
-5. `sanitizers-x64` — needs `build-x64`, runs `utils-tests` for each sanitizer preset. Uses `kubasejdak-org/binary-run-action@main`.
+1. `build-x64` — matrix of: `linux-native-conan-gcc-{debug,release}`, `linux-native-conan-clang-{debug,release}`,
+   `linux-native-conan-gcc-debug-{asan,lsan,tsan,ubsan}`. Uses `kubasejdak-org/cmake-build-preset-action@main`.
+2. `build-arm64` — matrix of: `linux-arm64-conan-{gcc,clang}-{debug,release}` (corresponding Docker images:
+   `kubasejdak/aarch64-none-linux-gnu-gcc:13-24.04`, `kubasejdak/aarch64-none-linux-gnu-clang:18-24.04`)
+3. `tests-x64` — needs `build-x64`, runs `utils-tests` binary from `linux-native-conan-gcc-debug` artifact. Uses
+   `kubasejdak-org/binary-run-action@main`.
+4. `valgrind-x64` — needs `build-x64`, runs `utils-tests` under valgrind from `linux-native-conan-gcc-debug` artifact.
+   Uses `kubasejdak-org/valgrind-run-action@main`.
+5. `sanitizers-x64` — needs `build-x64`, runs `utils-tests` for each sanitizer preset. Uses
+   `kubasejdak-org/binary-run-action@main`.
 6. `check-all-linux` — gate job that needs all above jobs.
 
 Triggers: `push`, `schedule: "0 12 * * SAT"`, `workflow_dispatch`.
@@ -992,7 +839,8 @@ Create `.github/workflows/build-test-baremetal.yml` modeled after `osal/.github/
 
 **Jobs**:
 
-1. `build-stm32f4` — matrix of: `freertos-armv7-m4-conan-gcc-{debug,release}`. Docker image: `kubasejdak/arm-none-eabi-gcc:13-24.04`. Uses `kubasejdak-org/cmake-build-preset-action@main`.
+1. `build-stm32f4` — matrix of: `freertos-armv7-m4-conan-gcc-{debug,release}`. Docker image:
+   `kubasejdak/arm-none-eabi-gcc:13-24.04`. Uses `kubasejdak-org/cmake-build-preset-action@main`.
 2. `check-all-baremetal` — gate job.
 
 Triggers: same as above.
@@ -1003,8 +851,10 @@ Create `.github/workflows/static-analysis.yml` modeled after `osal/.github/workf
 
 **Jobs**:
 
-1. `formatting` (name: `clang-format`) — Docker: `kubasejdak/clang:18-24.04`. Uses `kubasejdak-org/clang-format-run-action@main`.
-2. `linting` (name: `clang-tidy`) — preset `linux-native-conan-clang-debug`, Docker: `kubasejdak/clang:18-24.04`. Uses `kubasejdak-org/clang-tidy-run-action@main`.
+1. `formatting` (name: `clang-format`) — Docker: `kubasejdak/clang:18-24.04`. Uses
+   `kubasejdak-org/clang-format-run-action@main`.
+2. `linting` (name: `clang-tidy`) — preset `linux-native-conan-clang-debug`, Docker: `kubasejdak/clang:18-24.04`. Uses
+   `kubasejdak-org/clang-tidy-run-action@main`.
 3. `check-all-static` — gate job.
 
 ### Task 8.5 — Create `.github/workflows/code-coverage.yml`
@@ -1014,8 +864,10 @@ Create `.github/workflows/code-coverage.yml` modeled after `osal/.github/workflo
 **Jobs** (all use `kubasejdak/gcc:13-24.04`, preset `linux-native-conan-gcc-debug`):
 
 1. `build-coverage` — uses `kubasejdak-org/cpp-coverage-check-action/build@main`.
-2. `test-coverage` — needs `build-coverage`, matrix with `APP: utils-tests`. Uses `kubasejdak-org/cpp-coverage-check-action/collect@main`.
-3. `generate-coverage-report` — needs `test-coverage`. Uses `kubasejdak-org/cpp-coverage-check-action/report@main` with `line-coverage: 90.0`, `function-coverage: 90.0`.
+2. `test-coverage` — needs `build-coverage`, matrix with `APP: utils-tests`. Uses
+   `kubasejdak-org/cpp-coverage-check-action/collect@main`.
+3. `generate-coverage-report` — needs `test-coverage`. Uses `kubasejdak-org/cpp-coverage-check-action/report@main` with
+   `line-coverage: 90.0`, `function-coverage: 90.0`.
 4. `check-all-coverage` — gate job.
 
 ---
@@ -1026,61 +878,57 @@ Create `.github/workflows/code-coverage.yml` modeled after `osal/.github/workflo
 
 ### Task 9.1 — Delete `external/` directory
 
-Delete the entire `external/stm32f4xx/` directory. This contains vendored STM32 HAL/CMSIS sources that were included directly in the repo. In the modernized setup, board-support comes from the `platform` dependency (accessed via `find_package(platform)`). The `tests/init/freertos-arm/CMakeLists.txt` reference to this directory was removed in Phase 7.
+Delete the entire `external/stm32f4xx/` directory. This contains vendored STM32 HAL/CMSIS sources that were included
+directly in the repo. In the modernized setup, board-support comes from the `platform` dependency (accessed via
+`find_package(platform)`). The `tests/init/freertos-arm/CMakeLists.txt` reference to this directory was removed in
+Phase 7.
 
 ### Task 9.2 — Delete `tools/ci/` directory
 
-Delete `tools/ci/` directory (contains `logs-reader.py` and `program-openocd.py` — GitLab CI runner scripts). The `tools/` directory itself should be kept; only the `ci/` subdirectory is removed.
+Delete `tools/ci/` directory (contains `logs-reader.py` and `program-openocd.py` — GitLab CI runner scripts). The
+`tools/` directory itself should be kept; only the `ci/` subdirectory is removed.
 
 ---
 
 ## File change summary
 
-| File/Directory                                                  | Phase | Action                         |
-| --------------------------------------------------------------- | ----- | ------------------------------ |
-| `.devcontainer/gcc-13/devcontainer.json`                        | 1     | Create                         |
-| `.devcontainer/clang-18/devcontainer.json`                      | 1     | Create                         |
-| `.devcontainer/arm-none-eabi-gcc-13/devcontainer.json`          | 1     | Create                         |
-| `.devcontainer/aarch64-none-linux-gnu-gcc-13/devcontainer.json` | 1     | Create                         |
-| `.prettierrc`                                                   | 2     | Create                         |
-| `.clang-format-ignore`                                          | 2     | Create                         |
-| `.clang-format`                                                 | 2     | Replace                        |
-| `.clang-tidy`                                                   | 2     | Replace                        |
-| `.gitignore`                                                    | 3     | Update                         |
-| `LICENSE`                                                       | 3     | Replace (BSD→MIT, single year) |
-| `lib/**/*.{hpp,cpp}` (30 files)                                 | 3     | Update license headers         |
-| `test/**/*.{hpp,cpp}` (19 files)                                | 3     | Update license headers         |
-| `CONTRIBUTING.md`                                               | 3     | Fill in (copy from osal)       |
-| `README.md`                                                     | 3     | Write                          |
-| `CMakeLists.txt`                                                | 4     | Rewrite                        |
-| `lib/CMakeLists.txt`                                            | 4     | Update                         |
-| `cmake/compilation-flags.cmake`                                 | 4     | Create                         |
-| `cmake/components.cmake`                                        | 4     | Create                         |
-| `cmake/modules/Findutils.cmake`                                 | 4     | Create                         |
-| `cmake/conan.cmake`                                             | 4     | Delete                         |
-| `cmake/coverage.cmake`                                          | 4     | Delete                         |
-| `cmake/osal.cmake`                                              | 4     | Delete                         |
-| `cmake/platform.cmake`                                          | 4     | Delete                         |
-| `cmake/sanitizers.cmake`                                        | 4     | Delete                         |
-| `test/settings.cmake`                                           | 4     | Delete                         |
-| `CMakePresets.json`                                             | 5     | Rewrite (version 8)            |
-| `cmake/presets/type.json`                                       | 5     | Create                         |
-| `cmake/presets/dependencies.json`                               | 5     | Create                         |
-| `cmake/presets/linux.json`                                      | 5     | Create                         |
-| `cmake/presets/baremetal.json`                                  | 5     | Create                         |
-| `cmake/presets/sanitizers.json`                                 | 5     | Create                         |
-| `cmake/conan_provider.cmake`                                    | 6     | Create (copy from osal)        |
-| `conanfile.txt`                                                 | 6     | Update                         |
-| `test/` directory                                               | 7     | Rename to `tests/`             |
-| `tests/CMakeLists.txt`                                          | 7     | Update                         |
-| `tests/init/freertos-arm/CMakeLists.txt`                        | 7     | Update (remove external/ ref)  |
-| `tests/.clang-tidy`                                             | 7     | Create                         |
-| `tests/**/*.cpp` (assertion fixes)                              | 7     | 191 REQUIRE(!→REQUIRE_FALSE    |
-| `.gitlab-ci.yml`                                                | 8     | Delete                         |
-| `.gitlab/`                                                      | 8     | Delete                         |
-| `.github/workflows/build-test-linux.yml`                        | 8     | Create                         |
-| `.github/workflows/build-test-baremetal.yml`                    | 8     | Create                         |
-| `.github/workflows/static-analysis.yml`                         | 8     | Create                         |
-| `.github/workflows/code-coverage.yml`                           | 8     | Create                         |
-| `external/`                                                     | 9     | Delete                         |
-| `tools/ci/`                                                     | 9     | Delete                         |
+| File/Directory                               | Phase | Action                         |
+| -------------------------------------------- | ----- | ------------------------------ |
+| `.prettierrc`                                | 2     | Create                         |
+| `LICENSE`                                    | 3     | Replace (BSD→MIT, single year) |
+| `lib/**/*.{hpp,cpp}` (30 files)              | 3     | Update license headers         |
+| `test/**/*.{hpp,cpp}` (19 files)             | 3     | Update license headers         |
+| `CONTRIBUTING.md`                            | 3     | Fill in (copy from osal)       |
+| `README.md`                                  | 3     | Write                          |
+| `CMakeLists.txt`                             | 4     | Rewrite                        |
+| `lib/CMakeLists.txt`                         | 4     | Update                         |
+| `cmake/compilation-flags.cmake`              | 4     | Create                         |
+| `cmake/components.cmake`                     | 4     | Create                         |
+| `cmake/modules/Findutils.cmake`              | 4     | Create                         |
+| `cmake/conan.cmake`                          | 4     | Delete                         |
+| `cmake/coverage.cmake`                       | 4     | Delete                         |
+| `cmake/osal.cmake`                           | 4     | Delete                         |
+| `cmake/platform.cmake`                       | 4     | Delete                         |
+| `cmake/sanitizers.cmake`                     | 4     | Delete                         |
+| `test/settings.cmake`                        | 4     | Delete                         |
+| `CMakePresets.json`                          | 5     | Rewrite (version 8)            |
+| `cmake/presets/type.json`                    | 5     | Create                         |
+| `cmake/presets/dependencies.json`            | 5     | Create                         |
+| `cmake/presets/linux.json`                   | 5     | Create                         |
+| `cmake/presets/baremetal.json`               | 5     | Create                         |
+| `cmake/presets/sanitizers.json`              | 5     | Create                         |
+| `cmake/conan_provider.cmake`                 | 6     | Create (copy from osal)        |
+| `conanfile.txt`                              | 6     | Update                         |
+| `test/` directory                            | 7     | Rename to `tests/`             |
+| `tests/CMakeLists.txt`                       | 7     | Update                         |
+| `tests/init/freertos-arm/CMakeLists.txt`     | 7     | Update (remove external/ ref)  |
+| `tests/.clang-tidy`                          | 7     | Create                         |
+| `tests/**/*.cpp` (assertion fixes)           | 7     | 191 REQUIRE(!→REQUIRE_FALSE    |
+| `.gitlab-ci.yml`                             | 8     | Delete                         |
+| `.gitlab/`                                   | 8     | Delete                         |
+| `.github/workflows/build-test-linux.yml`     | 8     | Create                         |
+| `.github/workflows/build-test-baremetal.yml` | 8     | Create                         |
+| `.github/workflows/static-analysis.yml`      | 8     | Create                         |
+| `.github/workflows/code-coverage.yml`        | 8     | Create                         |
+| `external/`                                  | 9     | Delete                         |
+| `tools/ci/`                                  | 9     | Delete                         |
