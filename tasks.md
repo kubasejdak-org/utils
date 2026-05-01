@@ -15,25 +15,6 @@ a self-contained PR. Tasks within a phase should be committed together.
 **Goal**: Bring all static analysis and formatting configs to the current standard used in `osal`. Each tool config is a
 separate task.
 
-### Task 2.1 — Add `.prettierrc`
-
-Create `.prettierrc` at the repo root:
-
-```json
-{
-    "printWidth": 120,
-    "proseWrap": "always",
-    "overrides": [
-        {
-            "files": "*.md",
-            "options": {
-                "tabWidth": 4
-            }
-        }
-    ]
-}
-```
-
 ## Phase 3 — Repository hygiene
 
 **Goal**: Fix `.gitignore`, license files, add `CONTRIBUTING.md`, and write `README.md`.
@@ -61,35 +42,6 @@ Changes from current:
 - Remove: `bin/`, `.vscode/`, `.DS_Store` (not in osal)
 - Add: `out/`, `build/`, `CMakeUserPresets.json` (in osal, missing here)
 - Rewrite comments to match osal style
-
-### Task 3.2 — Replace root `LICENSE`
-
-Replace the BSD 2-Clause `LICENSE` file with MIT License. Use single creation year `2020` (no year range — this is a
-deliberate convention: only the year of creation, not a range). Match `osal`'s exact format:
-
-```
-MIT License
-
-Copyright (c) 2020 Kuba Sejdak (kuba.sejdak@gmail.com)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
 
 ### Task 3.3 — Update license headers in all source files
 
@@ -144,11 +96,6 @@ Exact osal header format for reference:
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 ```
-
-### Task 3.4 — Fill in `CONTRIBUTING.md`
-
-Replace the empty `CONTRIBUTING.md` with the content from `osal/CONTRIBUTING.md` verbatim. The content is generic enough
-to apply to any `kubasejdak-org` repo without modification.
 
 ### Task 3.5 — Write `README.md`
 
@@ -892,43 +839,40 @@ Delete `tools/ci/` directory (contains `logs-reader.py` and `program-openocd.py`
 
 ## File change summary
 
-| File/Directory                               | Phase | Action                         |
-| -------------------------------------------- | ----- | ------------------------------ |
-| `.prettierrc`                                | 2     | Create                         |
-| `LICENSE`                                    | 3     | Replace (BSD→MIT, single year) |
-| `lib/**/*.{hpp,cpp}` (30 files)              | 3     | Update license headers         |
-| `test/**/*.{hpp,cpp}` (19 files)             | 3     | Update license headers         |
-| `CONTRIBUTING.md`                            | 3     | Fill in (copy from osal)       |
-| `README.md`                                  | 3     | Write                          |
-| `CMakeLists.txt`                             | 4     | Rewrite                        |
-| `lib/CMakeLists.txt`                         | 4     | Update                         |
-| `cmake/compilation-flags.cmake`              | 4     | Create                         |
-| `cmake/components.cmake`                     | 4     | Create                         |
-| `cmake/modules/Findutils.cmake`              | 4     | Create                         |
-| `cmake/conan.cmake`                          | 4     | Delete                         |
-| `cmake/coverage.cmake`                       | 4     | Delete                         |
-| `cmake/osal.cmake`                           | 4     | Delete                         |
-| `cmake/platform.cmake`                       | 4     | Delete                         |
-| `cmake/sanitizers.cmake`                     | 4     | Delete                         |
-| `test/settings.cmake`                        | 4     | Delete                         |
-| `CMakePresets.json`                          | 5     | Rewrite (version 8)            |
-| `cmake/presets/type.json`                    | 5     | Create                         |
-| `cmake/presets/dependencies.json`            | 5     | Create                         |
-| `cmake/presets/linux.json`                   | 5     | Create                         |
-| `cmake/presets/baremetal.json`               | 5     | Create                         |
-| `cmake/presets/sanitizers.json`              | 5     | Create                         |
-| `cmake/conan_provider.cmake`                 | 6     | Create (copy from osal)        |
-| `conanfile.txt`                              | 6     | Update                         |
-| `test/` directory                            | 7     | Rename to `tests/`             |
-| `tests/CMakeLists.txt`                       | 7     | Update                         |
-| `tests/init/freertos-arm/CMakeLists.txt`     | 7     | Update (remove external/ ref)  |
-| `tests/.clang-tidy`                          | 7     | Create                         |
-| `tests/**/*.cpp` (assertion fixes)           | 7     | 191 REQUIRE(!→REQUIRE_FALSE    |
-| `.gitlab-ci.yml`                             | 8     | Delete                         |
-| `.gitlab/`                                   | 8     | Delete                         |
-| `.github/workflows/build-test-linux.yml`     | 8     | Create                         |
-| `.github/workflows/build-test-baremetal.yml` | 8     | Create                         |
-| `.github/workflows/static-analysis.yml`      | 8     | Create                         |
-| `.github/workflows/code-coverage.yml`        | 8     | Create                         |
-| `external/`                                  | 9     | Delete                         |
-| `tools/ci/`                                  | 9     | Delete                         |
+| File/Directory                               | Phase | Action                        |
+| -------------------------------------------- | ----- | ----------------------------- |
+| `lib/**/*.{hpp,cpp}` (30 files)              | 3     | Update license headers        |
+| `test/**/*.{hpp,cpp}` (19 files)             | 3     | Update license headers        |
+| `README.md`                                  | 3     | Write                         |
+| `CMakeLists.txt`                             | 4     | Rewrite                       |
+| `lib/CMakeLists.txt`                         | 4     | Update                        |
+| `cmake/compilation-flags.cmake`              | 4     | Create                        |
+| `cmake/components.cmake`                     | 4     | Create                        |
+| `cmake/modules/Findutils.cmake`              | 4     | Create                        |
+| `cmake/conan.cmake`                          | 4     | Delete                        |
+| `cmake/coverage.cmake`                       | 4     | Delete                        |
+| `cmake/osal.cmake`                           | 4     | Delete                        |
+| `cmake/platform.cmake`                       | 4     | Delete                        |
+| `cmake/sanitizers.cmake`                     | 4     | Delete                        |
+| `test/settings.cmake`                        | 4     | Delete                        |
+| `CMakePresets.json`                          | 5     | Rewrite (version 8)           |
+| `cmake/presets/type.json`                    | 5     | Create                        |
+| `cmake/presets/dependencies.json`            | 5     | Create                        |
+| `cmake/presets/linux.json`                   | 5     | Create                        |
+| `cmake/presets/baremetal.json`               | 5     | Create                        |
+| `cmake/presets/sanitizers.json`              | 5     | Create                        |
+| `cmake/conan_provider.cmake`                 | 6     | Create (copy from osal)       |
+| `conanfile.txt`                              | 6     | Update                        |
+| `test/` directory                            | 7     | Rename to `tests/`            |
+| `tests/CMakeLists.txt`                       | 7     | Update                        |
+| `tests/init/freertos-arm/CMakeLists.txt`     | 7     | Update (remove external/ ref) |
+| `tests/.clang-tidy`                          | 7     | Create                        |
+| `tests/**/*.cpp` (assertion fixes)           | 7     | 191 REQUIRE(!→REQUIRE_FALSE   |
+| `.gitlab-ci.yml`                             | 8     | Delete                        |
+| `.gitlab/`                                   | 8     | Delete                        |
+| `.github/workflows/build-test-linux.yml`     | 8     | Create                        |
+| `.github/workflows/build-test-baremetal.yml` | 8     | Create                        |
+| `.github/workflows/static-analysis.yml`      | 8     | Create                        |
+| `.github/workflows/code-coverage.yml`        | 8     | Create                        |
+| `external/`                                  | 9     | Delete                        |
+| `tools/ci/`                                  | 9     | Delete                        |
