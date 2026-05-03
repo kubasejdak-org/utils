@@ -35,4 +35,4 @@ add_subdirectory(${osal_SOURCE_DIR}/lib ${osal_BINARY_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(lib)
-add_subdirectory(test)
+add_subdirectory(tests)
