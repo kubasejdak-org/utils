@@ -4,7 +4,7 @@
 /// @author Kuba Sejdak
 /// @copyright MIT License
 ///
-/// Copyright (c) 2019 Kuba Sejdak (kuba.sejdak@gmail.com)
+/// Copyright (c) 2020 Kuba Sejdak (kuba.sejdak@gmail.com)
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,16 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include "platform/init.hpp"
+#include "tests/helpers/VerboseReporter.hpp"
 
-namespace platform {
+#include <catch2/catch_session.hpp>
 
-bool init()
+#include <cstdlib>
+
+int appMain(int argc, char** argv)
 {
-    return true;
-}
+    if (!platform::init())
+        return EXIT_FAILURE;
 
-} // namespace platform
+    return Catch::Session().run(argc, argv);
+}
