@@ -41,7 +41,7 @@
 
 TEST_CASE("1. Check power of 2 detection", "[unit][bits]")
 {
-    constexpr std::uint32_t cIterationsCount = 1'000;
+    constexpr std::uint32_t cIterationsCount = 1000;
     for (std::uint32_t i = 1; i < cIterationsCount; ++i) {
         auto valueA = std::uint32_t(std::log2(i));
         double valueB = std::pow(2, valueA);
@@ -61,14 +61,14 @@ TEST_CASE("2. Check conversions to little endian", "[unit][bits]")
 
     SECTION("2.2. 32bit conversions")
     {
-        constexpr std::uint32_t cIterationsCount = 1'000;
+        constexpr std::uint32_t cIterationsCount = 1000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i)
             REQUIRE(utils::bits::toLittleEndian(i) == i);
     }
 
     SECTION("2.3. 64bit conversions")
     {
-        constexpr std::uint64_t cIterationsCount = 1'000;
+        constexpr std::uint64_t cIterationsCount = 1000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i)
             REQUIRE(utils::bits::toLittleEndian(i) == i);
     }
@@ -86,7 +86,7 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
 
     SECTION("3.2. 32bit conversions")
     {
-        constexpr std::uint32_t cIterationsCount = 1'000;
+        constexpr std::uint32_t cIterationsCount = 1000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i) {
             std::uint32_t expected = ((i & 0x000000ff) << 24)  // NOLINT
                                    | ((i & 0x0000ff00) << 8)   // NOLINT
@@ -98,7 +98,7 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
 
     SECTION("3.3 64bit conversions")
     {
-        constexpr std::uint64_t cIterationsCount = 1'000;
+        constexpr std::uint64_t cIterationsCount = 1000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i) {
             std::uint64_t expected = ((i & 0x00000000000000ffUL) << 56)  // NOLINT
                                    | ((i & 0x000000000000ff00UL) << 40)  // NOLINT
@@ -136,7 +136,7 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
 
     SECTION("4.3. std::uint32_t")
     {
-        constexpr std::uint32_t cIterationsCount = 1'000;
+        constexpr std::uint32_t cIterationsCount = 1000;
         for (std::uint32_t value = 0; value < cIterationsCount; ++value) {
             auto array = utils::bits::toBytesArray(value);
             REQUIRE(array.size() == sizeof(value));
@@ -149,7 +149,7 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
 
     SECTION("4.4. std::uint64_t")
     {
-        constexpr std::uint64_t cIterationsCount = 1'000;
+        constexpr std::uint64_t cIterationsCount = 1000;
         for (std::uint64_t value = 0; value < cIterationsCount; ++value) {
             auto array = utils::bits::toBytesArray(value);
             REQUIRE(array.size() == sizeof(value));

@@ -109,7 +109,7 @@ private:
     {
         m_mutex.lock();
         FsmLogger::debug("<{}:{}> preStateCall", m_name, m_currentState->name());
-    };
+    }
 
     /// Method which will be called directly after every call to the state's methods. If a state change was triggered,
     /// then it will execute it (still with the internal state being locked). Before returning to the caller the
@@ -122,7 +122,7 @@ private:
             executeStateChange();
 
         m_mutex.unlock();
-    };
+    }
 
     /// Prepares new state, that will be used during the execute state change step.
     /// @tparam NewState        Type of the state to be set.

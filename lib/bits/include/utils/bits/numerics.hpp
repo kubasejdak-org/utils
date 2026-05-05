@@ -43,7 +43,7 @@ namespace utils::bits {
 /// @retval false       Given value is not a power of 2.
 constexpr inline bool isPowerOf2(std::uint32_t value)
 {
-    return (value > 0 && ((value & (value - 1)) == 0));
+    return value > 0 && ((value & (value - 1)) == 0);
 }
 
 } // namespace utils::bits

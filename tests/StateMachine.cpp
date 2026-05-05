@@ -162,7 +162,7 @@ TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
 TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
 {
     utils::fsm::StateMachine<IAppState> stateMachine("Test");
-    constexpr int cIterations = 1'000;
+    constexpr int cIterations = 1000;
     std::string name;
     std::string nextName;
 
