@@ -17,13 +17,11 @@ stages:
   - sanitizers
   - coverage
   - quality
-  - deploy
 
 include:
   - "/.gitlab/ci/build-freertos.yml"
   - "/.gitlab/ci/build-linux.yml"
   - "/.gitlab/ci/coverage-linux.yml"
-  - "/.gitlab/ci/deploy.yml"
   - "/.gitlab/ci/quality.yml"
   - "/.gitlab/ci/sanitizers-linux.yml"
   - "/.gitlab/ci/test-linux.yml"
