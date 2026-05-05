@@ -1,0 +1,52 @@
+name: Run static analysis
+
+on:
+  push:
+  schedule:
+    - cron: "0 12 * * SAT"
+  workflow_dispatch:
+
+jobs:
+  formatting:
+    name: clang-format
+    runs-on: [self-hosted, X64, build, docker]
+    needs: []
+    container:
+      image: kubasejdak/clang:18-24.04
+      options: --user root
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: kubasejdak-org/clang-format-run-action@main
+
+  linting:
+    name: clang-tidy
+    runs-on: [self-hosted, X64, build, docker]
+    needs: []
+    container:
+      image: ${{ matrix.DOCKER_IMAGE }}
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PRESET: linux-native-conan-clang-debug
+            DOCKER_IMAGE: kubasejdak/clang:18-24.04
+          - PRESET: freertos-armv7-m4-conan-clang-debug
+            DOCKER_IMAGE: kubasejdak/arm-none-eabi-clang:18-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: kubasejdak-org/clang-tidy-run-action@main
+        with:
+          preset: ${{ matrix.PRESET }}
+
+  check-all-static:
+    runs-on: [self-hosted, build]
+    if: always()
+    needs:
+      - formatting
+      - linting
+    steps:
+      - name: Check all jobs
+        run: '! echo ''${{ toJSON(needs.*.result) }}'' | grep -qE ''"(failure|cancelled|skipped)"'''
