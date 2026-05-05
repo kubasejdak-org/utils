@@ -30,5 +30,7 @@ target_link_libraries(utils-tests
 # endif ()
 
 if (NOT UNIX)
-    objcopy_generate_bin(osal-tests)
+    objcopy_generate_bin(utils-tests)
 endif ()
+
+install(TARGETS utils-tests)
