@@ -2,8 +2,8 @@ add_subdirectory(helpers)
 add_subdirectory(init)
 
 add_executable(utils-tests
+    bits.cpp
     main.cpp
-#     bits.cpp
 #     ExecAround.cpp
 #     GlobalRegistry.cpp
 #     Logger.cpp
@@ -16,6 +16,7 @@ add_executable(utils-tests
 
 find_package(Catch2)
 find_package(platform COMPONENTS main)
+find_package(utils COMPONENTS bits)
 
 target_link_libraries(utils-tests
     PRIVATE
@@ -23,6 +24,7 @@ target_link_libraries(utils-tests
         platform::init
         platform::main
         tests::helpers
+        utils::bits
 )
 
 # if (OSAL_PLATFORM STREQUAL linux)
