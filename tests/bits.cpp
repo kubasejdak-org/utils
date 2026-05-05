@@ -49,9 +49,9 @@ TEMPLATE_TEST_CASE("1. Check power of 2 detection",
     constexpr auto cIterationsCount
         = static_cast<TestType>(std::min<std::uint64_t>(std::numeric_limits<TestType>::max(), 1000));
     for (TestType i = 1; i < cIterationsCount; ++i) {
-        auto valueA = TestType(std::log2(i));
-        double valueB = std::pow(2, valueA);
-        bool powerOf2 = double(i) == valueB;
+        auto valueA = static_cast<TestType>(std::log2(i));
+        double valueB = std::pow(2, static_cast<double>(valueA));
+        bool powerOf2 = static_cast<double>(i) == valueB;
         CHECK(utils::bits::isPowerOf2(i) == powerOf2);
     }
 }
@@ -84,7 +84,7 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
     SECTION("3.1. 16bit conversions")
     {
         for (std::uint16_t i = 0; i < std::numeric_limits<std::uint16_t>::max(); ++i) {
-            std::uint16_t expected = ((i & 0x00ff) << 8) | ((i & 0xff00) >> 8);
+            std::uint16_t expected = ((i & 0x00ffU) << 8U) | ((i & 0xff00U) >> 8U);
             CHECK(utils::bits::toBigEndian(i) == expected);
         }
     }
@@ -93,8 +93,8 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
     {
         constexpr std::uint32_t cIterationsCount = 1000;
         for (std::uint32_t i = 0; i < cIterationsCount; ++i) {
-            std::uint32_t expected = ((i & 0x000000ff) << 24) | ((i & 0x0000ff00) << 8) | ((i & 0x00ff0000) >> 8)
-                                   | ((i & 0xff000000) >> 24);
+            std::uint32_t expected = ((i & 0x000000ffU) << 24U) | ((i & 0x0000ff00U) << 8U) | ((i & 0x00ff0000U) >> 8U)
+                                   | ((i & 0xff000000U) >> 24U);
             CHECK(utils::bits::toBigEndian(i) == expected);
         }
     }
@@ -128,8 +128,8 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
         for (std::uint16_t value = 0; value < std::numeric_limits<std::uint16_t>::max(); ++value) {
             auto array = utils::bits::toBytesArray(value);
             CHECK(array.size() == sizeof(value));
-            CHECK(array[0] == (value & 0x00ff));
-            CHECK(array[1] == ((value & 0xff00) >> 8U));
+            CHECK(array[0] == (value & 0x00ffU));
+            CHECK(array[1] == ((value & 0xff00U) >> 8U));
         }
     }
 
@@ -139,10 +139,10 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
         for (std::uint32_t value = 0; value < cIterationsCount; ++value) {
             auto array = utils::bits::toBytesArray(value);
             CHECK(array.size() == sizeof(value));
-            CHECK(array[0] == (value & 0x000000ff));
-            CHECK(array[1] == ((value & 0x0000ff00) >> 8U));
-            CHECK(array[2] == ((value & 0x00ff0000) >> 16U));
-            CHECK(array[3] == ((value & 0xff000000) >> 24U));
+            CHECK(array[0] == (value & 0x000000ffU));
+            CHECK(array[1] == ((value & 0x0000ff00U) >> 8U));
+            CHECK(array[2] == ((value & 0x00ff0000U) >> 16U));
+            CHECK(array[3] == ((value & 0xff000000U) >> 24U));
         }
     }
 
@@ -152,14 +152,14 @@ TEST_CASE("4. Conversions from integral to byte array", "[unit][bits]")
         for (std::uint64_t value = 0; value < cIterationsCount; ++value) {
             auto array = utils::bits::toBytesArray(value);
             CHECK(array.size() == sizeof(value));
-            CHECK(array[0] == (value & 0x00000000000000ff));
-            CHECK(array[1] == ((value & 0x000000000000ff00) >> 8U));
-            CHECK(array[2] == ((value & 0x0000000000ff0000) >> 16U));
-            CHECK(array[3] == ((value & 0x00000000ff000000) >> 24U));
-            CHECK(array[4] == ((value & 0x000000ff00000000) >> 32U));
-            CHECK(array[5] == ((value & 0x0000ff0000000000) >> 40U));
-            CHECK(array[6] == ((value & 0x00ff000000000000) >> 48U));
-            CHECK(array[7] == ((value & 0xff00000000000000) >> 56U));
+            CHECK(array[0] == (value & 0x00000000000000ffULL));
+            CHECK(array[1] == ((value & 0x000000000000ff00ULL) >> 8U));
+            CHECK(array[2] == ((value & 0x0000000000ff0000ULL) >> 16U));
+            CHECK(array[3] == ((value & 0x00000000ff000000ULL) >> 24U));
+            CHECK(array[4] == ((value & 0x000000ff00000000ULL) >> 32U));
+            CHECK(array[5] == ((value & 0x0000ff0000000000ULL) >> 40U));
+            CHECK(array[6] == ((value & 0x00ff000000000000ULL) >> 48U));
+            CHECK(array[7] == ((value & 0xff00000000000000ULL) >> 56U));
         }
     }
 }
