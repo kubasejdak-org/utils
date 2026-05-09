@@ -61,17 +61,11 @@ TEST_CASE("1. Calling watchdog functions in wrong state", "[unit][Watchdog]")
 
     SECTION("1.2. Watchdog is already started")
     {
-        REQUIRE(watchdog.registerClient(
-            "client1",
-            [](std::string_view /*unused*/) {},
-            1s));
+        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
         REQUIRE(watchdog.start());
 
         REQUIRE(!watchdog.start());
-        REQUIRE(!watchdog.registerClient(
-            "client2",
-            [](std::string_view /*unused*/) {},
-            1s));
+        REQUIRE(!watchdog.registerClient("client2", [](std::string_view /*unused*/) {}, 1s));
 
         REQUIRE(watchdog.stop());
     }
@@ -83,22 +77,13 @@ TEST_CASE("1. Calling watchdog functions in wrong state", "[unit][Watchdog]")
 
     SECTION("1.4. Client is already registered")
     {
-        REQUIRE(watchdog.registerClient(
-            "client1",
-            [](std::string_view /*unused*/) {},
-            1s));
-        REQUIRE(!watchdog.registerClient(
-            "client1",
-            [](std::string_view /*unused*/) {},
-            1s));
+        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
+        REQUIRE(!watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
     }
 
     SECTION("1.5. No such client")
     {
-        REQUIRE(watchdog.registerClient(
-            "client1",
-            [](std::string_view /*unused*/) {},
-            1s));
+        REQUIRE(watchdog.registerClient("client1", [](std::string_view /*unused*/) {}, 1s));
         REQUIRE(watchdog.start());
 
         REQUIRE(!watchdog.reset("client2"));
@@ -111,10 +96,7 @@ TEST_CASE("2. Start and stop watchdog multiple times", "[unit][Watchdog]")
 {
     utils::watchdog::Watchdog watchdog("TestWdg");
     std::string client = "test1";
-    REQUIRE(watchdog.registerClient(
-        client,
-        [](std::string_view /*unused*/) {},
-        1s));
+    REQUIRE(watchdog.registerClient(client, [](std::string_view /*unused*/) {}, 1s));
 
     constexpr int cIterationsCount = 100;
     for (int i = 0; i < cIterationsCount; ++i) {

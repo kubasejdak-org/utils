@@ -58,9 +58,9 @@ const char* ErrorCategory::name() const noexcept
 std::string ErrorCategory::message(int value) const
 {
     switch (static_cast<Error>(value)) {
-        case Error::eOk: return "eOk";
+        case Error::eOk:              return "eOk";
         case Error::eInvalidArgument: return "eInvalidArgument";
-        default: return "(unrecognized error)";
+        default:                      return "(unrecognized error)";
     }
 }
 

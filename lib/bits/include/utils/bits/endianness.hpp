@@ -2,40 +2,36 @@
 ///
 /// @file
 /// @author Kuba Sejdak
-/// @copyright BSD 2-Clause License
+/// @copyright MIT License
 ///
-/// Copyright (c) 2020-2023, Kuba Sejdak <kuba.sejdak@gmail.com>
-/// All rights reserved.
+/// Copyright (c) 2020 Kuba Sejdak (kuba.sejdak@gmail.com)
 ///
-/// Redistribution and use in source and binary forms, with or without
-/// modification, are permitted provided that the following conditions are met:
+/// Permission is hereby granted, free of charge, to any person obtaining a copy
+/// of this software and associated documentation files (the "Software"), to deal
+/// in the Software without restriction, including without limitation the rights
+/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the Software is
+/// furnished to do so, subject to the following conditions:
 ///
-/// 1. Redistributions of source code must retain the above copyright notice, this
-///    list of conditions and the following disclaimer.
+/// The above copyright notice and this permission notice shall be included in all
+/// copies or substantial portions of the Software.
 ///
-/// 2. Redistributions in binary form must reproduce the above copyright notice,
-///    this list of conditions and the following disclaimer in the documentation
-///    and/or other materials provided with the distribution.
-///
-/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-/// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-/// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-/// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-/// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-/// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-/// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-/// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+/// SOFTWARE.
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include <array>
+#include <bit>
+#include <concepts>
 #include <cstdint>
-#include <cstring>
-#include <type_traits>
 
 namespace utils::bits {
 
@@ -43,47 +39,27 @@ namespace utils::bits {
 /// @return Flag indicating if current system uses big endian notation.
 /// @retval true        Current system uses big endian notation.
 /// @retval false       Current system uses little endian notation.
-inline bool isBigEndian()
+constexpr bool isBigEndian()
 {
-    constexpr std::uint32_t cValue = 0x01020304;
-
-    union {
-        std::uint32_t integer;
-        std::array<std::uint8_t, 4> bytes{};
-    } helper = {cValue};
-
-    return helper.bytes[0] == 1; // NOLINT(cppcoreguidelines-pro-type-union-access)
+    return std::endian::native == std::endian::big;
 }
 
 /// Changes order of bytes in given integer value to the opposite endianness.
 /// @tparam T           Type of the value to be changed.
 /// @param value        Value to be changed.
 /// @return Value with the opposite endianness.
-template <typename T>
-constexpr inline T changeEndianness(T value)
+template <std::integral T>
+constexpr T changeEndianness(T value)
 {
-    static_assert(std::is_integral_v<T>, "T is not an integral");
-
-    constexpr auto cSize = sizeof(T);
-
-    if constexpr (cSize == 2)
-        return __builtin_bswap16(value);
-
-    if constexpr (cSize == 4)
-        return __builtin_bswap32(value);
-
-    if constexpr (cSize == 8) // NOLINT
-        return __builtin_bswap64(value);
-
-    return value;
+    return std::byteswap(value);
 }
 
 /// Changes order of bytes in given integer value to big endian.
 /// @tparam T           Type of the value to be changed.
 /// @param value        Value to be changed.
 /// @return Value with the big endian notation.
-template <typename T>
-inline auto toBigEndian(T value)
+template <std::integral T>
+constexpr auto toBigEndian(T value)
 {
     return isBigEndian() ? value : changeEndianness(value);
 }
@@ -92,8 +68,8 @@ inline auto toBigEndian(T value)
 /// @tparam T           Type of the value to be changed.
 /// @param value        Value to be changed.
 /// @return Value with the little endian notation.
-template <typename T>
-inline auto toLittleEndian(T value)
+template <std::integral T>
+constexpr auto toLittleEndian(T value)
 {
     return isBigEndian() ? changeEndianness(value) : value;
 }
@@ -102,14 +78,10 @@ inline auto toLittleEndian(T value)
 /// @tparam T           Type of the value to be converted.
 /// @param value        Value to be converted.
 /// @return Array of bytes created from the given integral value.
-template <typename T>
-constexpr inline auto toBytesArray(T value)
+template <std::integral T>
+constexpr auto toBytesArray(T value)
 {
-    static_assert(std::is_integral_v<T>, "T is not an integral");
-
-    std::array<std::uint8_t, sizeof(T)> bytes{};
-    std::memcpy(bytes.data(), &value, sizeof(T));
-    return bytes;
+    return std::bit_cast<std::array<std::uint8_t, sizeof(T)>>(value);
 }
 
 } // namespace utils::bits

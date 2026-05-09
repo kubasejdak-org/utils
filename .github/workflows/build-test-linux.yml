@@ -1,0 +1,184 @@
+name: Build and run tests for Linux
+
+on:
+  push:
+  schedule:
+    - cron: "0 12 * * SAT"
+  workflow_dispatch:
+
+jobs:
+  build-x64:
+    runs-on: [self-hosted, X64, build, docker]
+    needs: []
+    container:
+      image: ${{ matrix.DOCKER_IMAGE }}
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PRESET: linux-native-conan-gcc-debug
+            DOCKER_IMAGE: kubasejdak/gcc:13-24.04
+          - PRESET: linux-native-conan-gcc-release
+            DOCKER_IMAGE: kubasejdak/gcc:13-24.04
+          - PRESET: linux-native-conan-clang-debug
+            DOCKER_IMAGE: kubasejdak/clang:18-24.04
+          - PRESET: linux-native-conan-clang-release
+            DOCKER_IMAGE: kubasejdak/clang:18-24.04
+          - PRESET: linux-native-conan-gcc-debug-asan
+            DOCKER_IMAGE: kubasejdak/gcc:13-24.04
+          - PRESET: linux-native-conan-gcc-debug-lsan
+            DOCKER_IMAGE: kubasejdak/gcc:13-24.04
+          - PRESET: linux-native-conan-gcc-debug-tsan
+            DOCKER_IMAGE: kubasejdak/gcc:13-24.04
+          - PRESET: linux-native-conan-gcc-debug-ubsan
+            DOCKER_IMAGE: kubasejdak/gcc:13-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: kubasejdak-org/cmake-build-preset-action@main
+        with:
+          preset: ${{ matrix.PRESET }}
+
+  build-arm64:
+    runs-on: [self-hosted, X64, build, docker]
+    needs: []
+    container:
+      image: ${{ matrix.DOCKER_IMAGE }}
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PRESET: linux-arm64-conan-gcc-debug
+            DOCKER_IMAGE: kubasejdak/aarch64-none-linux-gnu-gcc:13-24.04
+          - PRESET: linux-arm64-conan-gcc-release
+            DOCKER_IMAGE: kubasejdak/aarch64-none-linux-gnu-gcc:13-24.04
+          - PRESET: linux-arm64-conan-clang-debug
+            DOCKER_IMAGE: kubasejdak/aarch64-none-linux-gnu-clang:18-24.04
+          - PRESET: linux-arm64-conan-clang-release
+            DOCKER_IMAGE: kubasejdak/aarch64-none-linux-gnu-clang:18-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: kubasejdak-org/cmake-build-preset-action@main
+        with:
+          preset: ${{ matrix.PRESET }}
+
+  tests-x64:
+    runs-on: [self-hosted, X64, docker]
+    needs: build-x64
+    container:
+      image: kubasejdak/gcc:13-24.04
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - APP: utils-tests
+    env:
+      PRESET: linux-native-conan-gcc-debug
+    steps:
+      - uses: kubasejdak-org/binary-run-action@main
+        with:
+          binary: ${{ matrix.APP }}
+          artifact: build-${{ env.PRESET }}
+
+  # examples-x64:
+  #   runs-on: [self-hosted, X64, docker]
+  #   needs: build-x64
+  #   container:
+  #     image: kubasejdak/gcc:13-24.04
+  #     options: --user root
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - APP: platform-package-info-example
+  #         - APP: platform-hello-world-example
+  #         - APP: platform-paths-example
+  #   env:
+  #     PRESET: linux-native-gcc-debug
+  #   steps:
+  #     - uses: kubasejdak-org/binary-run-action@main
+  #       with:
+  #         binary: ${{ matrix.APP }}
+  #         artifact: build-${{ env.PRESET }}
+
+  # examples-arm64:
+  #   runs-on: [self-hosted, ARM64, docker]
+  #   needs: build-arm64
+  #   container:
+  #     image: kubasejdak/tests-sbc:13-24.04
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - APP: platform-package-info-example
+  #         - APP: platform-hello-world-example
+  #         - APP: platform-paths-example
+  #   env:
+  #     PRESET: linux-arm64-gcc-debug
+  #   steps:
+  #     - uses: kubasejdak-org/binary-run-action@main
+  #       with:
+  #         binary: ${{ matrix.APP }}
+  #         artifact: build-${{ env.PRESET }}
+
+  valgrind-x64:
+    runs-on: [self-hosted, X64, docker]
+    needs: build-x64
+    container:
+      image: kubasejdak/valgrind:24.04
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - APP: utils-tests
+    env:
+      PRESET: linux-native-conan-gcc-debug
+    steps:
+      - uses: kubasejdak-org/valgrind-run-action@main
+        with:
+          binary: ${{ matrix.APP }}
+          artifact: build-${{ env.PRESET }}
+
+  sanitizers-x64:
+    runs-on: [self-hosted, X64, docker]
+    needs: build-x64
+    container:
+      image: kubasejdak/gcc:13-24.04
+      options: --user root --cap-add=SYS_PTRACE --security-opt seccomp=unconfined
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - APP: utils-tests
+            PRESET: linux-native-conan-gcc-debug-asan
+          - APP: utils-tests
+            PRESET: linux-native-conan-gcc-debug-lsan
+          - APP: utils-tests
+            PRESET: linux-native-conan-gcc-debug-tsan
+          - APP: utils-tests
+            PRESET: linux-native-conan-gcc-debug-ubsan
+    steps:
+      - uses: kubasejdak-org/binary-run-action@main
+        with:
+          binary: ${{ matrix.APP }}
+          artifact: build-${{ matrix.PRESET }}
+
+  check-all-linux:
+    runs-on: [self-hosted, build]
+    if: always()
+    needs:
+      - build-x64
+      - build-arm64
+      - tests-x64
+      # - examples-x64
+      # - examples-arm64
+      - valgrind-x64
+      - sanitizers-x64
+    steps:
+      - name: Check all jobs
+        run: '! echo ''${{ toJSON(needs.*.result) }}'' | grep -qE ''"(failure|cancelled|skipped)"'''

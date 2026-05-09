@@ -84,11 +84,11 @@ public:
 
     /// Returns object representing local endpoint (this side of the connection).
     /// @return Object representing local endpoint (this side of the connection).
-    [[nodiscard]] Endpoint localEndpoint() const { return m_localEndpoint; };
+    [[nodiscard]] Endpoint localEndpoint() const { return m_localEndpoint; }
 
     /// Returns object representing remote endpoint (other side of the connection).
     /// @return Object representing remote endpoint (other side of the connection).
-    [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; };
+    [[nodiscard]] Endpoint remoteEndpoint() const { return m_remoteEndpoint; }
 
     /// Returns flag indicating if parent (if any exists) is running.
     /// @return Flag indicating if parent (if any exists) is running.

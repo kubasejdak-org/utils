@@ -179,9 +179,8 @@ private:
         {
             if constexpr (types::IsReferenceWrapper<UnderlyingType>::value) { // NOLINT
                 using T = typename UnderlyingType::type;
-                if constexpr (std::is_pointer_v<T> || types::IsSharedPointer<T>::value) {
+                if constexpr (std::is_pointer_v<T> || types::IsSharedPointer<T>::value)
                     return wrapper->underlyingObject.get();
-                }
                 else
                     return &wrapper->underlyingObject.get();
             }
