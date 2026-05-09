@@ -103,10 +103,10 @@ TEST_CASE("3. Check conversions to big endian", "[unit][bits]")
     {
         constexpr std::uint64_t cIterationsCount = 1000;
         for (std::uint64_t i = 0; i < cIterationsCount; ++i) {
-            std::uint64_t expected = ((i & 0x00000000000000ffUL) << 56) | ((i & 0x000000000000ff00UL) << 40)
-                                   | ((i & 0x0000000000ff0000UL) << 24) | ((i & 0x00000000ff000000UL) << 8)
-                                   | ((i & 0x000000ff00000000UL) >> 8) | ((i & 0x0000ff0000000000UL) >> 24)
-                                   | ((i & 0x00ff000000000000UL) >> 40) | ((i & 0xff00000000000000UL) >> 56);
+            std::uint64_t expected = ((i & 0x00000000000000ffUL) << 56U) | ((i & 0x000000000000ff00UL) << 40U)
+                                   | ((i & 0x0000000000ff0000UL) << 24U) | ((i & 0x00000000ff000000UL) << 8U)
+                                   | ((i & 0x000000ff00000000UL) >> 8U) | ((i & 0x0000ff0000000000UL) >> 24U)
+                                   | ((i & 0x00ff000000000000UL) >> 40U) | ((i & 0xff00000000000000UL) >> 56U);
             CHECK(utils::bits::toBigEndian(i) == expected);
         }
     }
