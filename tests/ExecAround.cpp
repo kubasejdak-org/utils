@@ -2,31 +2,27 @@
 ///
 /// @file
 /// @author Kuba Sejdak
-/// @copyright BSD 2-Clause License
+/// @copyright MIT License
 ///
-/// Copyright (c) 2021-2023, Kuba Sejdak <kuba.sejdak@gmail.com>
-/// All rights reserved.
+/// Copyright (c) 2021 Kuba Sejdak (kuba.sejdak@gmail.com)
 ///
-/// Redistribution and use in source and binary forms, with or without
-/// modification, are permitted provided that the following conditions are met:
+/// Permission is hereby granted, free of charge, to any person obtaining a copy
+/// of this software and associated documentation files (the "Software"), to deal
+/// in the Software without restriction, including without limitation the rights
+/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the Software is
+/// furnished to do so, subject to the following conditions:
 ///
-/// 1. Redistributions of source code must retain the above copyright notice, this
-///    list of conditions and the following disclaimer.
+/// The above copyright notice and this permission notice shall be included in all
+/// copies or substantial portions of the Software.
 ///
-/// 2. Redistributions in binary form must reproduce the above copyright notice,
-///    this list of conditions and the following disclaimer in the documentation
-///    and/or other materials provided with the distribution.
-///
-/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-/// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-/// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-/// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-/// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-/// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-/// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-/// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+/// SOFTWARE.
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -41,25 +37,29 @@
 struct TestType {
     TestType() = default;
 
-    TestType(const TestType& /*unused*/)
+    TestType(const TestType& /*other*/)
         : copyConstructed(true)
     {}
 
-    TestType(TestType&& /*unused*/) noexcept
+    TestType(TestType&& /*other*/) noexcept
         : moveConstructed(true)
     {}
 
     ~TestType() = default;
 
-    TestType& operator=(const TestType& /*unused*/) // NOLINT
+    TestType& operator=(const TestType& other)
     {
-        copyAssigned = true;
+        if (&other != this)
+            copyAssigned = true;
+
         return *this;
     }
 
-    TestType& operator=(TestType&& /*unused*/) noexcept
+    TestType& operator=(TestType&& other) noexcept
     {
-        moveAssigned = true;
+        if (&other != this)
+            moveAssigned = true;
+
         return *this;
     }
 
@@ -83,23 +83,23 @@ TEST_CASE("1. Simple wrapper around custom type", "[unit][ExecAround]")
     auto postAction = [&] { postCall = true; };
 
     utils::functional::ExecAround<TestType> wrapper(TestType{}, preAction, postAction);
-    REQUIRE(wrapper->i == 0);
-    REQUIRE(wrapper->d == 0.0);
+    CHECK(wrapper->i == 0);
+    CHECK(wrapper->d == 0.0);
 
     wrapper->func1();
-    REQUIRE(wrapper->i == 1);
-    REQUIRE(wrapper->d == 0.0);
-    REQUIRE(preCall);
-    REQUIRE(postCall);
+    CHECK(wrapper->i == 1);
+    CHECK(wrapper->d == 0.0);
+    CHECK(preCall);
+    CHECK(postCall);
 
     preCall = false;
     postCall = false;
 
     wrapper->func2();
-    REQUIRE(wrapper->i == 1);
-    REQUIRE(wrapper->d == 1.0);
-    REQUIRE(preCall);
-    REQUIRE(postCall);
+    CHECK(wrapper->i == 1);
+    CHECK(wrapper->d == 1.0);
+    CHECK(preCall);
+    CHECK(postCall);
 }
 
 TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
@@ -114,44 +114,44 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
     SECTION("2.1. Copy construction")
     {
         auto copiedWrapper = wrapper;
-        REQUIRE(copiedWrapper->copyConstructed);
+        CHECK(copiedWrapper->copyConstructed);
 
         copiedWrapper->func1();
-        REQUIRE(copiedWrapper->i == 1);
+        CHECK(copiedWrapper->i == 1);
     }
 
     SECTION("2.2. Move construction")
     {
         auto movedWrapper(std::move(wrapper));
-        REQUIRE(movedWrapper->moveConstructed);
+        CHECK(movedWrapper->moveConstructed);
 
         movedWrapper->func1();
-        REQUIRE(movedWrapper->i == 1);
+        CHECK(movedWrapper->i == 1);
     }
 
     SECTION("2.3. Copy assignment")
     {
         utils::functional::ExecAround<TestType> copyAssignedWrapper;
-        copyAssignedWrapper = wrapper; // NOLINT
-        REQUIRE(copyAssignedWrapper->copyAssigned);
+        copyAssignedWrapper = wrapper; // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+        CHECK(copyAssignedWrapper->copyAssigned);
 
         copyAssignedWrapper->func1();
-        REQUIRE(copyAssignedWrapper->i == 1);
+        CHECK(copyAssignedWrapper->i == 1);
     }
 
     SECTION("2.4. Move assignment")
     {
         utils::functional::ExecAround<TestType> moveAssignedWrapper;
-        moveAssignedWrapper = std::move(wrapper); // NOLINT
-        REQUIRE(moveAssignedWrapper->moveAssigned);
+        moveAssignedWrapper = std::move(wrapper);
+        CHECK(moveAssignedWrapper->moveAssigned);
 
         moveAssignedWrapper->func1();
-        REQUIRE(moveAssignedWrapper->i == 1);
+        CHECK(moveAssignedWrapper->i == 1);
     }
 
-    REQUIRE(wrapper->i == 0); // NOLINT
-    REQUIRE(preCall);
-    REQUIRE(postCall);
+    CHECK(wrapper->i == 0); // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+    CHECK(preCall);
+    CHECK(postCall);
 }
 
 TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
@@ -165,17 +165,17 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
     {
         TestType test;
         utils::functional::ExecAround<TestType> wrapper(test, preAction, postAction);
-        REQUIRE(wrapper->copyConstructed);
+        CHECK(wrapper->copyConstructed);
 
         wrapper->func1();
-        REQUIRE(wrapper->i == 1);
-        REQUIRE(test.i == 0);
+        CHECK(wrapper->i == 1);
+        CHECK(test.i == 0);
     }
 
     SECTION("3.2. Copy from temporary")
     {
         utils::functional::ExecAround<TestType> wrapper(TestType{}, preAction, postAction);
-        REQUIRE(wrapper->moveConstructed);
+        CHECK(wrapper->moveConstructed);
 
         wrapper->func1();
     }
@@ -184,11 +184,11 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
     {
         TestType test;
         utils::functional::ExecAround<TestType> wrapper(std::move(test), preAction, postAction);
-        REQUIRE(wrapper->moveConstructed);
+        CHECK(wrapper->moveConstructed);
 
         wrapper->func1();
-        REQUIRE(wrapper->i == 1);
-        REQUIRE(test.i == 0); // NOLINT
+        CHECK(wrapper->i == 1);
+        CHECK(test.i == 0); // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
     }
 
     SECTION("3.4. Reference wrapper")
@@ -197,36 +197,36 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
 
         TestType test;
         utils::functional::ExecAround<TestTypeRef> wrapper(std::ref(test), preAction, postAction);
-        REQUIRE(!wrapper->copyConstructed);
-        REQUIRE(!wrapper->moveConstructed);
+        CHECK(!wrapper->copyConstructed);
+        CHECK(!wrapper->moveConstructed);
 
         wrapper->func1();
-        REQUIRE(wrapper->i == 1);
-        REQUIRE(test.i == 1);
+        CHECK(wrapper->i == 1);
+        CHECK(test.i == 1);
     }
 
     SECTION("3.5. Pointer")
     {
         auto test = std::make_unique<TestType>();
         utils::functional::ExecAround<TestType*> wrapper(test.get(), preAction, postAction);
-        REQUIRE(!wrapper->copyConstructed);
-        REQUIRE(!wrapper->moveConstructed);
+        CHECK(!wrapper->copyConstructed);
+        CHECK(!wrapper->moveConstructed);
 
         wrapper->func1();
-        REQUIRE(wrapper->i == 1);
-        REQUIRE(test->i == 1);
+        CHECK(wrapper->i == 1);
+        CHECK(test->i == 1);
     }
 
     SECTION("3.6. Shared pointer")
     {
         auto test = std::make_shared<TestType>();
         utils::functional::ExecAround<std::shared_ptr<TestType>> wrapper(test, preAction, postAction);
-        REQUIRE(!wrapper->copyConstructed);
-        REQUIRE(!wrapper->moveConstructed);
+        CHECK(!wrapper->copyConstructed);
+        CHECK(!wrapper->moveConstructed);
 
         wrapper->func1();
-        REQUIRE(wrapper->i == 1);
-        REQUIRE(test->i == 1);
+        CHECK(wrapper->i == 1);
+        CHECK(test->i == 1);
     }
 
     SECTION("3.7. Reference to shared pointer")
@@ -235,14 +235,21 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
 
         auto test = std::make_shared<TestType>();
         utils::functional::ExecAround<TestTypeSharedPtrRef> wrapper(std::ref(test), preAction, postAction);
-        REQUIRE(!wrapper->copyConstructed);
-        REQUIRE(!wrapper->moveConstructed);
+        CHECK(!wrapper->copyConstructed);
+        CHECK(!wrapper->moveConstructed);
 
         wrapper->func1();
-        REQUIRE(wrapper->i == 1);
-        REQUIRE(test->i == 1);
+        CHECK(wrapper->i == 1);
+        CHECK(test->i == 1);
     }
 
-    REQUIRE(preCall);
-    REQUIRE(postCall);
+    CHECK(preCall);
+    CHECK(postCall);
+}
+
+TEST_CASE("4. ExecAround with empty actions does not crash", "[unit][ExecAround]")
+{
+    utils::functional::ExecAround<TestType> wrapper(TestType{}, nullptr, nullptr);
+    wrapper->func1();
+    CHECK(wrapper->i == 1);
 }
