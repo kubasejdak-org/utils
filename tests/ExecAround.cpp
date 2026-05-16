@@ -47,15 +47,19 @@ struct TestType {
 
     ~TestType() = default;
 
-    TestType& operator=(const TestType& /*other*/)
+    TestType& operator=(const TestType& other)
     {
-        copyAssigned = true;
+        if (this != &other)
+            copyAssigned = true;
+
         return *this;
     }
 
-    TestType& operator=(TestType&& /*other*/) noexcept
+    TestType& operator=(TestType&& other) noexcept
     {
-        moveAssigned = true;
+        if (this != &other)
+            moveAssigned = true;
+
         return *this;
     }
 
@@ -128,7 +132,7 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
     SECTION("2.3. Copy assignment")
     {
         utils::functional::ExecAround<TestType> copyAssignedWrapper;
-        copyAssignedWrapper = wrapper;
+        copyAssignedWrapper = wrapper; // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
         CHECK(copyAssignedWrapper->copyAssigned);
 
         copyAssignedWrapper->func1();
@@ -184,7 +188,7 @@ TEST_CASE("3. Passing wrapped object in different ways", "[unit][ExecAround]")
 
         wrapper->func1();
         CHECK(wrapper->i == 1);
-        CHECK(test.i == 0);
+        CHECK(test.i == 0); // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
     }
 
     SECTION("3.4. Reference wrapper")
