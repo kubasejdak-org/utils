@@ -49,7 +49,7 @@ struct TestType {
 
     TestType& operator=(const TestType& other)
     {
-        if (this != &other)
+        if (&other != this)
             copyAssigned = true;
 
         return *this;
@@ -57,7 +57,7 @@ struct TestType {
 
     TestType& operator=(TestType&& other) noexcept
     {
-        if (this != &other)
+        if (&other != this)
             moveAssigned = true;
 
         return *this;
