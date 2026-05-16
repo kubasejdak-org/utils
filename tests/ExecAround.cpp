@@ -145,7 +145,7 @@ TEST_CASE("2. Moving ExecAround around", "[unit][ExecAround]")
         CHECK(moveAssignedWrapper->i == 1);
     }
 
-    CHECK(wrapper->i == 0);
+    CHECK(wrapper->i == 0); // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
     CHECK(preCall);
     CHECK(postCall);
 }
