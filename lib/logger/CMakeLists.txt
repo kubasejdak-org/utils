@@ -6,6 +6,13 @@ target_include_directories(utils-logger
         include
 )
 
+find_package(spdlog)
+
+target_link_libraries(utils-logger
+    INTERFACE
+        spdlog::spdlog
+)
+
 if (NOT UNIX)
     target_link_libraries(utils-logger
         INTERFACE

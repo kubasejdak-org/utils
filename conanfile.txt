@@ -1,3 +1,6 @@
+[requires]
+spdlog/1.17.0
+
 [test_requires]
 catch2/3.13.0
 
@@ -7,3 +10,5 @@ CMakeDeps
 [options]
 catch2/*:default_reporter=verbose
 catch2/*:no_posix_signals=True
+spdlog/*:no_exceptions=True
+spdlog/*:use_std_fmt=False
