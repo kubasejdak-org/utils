@@ -96,6 +96,8 @@ TEST_CASE("2. Logger instances have correct initial state", "[unit][Logger]")
 TEST_CASE("3. Log level can be changed at runtime", "[unit][Logger]")
 {
     REQUIRE(Demo2Logger::get() != nullptr);
+
+    auto originalLevel = Demo2Logger::get()->level();
     Demo2Logger::get()->set_level(spdlog::level::info);
     CHECK(Demo2Logger::get()->level() == spdlog::level::info);
 
@@ -105,4 +107,6 @@ TEST_CASE("3. Log level can be changed at runtime", "[unit][Logger]")
     Demo2Logger::warn("This warn log will be visible");
     Demo2Logger::error("This error log will be visible");
     Demo2Logger::critical("This critical log will be visible");
+
+    Demo2Logger::get()->set_level(originalLevel);
 }
