@@ -29,7 +29,7 @@
 #include <utils/logger/Logger.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#include <spdlog/spdlog.h>
+#include <spdlog/common.h>
 
 REGISTER_LOGGER(Demo1Logger, "DEMO1", spdlog::level::off);
 REGISTER_LOGGER(Demo2Logger, "DEMO2", spdlog::level::critical);
