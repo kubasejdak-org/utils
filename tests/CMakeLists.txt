@@ -4,9 +4,9 @@ add_subdirectory(helpers)
 add_executable(utils-tests
     bits.cpp
     ExecAround.cpp
+    Logger.cpp
     main.cpp
 #     GlobalRegistry.cpp
-#     Logger.cpp
 #     property.cpp
 #     Result.cpp
     ScopedExit.cpp
@@ -16,7 +16,7 @@ add_executable(utils-tests
 
 find_package(Catch2)
 find_package(platform COMPONENTS main)
-find_package(utils COMPONENTS bits functional)
+find_package(utils COMPONENTS bits functional logger)
 
 target_link_libraries(utils-tests
     PRIVATE
@@ -25,6 +25,7 @@ target_link_libraries(utils-tests
         tests::helpers
         utils::bits
         utils::functional
+        utils::logger
 )
 
 install(TARGETS utils-tests)

@@ -171,7 +171,7 @@ private:
         /// @return Underlying user-defined object.
         auto operator->() const noexcept
         {
-            if constexpr (types::IsReferenceWrapper<UnderlyingType>::value) { // NOLINT
+            if constexpr (types::IsReferenceWrapper<UnderlyingType>::value) {
                 using T = typename UnderlyingType::type;
                 if constexpr (std::is_pointer_v<T> || types::IsSharedPointer<T>::value)
                     return wrapper->underlyingObject.get();

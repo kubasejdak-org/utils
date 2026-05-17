@@ -2,31 +2,27 @@
 ///
 /// @file
 /// @author Kuba Sejdak
-/// @copyright BSD 2-Clause License
+/// @copyright MIT License
 ///
-/// Copyright (c) 2020-2023, Kuba Sejdak <kuba.sejdak@gmail.com>
-/// All rights reserved.
+/// Copyright (c) 2020 Kuba Sejdak (kuba.sejdak@gmail.com)
 ///
-/// Redistribution and use in source and binary forms, with or without
-/// modification, are permitted provided that the following conditions are met:
+/// Permission is hereby granted, free of charge, to any person obtaining a copy
+/// of this software and associated documentation files (the "Software"), to deal
+/// in the Software without restriction, including without limitation the rights
+/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the Software is
+/// furnished to do so, subject to the following conditions:
 ///
-/// 1. Redistributions of source code must retain the above copyright notice, this
-///    list of conditions and the following disclaimer.
+/// The above copyright notice and this permission notice shall be included in all
+/// copies or substantial portions of the Software.
 ///
-/// 2. Redistributions in binary form must reproduce the above copyright notice,
-///    this list of conditions and the following disclaimer in the documentation
-///    and/or other materials provided with the distribution.
-///
-/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-/// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-/// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-/// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-/// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-/// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-/// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-/// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+/// SOFTWARE.
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,9 +31,9 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <functional>
 #include <memory>
 #include <string>
-#include <string_view>
 #include <utility>
 
 /// Registers custom user-defined logger with the given properties.
@@ -45,22 +41,19 @@
 /// @param loggerName       Name of the logger (displayed as [<NAME>] in log message).
 /// @param logLevel         Default logging level for this logger.
 /// @param loggerCreator    Callable object which will create the logger.
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, loggerCreator)                                            \
     struct LoggerType##Tag {                                                                                           \
         static constexpr auto* name = loggerName;                                                                      \
     };                                                                                                                 \
-    using LoggerType = utils::logger::ModuleLogger<LoggerType##Tag, logLevel, loggerCreator> // NOLINT
+    using LoggerType = utils::logger::ModuleLogger<LoggerType##Tag, logLevel, loggerCreator>
 
 #ifdef APPLICATION_LOGGER
     #if __has_include("ApplicationLogger.hpp")
         #include "ApplicationLogger.hpp"
     #endif
 
-    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
     #define LOGGER_CREATOR app::ApplicationLoggerCreator
 #else
-    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
     #define LOGGER_CREATOR utils::logger::detail::DefaultLoggerCreator
 #endif
 
@@ -68,7 +61,6 @@
 /// @tparam LoggerType      Type used to access given logger.
 /// @param loggerName       Name of the logger (displayed as [<NAME>] in log message).
 /// @param logLevel         Default logging level for this logger.
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define REGISTER_LOGGER(LoggerType, loggerName, logLevel)                                                              \
     REGISTER_LOGGER_EX(LoggerType, loggerName, logLevel, LOGGER_CREATOR)
 
@@ -126,9 +118,9 @@ public:
     /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void trace(std::string_view fmt, Args&&... args)
+    static void trace(spdlog::format_string_t<Args...> format, Args&&... args)
     {
-        get()->trace(fmt::runtime(fmt), std::forward<Args>(args)...);
+        get()->trace(format, std::forward<Args>(args)...);
     }
 
     /// Outputs the DEBUG logs.
@@ -136,9 +128,9 @@ public:
     /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void debug(std::string_view fmt, Args&&... args)
+    static void debug(spdlog::format_string_t<Args...> format, Args&&... args)
     {
-        get()->debug(fmt::runtime(fmt), std::forward<Args>(args)...);
+        get()->debug(format, std::forward<Args>(args)...);
     }
 
     /// Outputs the INFO logs.
@@ -146,9 +138,9 @@ public:
     /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void info(std::string_view fmt, Args&&... args)
+    static void info(spdlog::format_string_t<Args...> format, Args&&... args)
     {
-        get()->info(fmt::runtime(fmt), std::forward<Args>(args)...);
+        get()->info(format, std::forward<Args>(args)...);
     }
 
     /// Outputs the WARN logs.
@@ -156,9 +148,9 @@ public:
     /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void warn(std::string_view fmt, Args&&... args)
+    static void warn(spdlog::format_string_t<Args...> format, Args&&... args)
     {
-        get()->warn(fmt::runtime(fmt), std::forward<Args>(args)...);
+        get()->warn(format, std::forward<Args>(args)...);
     }
 
     /// Outputs the ERROR logs.
@@ -166,9 +158,9 @@ public:
     /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void error(std::string_view fmt, Args&&... args)
+    static void error(spdlog::format_string_t<Args...> format, Args&&... args)
     {
-        get()->error(fmt::runtime(fmt), std::forward<Args>(args)...);
+        get()->error(format, std::forward<Args>(args)...);
     }
 
     /// Outputs the CRITICAL logs.
@@ -176,9 +168,9 @@ public:
     /// @param fmt          Format string.
     /// @param args         Logger arguments.
     template <typename... Args>
-    static void critical(std::string_view fmt, Args&&... args)
+    static void critical(spdlog::format_string_t<Args...> format, Args&&... args)
     {
-        get()->critical(fmt::runtime(fmt), std::forward<Args>(args)...);
+        get()->critical(format, std::forward<Args>(args)...);
     }
 
     /// Returns the underlying spdlog logger.
@@ -191,7 +183,7 @@ private:
     {
         LoggerCreator creator;
         creator(Tag::name, cLevel);
-        m_logger = spdlog::get(Tag::name); // NOLINT(cppcoreguidelines-prefer-member-initializer)
+        m_logger = spdlog::get(Tag::name);
     }
 
     /// Returns the only instance of the ModuleLoggerImpl.
@@ -219,43 +211,43 @@ public:
     /// Outputs the TRACE logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void log(spdlog::level::level_enum /*unused*/, Args&&... /*unused*/)
+    static void log(spdlog::level::level_enum /*format*/, Args&&... /*args*/)
     {}
 
     /// Outputs the TRACE logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void trace(std::string_view /*unused*/, Args&&... /*unused*/)
+    static void trace(spdlog::format_string_t<Args...> /*format*/, Args&&... /*args*/)
     {}
 
     /// Outputs the DEBUG logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void debug(std::string_view /*unused*/, Args&&... /*unused*/)
+    static void debug(spdlog::format_string_t<Args...> /*format*/, Args&&... /*args*/)
     {}
 
     /// Outputs the INFO logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void info(std::string_view /*unused*/, Args&&... /*unused*/)
+    static void info(spdlog::format_string_t<Args...> /*format*/, Args&&... /*args*/)
     {}
 
     /// Outputs the WARN logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void warn(std::string_view /*unused*/, Args&&... /*unused*/)
+    static void warn(spdlog::format_string_t<Args...> /*format*/, Args&&... /*args*/)
     {}
 
     /// Outputs the ERROR logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void error(std::string_view /*unused*/, Args&&... /*unused*/)
+    static void error(spdlog::format_string_t<Args...> /*format*/, Args&&... /*args*/)
     {}
 
     /// Outputs the CRITICAL logs.
     /// @tparam Args        Logger arguments' types.
     template <typename... Args>
-    static void critical(std::string_view /*unused*/, Args&&... /*unused*/)
+    static void critical(spdlog::format_string_t<Args...> /*format*/, Args&&... /*args*/)
     {}
 
     /// Returns the underlying spdlog logger.
