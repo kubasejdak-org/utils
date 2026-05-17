@@ -54,7 +54,9 @@ public:
     {
         std::memset(m_stack, 0, sizeof(m_stack));
 
-        m_userFunction = std::bind(function, std::forward<Args>(args)...);
+        m_userFunction = [f = std::forward<Callable>(function), ... a = std::forward<Args>(args)...]() mutable {
+            f(std::move(a)...);
+        };
         m_workerFunction = [](void* arg) {
             auto threadFunction = *static_cast<FunctionWrapper*>(arg);
             threadFunction();
