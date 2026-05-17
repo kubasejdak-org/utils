@@ -12,19 +12,3 @@ target_link_libraries(utils-logger
     INTERFACE
         spdlog::spdlog
 )
-
-if (NOT UNIX)
-    target_link_libraries(utils-logger
-        INTERFACE
-            osal::cpp
-    )
-
-    set(COMPATIBILITY_PATH      ${CMAKE_CURRENT_SOURCE_DIR}/compatibility)
-    target_compile_options(utils-logger
-        INTERFACE
-            -include${COMPATIBILITY_PATH}/condition_variable
-            -include${COMPATIBILITY_PATH}/mutex
-            -include${COMPATIBILITY_PATH}/syscalls.hpp
-            -include${COMPATIBILITY_PATH}/thread
-    )
-endif ()

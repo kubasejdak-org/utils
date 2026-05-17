@@ -9,4 +9,5 @@ CMakeDeps
 
 [options]
 catch2/*:default_reporter=verbose
+spdlog/*:no_exceptions=True
 spdlog/*:use_std_fmt=True
