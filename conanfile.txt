@@ -11,4 +11,4 @@ CMakeDeps
 catch2/*:default_reporter=verbose
 catch2/*:no_posix_signals=True
 spdlog/*:no_exceptions=True
-spdlog/*:use_std_fmt=False
+spdlog/*:use_std_fmt=True
