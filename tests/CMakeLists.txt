@@ -1,5 +1,5 @@
 add_subdirectory(helpers)
-add_subdirectory(init)
+# add_subdirectory(network)
 
 add_executable(utils-tests
     bits.cpp
@@ -21,19 +21,10 @@ find_package(utils COMPONENTS bits functional)
 target_link_libraries(utils-tests
     PRIVATE
         Catch2::Catch2
-        platform::init
         platform::main
         tests::helpers
         utils::bits
         utils::functional
 )
-
-# if (OSAL_PLATFORM STREQUAL linux)
-#     add_subdirectory(network)
-# endif ()
-
-if (NOT UNIX)
-    objcopy_generate_bin(utils-tests)
-endif ()
 
 install(TARGETS utils-tests)
