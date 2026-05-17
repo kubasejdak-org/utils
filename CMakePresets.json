@@ -7,7 +7,6 @@
   },
   "include": [
     "cmake/presets/app.json",
-    "cmake/presets/baremetal.json",
     "cmake/presets/dependencies.json",
     "cmake/presets/linux.json",
     "cmake/presets/type.json"
@@ -108,22 +107,6 @@
     {
       "name": "yocto-sdk-clang-release",
       "inherits": ["yocto-sdk-clang", "release"]
-    },
-    {
-      "name": "freertos-armv7-m4-conan-gcc-debug",
-      "inherits": ["freertos-armv7-m4-gcc", "debug", "conan"]
-    },
-    {
-      "name": "freertos-armv7-m4-conan-gcc-release",
-      "inherits": ["freertos-armv7-m4-gcc", "release", "conan"]
-    },
-    {
-      "name": "freertos-armv7-m4-conan-clang-debug",
-      "inherits": ["freertos-armv7-m4-clang", "debug", "conan"]
-    },
-    {
-      "name": "freertos-armv7-m4-conan-clang-release",
-      "inherits": ["freertos-armv7-m4-clang", "release", "conan"]
     }
   ]
 }
