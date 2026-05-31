@@ -15,7 +15,7 @@ add_executable(utils-tests
 
 find_package(Catch2)
 find_package(platform COMPONENTS main)
-find_package(utils COMPONENTS bits functional logger)
+find_package(utils COMPONENTS bits functional logger registry)
 
 target_link_libraries(utils-tests
     PRIVATE
