@@ -4,7 +4,7 @@ add_subdirectory(helpers)
 add_executable(utils-tests
     bits.cpp
     ExecAround.cpp
-#     GlobalRegistry.cpp
+    GlobalRegistry.cpp
     Logger.cpp
     main.cpp
 #     property.cpp
@@ -25,7 +25,7 @@ target_link_libraries(utils-tests
         utils::bits
         utils::functional
         utils::logger
-        # utils::registry
+        utils::registry
 )
 
 install(TARGETS utils-tests)
