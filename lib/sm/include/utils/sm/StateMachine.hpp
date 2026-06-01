@@ -34,9 +34,9 @@
 
 #include <osal/Mutex.hpp>
 #include <osal/ScopedLock.hpp>
-#include <utils/fsm/IState.hpp>
-#include <utils/fsm/logger.hpp>
 #include <utils/functional/ExecAround.hpp>
+#include <utils/sm/IState.hpp>
+#include <utils/sm/logger.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -46,7 +46,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace utils::fsm {
+namespace utils::sm {
 
 /// Class representing a thread-safe state machine.
 /// This state machine assumes, that user states have one common base class which acts as an interface (API) for all its
@@ -63,6 +63,8 @@ namespace utils::fsm {
 template <typename UserState>
 class StateMachine {
     static_assert(std::is_base_of_v<IState<UserState>, UserState>);
+
+    using Logger = StateMachineLogger;
 
 public:
     /// Constructor.
@@ -108,7 +110,7 @@ private:
     void preStateCall()
     {
         m_mutex.lock();
-        FsmLogger::debug("<{}:{}> preStateCall", m_name, m_currentState->name());
+        Logger::debug("<{}:{}> preStateCall", m_name, m_currentState->name());
     }
 
     /// Method which will be called directly after every call to the state's methods. If a state change was triggered,
@@ -116,7 +118,7 @@ private:
     /// internal lock is released.
     void postStateCall()
     {
-        FsmLogger::debug("<{}:{}> postStateCall", m_name, m_currentState->name());
+        Logger::debug("<{}:{}> postStateCall", m_name, m_currentState->name());
 
         if (m_newState)
             executeStateChange();
@@ -148,13 +150,13 @@ private:
     void executeStateChange() // NOLINT(misc-no-recursion)
     {
         if (m_currentState) {
-            FsmLogger::info("<{}:{}> Leaving state", m_name, m_currentState->name());
+            Logger::info("<{}:{}> Leaving state", m_name, m_currentState->name());
             m_currentState->onLeave();
         }
 
         m_currentState = std::move(m_newState);
 
-        FsmLogger::info("<{}:{}> Entering state", m_name, m_currentState->name());
+        Logger::info("<{}:{}> Entering state", m_name, m_currentState->name());
         m_currentState->onEnter();
 
         if (m_newState) {
@@ -163,10 +165,10 @@ private:
         }
 
         if (m_changeStateCounter > 1) {
-            FsmLogger::warn("<{}:{}> Recursive calls to changeState() detected: called {} times",
-                            m_name,
-                            m_currentState->name(),
-                            m_changeStateCounter);
+            Logger::warn("<{}:{}> Recursive calls to changeState() detected: called {} times",
+                         m_name,
+                         m_currentState->name(),
+                         m_changeStateCounter);
         }
 
         m_changeStateCounter = 0;
@@ -182,4 +184,4 @@ private:
     std::shared_ptr<UserState> m_newState{};
 };
 
-} // namespace utils::fsm
+} // namespace utils::sm

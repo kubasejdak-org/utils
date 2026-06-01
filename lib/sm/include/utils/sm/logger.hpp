@@ -34,14 +34,14 @@
 
 #include <utils/logger/Logger.hpp>
 
-namespace utils::fsm {
+namespace utils::sm {
 
 #ifdef NDEBUG
-constexpr auto cDefaultLogLevel = spdlog::level::off;
+constexpr auto cDefaultLogLevel = spdlog::level::info;
 #else
-constexpr auto cDefaultLogLevel = spdlog::level::warn;
+constexpr auto cDefaultLogLevel = spdlog::level::debug;
 #endif
 
-REGISTER_LOGGER(FsmLogger, "StateMachine", cDefaultLogLevel);
+REGISTER_LOGGER(StateMachineLogger, "StateMachine", cDefaultLogLevel);
 
-} // namespace utils::fsm
+} // namespace utils::sm
