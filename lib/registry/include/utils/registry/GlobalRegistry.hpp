@@ -28,17 +28,28 @@
 
 #pragma once
 
-#include <cassert>
+#include "utils/registry/Error.hpp"
+
+#include <osal/Mutex.hpp>
+#include <osal/ScopedLock.hpp>
+
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <vector>
 
 namespace utils::registry {
 namespace detail {
+
+/// Concept that requires K to be comparable with IdType via operator< (as required by std::less<>).
+/// This enables heterogeneous lookup in std::map<IdType, ..., std::less<>> without constructing an IdType.
+template <typename K, typename IdType>
+concept ComparableWith = std::totally_ordered_with<K, IdType>;
 
 /// Helper class that wrapping object and the id describing it into one entity.
 /// @tparam IdType              Type representing id of the object.
@@ -74,7 +85,7 @@ private:
 } // namespace detail
 
 /// Provides an easy to use way of registering set of global objects of the same type ObjectType and accessible via
-/// IdType from everywhere.
+/// IdType from everywhere. All public methods are thread-safe.
 /// @tparam ObjectType          Type representing the object.
 /// @tparam IdType              Type representing id of the object.
 /// @note In order to create a GlobalRegistry, use the following code:
@@ -91,27 +102,35 @@ class GlobalRegistry {
 public:
     /// Initializes GlobalRegistry with a given set of id-object pairs (wrapper in detail::Instance).
     /// @param instances        T objects, that should be stored within GlobalRegistry.
+    /// @return Error code of the operation.
     /// @note This method can be called only once for every type ObjectType-IdType pair.
-    static void init(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
+    static std::error_code init(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
     {
-        assert(m_instances.empty());
-        append(std::move(instances));
+        osal::ScopedLock lock(m_mutex);
+        if (!m_instances.empty())
+            return Error::eAlreadyInitialized;
+
+        return appendLocked(std::move(instances));
     }
 
     /// Appends given set of id-object pairs into GlobalRegistry (wrapper in detail::Instance).
     /// @param instances        T objects, that should be stored within GlobalRegistry.
+    /// @return Error code of the operation.
     /// @note This method can be called multiple times for every type ObjectType-IdType pair.
-    static void append(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
+    static std::error_code append(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
     {
-        for (auto& instance : instances)
-            m_instances.try_emplace(instance.id(), instance.object());
+        osal::ScopedLock lock(m_mutex);
+        return appendLocked(std::move(instances));
     }
 
-    /// Returns std::shared_ptr with instance of the T type, that is identified with the given id.
+    /// Returns std::shared_ptr with instance of the ObjectType type, that is identified with the given id.
+    /// @tparam K               Type comparable to IdType via operator< (supports heterogeneous lookup).
     /// @param id               Id of the instance, that should be returned.
-    /// @return std::shared_ptr with instance of the T type, that is identified with the given id.
-    static std::shared_ptr<ObjectType> get(const IdType& id)
+    /// @return std::shared_ptr with the matching instance, or nullptr if not found.
+    template <detail::ComparableWith<IdType> K>
+    static std::shared_ptr<ObjectType> get(const K& id)
     {
+        osal::ScopedLock lock(m_mutex);
         auto it = m_instances.find(id);
         if (it == m_instances.end())
             return nullptr;
@@ -119,20 +138,53 @@ public:
         return it->second;
     }
 
+    /// Returns all registered ids in sorted order.
+    /// @return Vector of all registered ids.
+    static std::vector<IdType> ids()
+    {
+        osal::ScopedLock lock(m_mutex);
+        std::vector<IdType> result;
+        result.reserve(m_instances.size());
+        for (const auto& [id, _] : m_instances)
+            result.push_back(id);
+
+        return result;
+    }
+
     /// Returns size of the GlobalRegistry.
     /// @return Size of the GlobalRegistry.
-    static std::size_t size() { return m_instances.size(); }
+    static std::size_t size()
+    {
+        osal::ScopedLock lock(m_mutex);
+        return m_instances.size();
+    }
 
     /// Clears global registry.
     /// @note After call to this function GlobalRegistry can be initialized once again.
-    static void clear() { m_instances.clear(); }
+    static void clear()
+    {
+        osal::ScopedLock lock(m_mutex);
+        m_instances.clear();
+    }
 
 private:
-    /// Default constructor.
     GlobalRegistry() = default;
 
+    static std::error_code appendLocked(std::vector<detail::Instance<IdType, ObjectType>>&& instances)
+    {
+        bool hasDuplicate = false;
+        for (auto& instance : instances) {
+            auto [_, inserted] = m_instances.try_emplace(instance.id(), instance.object());
+            if (!inserted)
+                hasDuplicate = true;
+        }
+
+        return hasDuplicate ? Error::eDuplicateId : std::error_code{};
+    }
+
 private:
-    static inline std::map<IdType, std::shared_ptr<ObjectType>> m_instances;
+    static inline std::map<IdType, std::shared_ptr<ObjectType>, std::less<>> m_instances;
+    static inline osal::Mutex m_mutex;
 };
 
 } // namespace utils::registry
