@@ -35,7 +35,7 @@
 #include <string>
 #include <utility>
 
-namespace utils::fsm {
+namespace utils::sm {
 
 template <typename UserState>
 class StateMachine;
@@ -101,4 +101,4 @@ private:
     StateMachine<UserState>* m_stateMachine;
 };
 
-} // namespace utils::fsm
+} // namespace utils::sm

@@ -32,8 +32,8 @@
 
 #include <osal/Thread.hpp>
 #include <osal/sleep.hpp>
-#include <utils/fsm/IState.hpp>
-#include <utils/fsm/StateMachine.hpp>
+#include <utils/sm/IState.hpp>
+#include <utils/sm/StateMachine.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -41,9 +41,9 @@
 #include <string>
 #include <utility>
 
-struct IAppState : utils::fsm::IState<IAppState> {
-    IAppState(std::string name, utils::fsm::StateMachine<IAppState>* stateMachine)
-        : utils::fsm::IState<IAppState>(std::move(name), stateMachine)
+struct IAppState : utils::sm::IState<IAppState> {
+    IAppState(std::string name, utils::sm::StateMachine<IAppState>* stateMachine)
+        : utils::sm::IState<IAppState>(std::move(name), stateMachine)
     {}
 
     void onEnter() override {}
@@ -54,7 +54,7 @@ struct IAppState : utils::fsm::IState<IAppState> {
 };
 
 struct StateA : IAppState {
-    explicit StateA(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateA(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateA", stateMachine)
     {}
 
@@ -62,7 +62,7 @@ struct StateA : IAppState {
 };
 
 struct StateB : IAppState {
-    explicit StateB(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateB(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateB", stateMachine)
     {}
 
@@ -70,7 +70,7 @@ struct StateB : IAppState {
 };
 
 struct StateC : IAppState {
-    explicit StateC(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateC(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateC", stateMachine)
     {}
 
@@ -80,7 +80,7 @@ struct StateC : IAppState {
 struct StateF;
 
 struct StateD : IAppState {
-    explicit StateD(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateD(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateD", stateMachine)
     {}
 
@@ -92,7 +92,7 @@ struct StateD : IAppState {
 };
 
 struct StateE : IAppState {
-    explicit StateE(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateE(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateE", stateMachine)
     {}
 
@@ -104,7 +104,7 @@ struct StateE : IAppState {
 };
 
 struct StateF : IAppState {
-    explicit StateF(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateF(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateF", stateMachine)
     {}
 
@@ -116,7 +116,7 @@ struct StateF : IAppState {
 };
 
 struct StateG : IAppState {
-    explicit StateG(utils::fsm::StateMachine<IAppState>* stateMachine)
+    explicit StateG(utils::sm::StateMachine<IAppState>* stateMachine)
         : IAppState("StateG", stateMachine)
     {}
 
@@ -129,7 +129,7 @@ struct StateG : IAppState {
 
 TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
 {
-    utils::fsm::StateMachine<IAppState> stateMachine("Test");
+    utils::sm::StateMachine<IAppState> stateMachine("Test");
 
     stateMachine.changeState<StateA>();
     REQUIRE(stateMachine.currentState()->name() == "StateA");
@@ -161,7 +161,7 @@ TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
 
 TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
 {
-    utils::fsm::StateMachine<IAppState> stateMachine("Test");
+    utils::sm::StateMachine<IAppState> stateMachine("Test");
     constexpr int cIterations = 1000;
     std::string name;
     std::string nextName;
@@ -281,7 +281,7 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
 
 TEST_CASE("3. Changing state from multiple threads", "[unit][StateMachine]")
 {
-    utils::fsm::StateMachine<IAppState> stateMachine("Test");
+    utils::sm::StateMachine<IAppState> stateMachine("Test");
     stateMachine.changeState<StateA>();
 
     bool stop{};
@@ -331,9 +331,9 @@ TEST_CASE("3. Changing state from multiple threads", "[unit][StateMachine]")
     stop = true;
 }
 
-struct ITestState : utils::fsm::IState<ITestState> {
-    ITestState(std::string name, utils::fsm::StateMachine<ITestState>* stateMachine)
-        : utils::fsm::IState<ITestState>(std::move(name), stateMachine)
+struct ITestState : utils::sm::IState<ITestState> {
+    ITestState(std::string name, utils::sm::StateMachine<ITestState>* stateMachine)
+        : utils::sm::IState<ITestState>(std::move(name), stateMachine)
     {}
 
     virtual void func() = 0;
@@ -342,7 +342,7 @@ struct ITestState : utils::fsm::IState<ITestState> {
 struct TestStateD;
 
 struct TestStateA : ITestState {
-    explicit TestStateA(utils::fsm::StateMachine<ITestState>* stateMachine)
+    explicit TestStateA(utils::sm::StateMachine<ITestState>* stateMachine)
         : ITestState("TestStateA", stateMachine)
     {}
 
@@ -350,7 +350,7 @@ struct TestStateA : ITestState {
 };
 
 struct TestStateB : ITestState {
-    explicit TestStateB(utils::fsm::StateMachine<ITestState>* stateMachine)
+    explicit TestStateB(utils::sm::StateMachine<ITestState>* stateMachine)
         : ITestState("TestStateB", stateMachine)
     {}
 
@@ -360,7 +360,7 @@ struct TestStateB : ITestState {
 };
 
 struct TestStateC : ITestState {
-    explicit TestStateC(utils::fsm::StateMachine<ITestState>* stateMachine)
+    explicit TestStateC(utils::sm::StateMachine<ITestState>* stateMachine)
         : ITestState("TestStateC", stateMachine)
     {}
 
@@ -370,7 +370,7 @@ struct TestStateC : ITestState {
 };
 
 struct TestStateD : ITestState {
-    explicit TestStateD(utils::fsm::StateMachine<ITestState>* stateMachine)
+    explicit TestStateD(utils::sm::StateMachine<ITestState>* stateMachine)
         : ITestState("TestStateD", stateMachine)
     {}
 
@@ -381,7 +381,7 @@ struct TestStateD : ITestState {
 
 TEST_CASE("4. Recursive calls to changeState()", "[unit][StateMachine]")
 {
-    utils::fsm::StateMachine<ITestState> stateMachine("Test");
+    utils::sm::StateMachine<ITestState> stateMachine("Test");
 
     stateMachine.changeState<TestStateA>();
     REQUIRE(stateMachine.currentState()->name() == "TestStateA");
