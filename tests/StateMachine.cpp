@@ -196,6 +196,7 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     stateMachine.changeState<StateC>();
                     name = "StateC";
                     break;
+                default: break;
             }
 
             CHECK(stateMachine.currentState()->name() == name);
@@ -222,6 +223,7 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     name = "StateF";
                     nextName = "StateE";
                     break;
+                default: break;
             }
 
             CHECK(stateMachine.currentState()->name() == name);
@@ -264,6 +266,7 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     name = "StateF";
                     nextName = "StateE";
                     break;
+                default: break;
             }
 
             CHECK(stateMachine.currentState()->name() == name);

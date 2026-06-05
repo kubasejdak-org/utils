@@ -1,6 +1,7 @@
 ---
 InheritParentConfig: true
 Checks: '
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
   -*-magic-numbers
 '
 ...
