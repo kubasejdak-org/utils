@@ -37,9 +37,9 @@
 namespace utils::network {
 
 #ifdef NDEBUG
-constexpr auto cDefaultLogLevel = spdlog::level::off;
-#else
 constexpr auto cDefaultLogLevel = spdlog::level::info;
+#else
+constexpr auto cDefaultLogLevel = spdlog::level::debug;
 #endif
 
 REGISTER_LOGGER(NetworkTypesLogger, "NetworkTypes", cDefaultLogLevel);
