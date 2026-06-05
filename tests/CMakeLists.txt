@@ -9,13 +9,13 @@ add_executable(utils-tests
     main.cpp
 #     property.cpp
     ScopedExit.cpp
-#     StateMachine.cpp
+    StateMachine.cpp
 #     Watchdog.cpp
 )
 
 find_package(Catch2)
 find_package(platform COMPONENTS main)
-find_package(utils COMPONENTS bits functional logger registry)
+find_package(utils COMPONENTS bits functional logger registry sm)
 
 target_link_libraries(utils-tests
     PRIVATE
@@ -26,6 +26,7 @@ target_link_libraries(utils-tests
         utils::functional
         utils::logger
         utils::registry
+        utils::sm
 )
 
 install(TARGETS utils-tests)
