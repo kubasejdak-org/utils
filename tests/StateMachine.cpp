@@ -2,31 +2,27 @@
 ///
 /// @file
 /// @author Kuba Sejdak
-/// @copyright BSD 2-Clause License
+/// @copyright MIT License
 ///
-/// Copyright (c) 2021-2023, Kuba Sejdak <kuba.sejdak@gmail.com>
-/// All rights reserved.
+/// Copyright (c) 2021 Kuba Sejdak (kuba.sejdak@gmail.com)
 ///
-/// Redistribution and use in source and binary forms, with or without
-/// modification, are permitted provided that the following conditions are met:
+/// Permission is hereby granted, free of charge, to any person obtaining a copy
+/// of this software and associated documentation files (the "Software"), to deal
+/// in the Software without restriction, including without limitation the rights
+/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the Software is
+/// furnished to do so, subject to the following conditions:
 ///
-/// 1. Redistributions of source code must retain the above copyright notice, this
-///    list of conditions and the following disclaimer.
+/// The above copyright notice and this permission notice shall be included in all
+/// copies or substantial portions of the Software.
 ///
-/// 2. Redistributions in binary form must reproduce the above copyright notice,
-///    this list of conditions and the following disclaimer in the documentation
-///    and/or other materials provided with the distribution.
-///
-/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-/// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-/// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-/// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-/// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-/// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-/// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-/// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+/// SOFTWARE.
 ///
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -127,35 +123,53 @@ struct StateG : IAppState {
     }
 };
 
+struct TrackingState : IAppState {
+    TrackingState(utils::sm::StateMachine<IAppState>* stateMachine, int& enterCount, int& leaveCount)
+        : IAppState("TrackingState", stateMachine)
+        , m_enterCount(enterCount)
+        , m_leaveCount(leaveCount)
+    {}
+
+    void onEnter() override { ++m_enterCount; }
+
+    void onLeave() override { ++m_leaveCount; }
+
+    void func() override {}
+
+private:
+    int& m_enterCount;
+    int& m_leaveCount;
+};
+
 TEST_CASE("1. Simple change of states from the outside", "[unit][StateMachine]")
 {
     utils::sm::StateMachine<IAppState> stateMachine("Test");
 
     stateMachine.changeState<StateA>();
-    REQUIRE(stateMachine.currentState()->name() == "StateA");
+    CHECK(stateMachine.currentState()->name() == "StateA");
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateB>();
-    REQUIRE(stateMachine.currentState()->name() == "StateB");
+    CHECK(stateMachine.currentState()->name() == "StateB");
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateC>();
-    REQUIRE(stateMachine.currentState()->name() == "StateC");
+    CHECK(stateMachine.currentState()->name() == "StateC");
     stateMachine.currentState()->func();
     stateMachine.currentState()->func();
 
     stateMachine.changeState<StateA>();
-    REQUIRE(stateMachine.currentState()->name() == "StateA");
+    CHECK(stateMachine.currentState()->name() == "StateA");
     stateMachine.changeState<StateB>();
-    REQUIRE(stateMachine.currentState()->name() == "StateB");
+    CHECK(stateMachine.currentState()->name() == "StateB");
     stateMachine.changeState<StateC>();
-    REQUIRE(stateMachine.currentState()->name() == "StateC");
+    CHECK(stateMachine.currentState()->name() == "StateC");
     stateMachine.changeState<StateB>();
-    REQUIRE(stateMachine.currentState()->name() == "StateB");
+    CHECK(stateMachine.currentState()->name() == "StateB");
     stateMachine.changeState<StateA>();
-    REQUIRE(stateMachine.currentState()->name() == "StateA");
+    CHECK(stateMachine.currentState()->name() == "StateA");
     stateMachine.currentState()->func();
 }
 
@@ -182,9 +196,10 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     stateMachine.changeState<StateC>();
                     name = "StateC";
                     break;
+                default: break;
             }
 
-            REQUIRE(stateMachine.currentState()->name() == name);
+            CHECK(stateMachine.currentState()->name() == name);
             stateMachine.currentState()->func();
         }
     }
@@ -208,18 +223,19 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     name = "StateF";
                     nextName = "StateE";
                     break;
+                default: break;
             }
 
-            REQUIRE(stateMachine.currentState()->name() == name);
+            CHECK(stateMachine.currentState()->name() == name);
             stateMachine.currentState()->func();
-            REQUIRE(stateMachine.currentState()->name() == nextName);
+            CHECK(stateMachine.currentState()->name() == nextName);
         }
     }
 
     SECTION("2.3. Changing state from both the sides")
     {
         for (int i = 0; i < cIterations; ++i) {
-            switch (i % 6) { // NOLINT
+            switch (i % 6) {
                 case 0:
                     stateMachine.changeState<StateA>();
                     name = "StateA";
@@ -245,16 +261,17 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
                     name = "StateC";
                     nextName = name;
                     break;
-                case 5: // NOLINT
+                case 5:
                     stateMachine.changeState<StateF>();
                     name = "StateF";
                     nextName = "StateE";
                     break;
+                default: break;
             }
 
-            REQUIRE(stateMachine.currentState()->name() == name);
+            CHECK(stateMachine.currentState()->name() == name);
             stateMachine.currentState()->func();
-            REQUIRE(stateMachine.currentState()->name() == nextName);
+            CHECK(stateMachine.currentState()->name() == nextName);
         }
     }
 
@@ -262,9 +279,9 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
     {
         for (int i = 0; i < cIterations; ++i) {
             stateMachine.changeState<StateA>();
-            REQUIRE(stateMachine.currentState()->name() == "StateA");
+            CHECK(stateMachine.currentState()->name() == "StateA");
             stateMachine.currentState()->func();
-            REQUIRE(stateMachine.currentState()->name() == "StateA");
+            CHECK(stateMachine.currentState()->name() == "StateA");
         }
     }
 
@@ -272,9 +289,9 @@ TEST_CASE("2. Changing state in a loop", "[unit][StateMachine]")
     {
         for (int i = 0; i < cIterations; ++i) {
             stateMachine.changeState<StateG>();
-            REQUIRE(stateMachine.currentState()->name() == "StateG");
+            CHECK(stateMachine.currentState()->name() == "StateG");
             stateMachine.currentState()->func();
-            REQUIRE(stateMachine.currentState()->name() == "StateG");
+            CHECK(stateMachine.currentState()->name() == "StateG");
         }
     }
 }
@@ -286,7 +303,7 @@ TEST_CASE("3. Changing state from multiple threads", "[unit][StateMachine]")
 
     bool stop{};
     auto threadFunc = [&] {
-        while (!stop) // NOLINT
+        while (!stop)
             stateMachine.currentState()->func();
     };
 
@@ -384,7 +401,7 @@ TEST_CASE("4. Recursive calls to changeState()", "[unit][StateMachine]")
     utils::sm::StateMachine<ITestState> stateMachine("Test");
 
     stateMachine.changeState<TestStateA>();
-    REQUIRE(stateMachine.currentState()->name() == "TestStateA");
+    CHECK(stateMachine.currentState()->name() == "TestStateA");
 
     SECTION("4.1. Calls triggered from outside")
     {
@@ -396,5 +413,29 @@ TEST_CASE("4. Recursive calls to changeState()", "[unit][StateMachine]")
         stateMachine.currentState()->func();
     }
 
-    REQUIRE(stateMachine.currentState()->name() == "TestStateA");
+    CHECK(stateMachine.currentState()->name() == "TestStateA");
+}
+
+TEST_CASE("5. onEnter() and onLeave() are called correctly during state transitions", "[unit][StateMachine]")
+{
+    utils::sm::StateMachine<IAppState> stateMachine("Test");
+
+    int enterCount{};
+    int leaveCount{};
+
+    stateMachine.changeState<TrackingState>(enterCount, leaveCount);
+    CHECK(enterCount == 1);
+    CHECK(leaveCount == 0);
+
+    stateMachine.changeState<StateA>();
+    CHECK(enterCount == 1);
+    CHECK(leaveCount == 1);
+
+    stateMachine.changeState<TrackingState>(enterCount, leaveCount);
+    CHECK(enterCount == 2);
+    CHECK(leaveCount == 1);
+
+    stateMachine.changeState<TrackingState>(enterCount, leaveCount);
+    CHECK(enterCount == 3);
+    CHECK(leaveCount == 2);
 }
