@@ -14,6 +14,7 @@ add_executable(utils-tests
 )
 
 find_package(Catch2)
+find_package(osal)
 find_package(platform COMPONENTS main)
 find_package(utils COMPONENTS bits functional logger registry sm)
 
@@ -22,6 +23,7 @@ target_link_libraries(utils-tests
         Catch2::Catch2
         platform::main
         tests::helpers
+        osal::cpp
         utils::bits
         utils::functional
         utils::logger

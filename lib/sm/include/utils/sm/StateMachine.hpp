@@ -175,7 +175,7 @@ private:
     friend class IState<UserState>;
 
     std::string m_name;
-    osal::Mutex m_mutex{OsalMutexType::eRecursive};
+    osal::Mutex m_mutex{OsalMutexType::Recursive};
     std::size_t m_changeStateCounter{};
     std::shared_ptr<UserState> m_currentState{};
     std::shared_ptr<UserState> m_newState{};
